@@ -4,7 +4,7 @@ import { Card } from '@radix-ui/themes';
 function NavBar() {
     return (
         <Card className='flex h-14'>
-            <span className='w-1/2 mt-1'>Divinity Armory</span>
+            <span className='w-1/2 mt-1'>Dragonblight Armory</span>
             <NavigationMenu.Root className='flex justify-end w-11/12'>
                 <NavigationMenu.List className="center flex justify-evenly list-none rounded-[6px] ">
                     <NavigationMenu.Item >

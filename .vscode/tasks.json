@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "docker-build",
+            "label": "docker-build: debug",
+            "dockerBuild": {
+                "tag": "cataclysm_website.server:dev",
+                "target": "base",
+                "dockerfile": "${workspaceFolder}/Cataclysm_Website.Server/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: debug",
+            "dependsOn": [
+                "docker-build: debug"
+            ],
+            "dockerRun": {
+                "ports": [
+                    { "hostPort": 7054, "containerPort": 8080 }
+                ]
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj",
+                "enableDebugging": true
+            }
+        },
+        {
+            "label": "npm run dev",
+            "type": "npm",
+            "script": "dev",
+            "path": "Cataclysm_Website.client",
+            "isBackground": true,
+            "problemMatcher": "$vite"
+        }
+    ]
+}
