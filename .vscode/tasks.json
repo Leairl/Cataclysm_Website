@@ -2,6 +2,14 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "type": "shell",
+            "command": "docker network connect cata-network cataclysmwebsite-dev",
+            "label": "docker-network",
+            "dependsOn": [
+                "docker-run: debug"
+            ],
+        },
+        {
             "type": "docker-build",
             "label": "docker-build: debug",
             "dockerBuild": {

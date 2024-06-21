@@ -5,7 +5,7 @@
         "name": "Backend",
         "type": "docker",
         "request": "launch",
-        "preLaunchTask": "docker-run: debug",
+        "preLaunchTask": "docker-network",
         "netCore": {
           "appProject": "${workspaceFolder}/Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj"
         }

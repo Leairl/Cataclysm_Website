@@ -18,14 +18,14 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Cataclysm_Website.Server/Cataclysm_Website.Server.csproj", "Cataclysm_Website.Server/"]
 COPY ["Cataclysm_Website.client/Cataclysm_Website.client.esproj", "Cataclysm_Website.client/"]
-RUN dotnet restore "./Cataclysm_Website.Server/Cataclysm_Website.Server.csproj"
+RUN dotnet restore "./Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj"
 COPY . .
 WORKDIR "/src/Cataclysm_Website.Server"
-RUN dotnet build "./Cataclysm_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Cataclysm_Website.Backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Cataclysm_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Cataclysm_Website.Backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
