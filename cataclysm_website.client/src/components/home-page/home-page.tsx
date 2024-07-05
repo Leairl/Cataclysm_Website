@@ -22,7 +22,7 @@ function HomePage() {
     <div>
       <img
         className="object-left-top w-full h-full inset-0 absolute object-cover opacity-100 top-14"
-        src="https://i.imgur.com/CkQpTii.png"
+        src="https://i.imgur.com/LMjf4Lh.png"
       ></img>
       <Container height="100vh">
         <Flex direction="column" gap="5" className=" w-full">
