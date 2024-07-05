@@ -25,7 +25,7 @@ interface SeasonMatchStatistics {
     rating: number;
 }
 
-function arena3v3Ladder() {
+function Arena3v3Ladder() {
     //const [count, setCount] = useState(0); //store dynamic data, focus on arena ladder component
     const [ladder, setLadder] = useState<Player[]>();
 
@@ -88,4 +88,4 @@ function arena3v3Ladder() {
         }
 }
 
-export default arena3v3Ladder;
+export default Arena3v3Ladder;

@@ -25,7 +25,7 @@ interface SeasonMatchStatistics {
     rating: number;
 }
 
-function arena5v5Ladder() {
+function Arena5v5Ladder() {
     //const [count, setCount] = useState(0); //store dynamic data, focus on arena ladder component
     const [ladder, setLadder] = useState<Player[]>();
 
@@ -88,4 +88,4 @@ function arena5v5Ladder() {
         }
 }
 
-export default arena5v5Ladder;
+export default Arena5v5Ladder;

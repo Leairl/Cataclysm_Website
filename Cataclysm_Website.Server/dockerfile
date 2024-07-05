@@ -4,30 +4,36 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
+EXPOSE 7054
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS with-node
 RUN apt-get update
 RUN apt-get install curl
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
 RUN apt-get -y install nodejs
-
+# lets you debug vs code in vs
+RUN curl -sL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg
 
 FROM with-node AS build
-ARG BUILD_CONFIGURATION=Release
+ARG BUILD_CONFIGURATION=Debug
 WORKDIR /src
 COPY ["Cataclysm_Website.Server/Cataclysm_Website.Server.csproj", "Cataclysm_Website.Server/"]
-COPY ["Cataclysm_Website.client/Cataclysm_Website.client.esproj", "Cataclysm_Website.client/"]
-RUN dotnet restore "./Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj"
+COPY ["cataclysm_website.client/cataclysm_website.client.esproj", "cataclysm_website.client/"]
+RUN dotnet restore "./Cataclysm_Website.Server/Cataclysm_Website.Server.csproj"
 COPY . .
 WORKDIR "/src/Cataclysm_Website.Server"
-RUN dotnet build "./Cataclysm_Website.Backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Cataclysm_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Cataclysm_Website.Backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG BUILD_CONFIGURATION=Debug
+RUN dotnet publish "./Cataclysm_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# installing and running vs code debugger before running backend
+USER root
+RUN mkdir /vsdbg
+COPY --from=publish /vsdbg /vsdbg
+USER app
 ENTRYPOINT ["dotnet", "Cataclysm_Website.Server.dll"]

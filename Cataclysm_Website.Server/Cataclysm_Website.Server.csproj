@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArgentPonyWarcraftClient.Extensions.DependencyInjection" Version="8.2.22" />
+    <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
       <Version>8.*-*</Version>
     </PackageReference>
@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\cataclysm_website.client\cataclysm_website.frontend.esproj">
+    <ProjectReference Include="..\ArgentPonyWarcraftClient\ArgentPonyWarcraftClient.csproj" />
+    <ProjectReference Include="..\cataclysm_website.client\cataclysm_website.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

@@ -25,7 +25,7 @@ interface SeasonMatchStatistics {
     rating: number;
 }
 
-function arenaLadderRBG() {
+function ArenaLadderRBG() {
     //const [count, setCount] = useState(0); //store dynamic data, focus on arena ladder component
     const [ladder, setLadder] = useState<Player[]>();
 
@@ -88,4 +88,4 @@ function arenaLadderRBG() {
         }
 }
 
-export default arenaLadderRBG;
+export default ArenaLadderRBG;

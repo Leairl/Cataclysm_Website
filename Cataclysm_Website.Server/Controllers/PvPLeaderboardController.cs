@@ -23,7 +23,7 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("Get3v3Ladder")]
         public async Task<IActionResult> Get3v3Ladder() 
         {
-            var fullLeaderboard = await _warcraftCachedData.Get3v3Leaderboard("dynamic-classic-us");
+            var fullLeaderboard = await _warcraftCachedData.Get3v3Leaderboard("us");
             var firstHundred3v3Players = fullLeaderboard.Entries.Take(100);
             return Ok(firstHundred3v3Players);
         }
@@ -31,7 +31,7 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("Get2v2Ladder")]
         public async Task<IActionResult> Get2v2Ladder() 
         {
-            var fullLeaderboard = await _warcraftCachedData.Get2v2Leaderboard("dynamic-classic-us");
+            var fullLeaderboard = await _warcraftCachedData.Get2v2Leaderboard("us");
             var firstHundred2v2Players = fullLeaderboard.Entries.Take(100);
             return Ok(firstHundred2v2Players);
         }
@@ -39,7 +39,7 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("Get5v5Ladder")]
         public async Task<IActionResult> Get5v5Ladder() 
         {
-            var fullLeaderboard = await _warcraftCachedData.Get5v5Leaderboard("dynamic-classic-us");
+            var fullLeaderboard = await _warcraftCachedData.Get5v5Leaderboard("us");
             var firstHundred5v5Players = fullLeaderboard.Entries.Take(100);
             return Ok(firstHundred5v5Players);
         }
@@ -47,7 +47,7 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("GetRBGLadder")]
         public async Task<IActionResult> GetRBGLadder() 
         {
-            var fullLeaderboard = await _warcraftCachedData.GetRBGLeaderboard("dynamic-classic-us");
+            var fullLeaderboard = await _warcraftCachedData.GetRBGLeaderboard("us");
             var firstHundredRBGPlayers = fullLeaderboard.Entries.Take(100);
             return Ok(firstHundredRBGPlayers);
         }

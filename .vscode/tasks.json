@@ -1,51 +1,60 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "type": "shell",
-            "command": "docker network connect cata-network cataclysmwebsite-dev",
-            "label": "docker-network",
-            "dependsOn": [
-                "docker-run: debug"
-            ],
-        },
-        {
-            "type": "docker-build",
-            "label": "docker-build: debug",
-            "dockerBuild": {
-                "tag": "cataclysm_website.server:dev",
-                "target": "base",
-                "dockerfile": "${workspaceFolder}/Cataclysm_Website.Server/Dockerfile",
-                "context": "${workspaceFolder}",
-                "pull": true
-            },
-            "netCore": {
-                "appProject": "${workspaceFolder}/Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj"
-            }
-        },
-        {
-            "type": "docker-run",
-            "label": "docker-run: debug",
-            "dependsOn": [
-                "docker-build: debug"
-            ],
-            "dockerRun": {
-                "ports": [
-                    { "hostPort": 7054, "containerPort": 8080 }
-                ]
-            },
-            "netCore": {
-                "appProject": "${workspaceFolder}/Cataclysm_Website.Server/Cataclysm_Website.Backend.csproj",
-                "enableDebugging": true
-            }
-        },
-        {
-            "label": "npm run dev",
-            "type": "npm",
-            "script": "dev",
-            "path": "Cataclysm_Website.client",
-            "isBackground": true,
-            "problemMatcher": "$vite"
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Docker Container",
+      "type": "shell",
+      //building image (named cataclysm_backend)
+      "command": "docker build -t cataclysm_backend --file 'Cataclysm_Website.Server/dockerfile'.",
+      "dependsOn": "Remove Old Docker Container",
+      "problemMatcher": []
+    },
+    {
+      "label": "Remove Old Docker Container",
+      "type": "shell",
+      //even if there is an error with the command, run anyways
+      "command": "Invoke-Expression -ErrorAction SilentlyContinue -Command 'docker rm -f cataclysm_backend_container'",
+      "options": {
+        "shell": { "executable": "powershell", "args": ["-Command"] }
+      },
+      "dependsOn": "Stop Docker Container",
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop Docker Container",
+      "type": "shell",
+      //even if there is an error with the command, run anyways
+      "command": "Invoke-Expression -ErrorAction SilentlyContinue -Command 'docker stop cataclysm_backend_container'",
+      "options": {
+        "shell": { "executable": "powershell", "args": ["-Command"] }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Docker",
+      "type": "shell",
+      "command": "docker run -d --name cataclysm_backend_container --network cata-network -p 8080:8080 -p 7054:7054 --env ASPNETCORE_ENVIRONMENT=Development --env DOTNET_USE_POLLING_FILE_WATCHER=1 cataclysm_backend",
+      "dependsOn": "Build Docker Container",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build and Run",
+      "dependsOn": [
+        "Stop Docker Container",
+        "Remove Old Docker Container",
+        "Build Docker Container",
+        "Run Docker"
+      ],
+      "problemMatcher": []
+    },
+    {
+      //will be running for frontend
+      "label": "npm run dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "cataclysm_website.client",
+      "problemMatcher": "$vite",
+      "isBackground": true
+    }
+  ]
 }

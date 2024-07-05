@@ -28,21 +28,7 @@ public partial class WarcraftClient : IWarcraftClient
     /// <remarks>
     ///     Defaults the region to US and the locale to "en_US".
     /// </remarks>
-    public WarcraftClient(string clientId, string clientSecret) : this(clientId, clientSecret, Region.US, Locale.en_US)
-    {
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="WarcraftClient"/> class.
-    /// </summary>
-    /// <param name="clientId">The Blizzard OAuth client ID.</param>
-    /// <param name="clientSecret">The Blizzard OAuth client secret.</param>
-    /// <param name="region">Specifies the region that the API will retrieve its data from.</param>
-    /// <param name="locale">
-    ///     Specifies the language that the result will be in. Visit
-    ///     https://develop.battle.net/documentation/world-of-warcraft/guides/localization to see a list of available locales.
-    /// </param>
-    public WarcraftClient(string clientId, string clientSecret, Region region, Locale locale) : this(clientId, clientSecret, region, locale, InternalHttpClient.Instance)
+    public WarcraftClient(string clientId, string clientSecret, RateLimitedHttpClient client) : this(clientId, clientSecret, Region.US, Locale.en_US, client)
     {
     }
 
@@ -57,7 +43,7 @@ public partial class WarcraftClient : IWarcraftClient
     ///     https://develop.battle.net/documentation/world-of-warcraft/guides/localization to see a list of available locales.
     /// </param>
     /// <param name="client">The <see cref="HttpClient"/> that communicates with Blizzard.</param>
-    public WarcraftClient(string clientId, string clientSecret, Region region, Locale locale, HttpClient client)
+    public WarcraftClient(string clientId, string clientSecret, Region region, Locale locale, RateLimitedHttpClient client)
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
         ClientId = clientId ?? throw new ArgumentNullException(nameof(clientId));
@@ -95,7 +81,7 @@ public partial class WarcraftClient : IWarcraftClient
     /// <summary>
     /// The <see cref="HttpClient"/> instance handling requests.
     /// </summary>
-    internal HttpClient Client { get; }
+    internal RateLimitedHttpClient Client { get; }
 
     /// <summary>
     ///     Retrieve an item of type <typeparamref name="T"/> from the Blizzard World of Warcraft Game Data or Profile API.
@@ -139,8 +125,8 @@ public partial class WarcraftClient : IWarcraftClient
     /// </returns>
     private async Task<RequestResult<T>> GetAsync<T>(string requestUri, string accessToken)
     {
-        // Add an authentication header with the token.
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        // Add an authentication header with the token. (uses var httpclient from ratelimitedhttpclient)
+        Client.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // Retrieve the response.
         HttpResponseMessage response = await Client.GetAsync(requestUri).ConfigureAwait(false);
@@ -163,7 +149,8 @@ public partial class WarcraftClient : IWarcraftClient
             // If not then it is most likely a problem on our end due to an HTTP error.
             string message = $"Response code {(int)response.StatusCode} ({response.ReasonPhrase}) does not indicate success. Request: {requestUri}";
 
-            throw new HttpRequestException(message);
+           // throw new HttpRequestException(message);
+           return null;
         }
 
         // Deserialize an object of type T from the JSON string.
@@ -198,9 +185,10 @@ public partial class WarcraftClient : IWarcraftClient
         string credentials = $"{ClientId}:{ClientSecret}";
         string host = GetOAuthHost(region);
 
-        Client.DefaultRequestHeaders.Accept.Clear();
-        Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials)));
+        //use httpclient from ratelimitedhttpclient
+        Client.httpClient.DefaultRequestHeaders.Accept.Clear(); 
+        Client.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        Client.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials)));
 
         var requestBody = new FormUrlEncodedContent(new[]
         {

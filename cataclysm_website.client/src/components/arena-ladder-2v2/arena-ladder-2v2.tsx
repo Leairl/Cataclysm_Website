@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './arena-ladder-2v2.css';
 import * as Avatar from '@radix-ui/react-avatar';
-import {Card, Table, Flex, Container, Button } from '@radix-ui/themes';
+import {Card, Table, Flex, Container } from '@radix-ui/themes';
 interface RealmReferenceWithoutName {
     slug: string;
 }
@@ -25,7 +25,7 @@ interface SeasonMatchStatistics {
     rating: number;
 }
 
-function arena2v2Ladder() {
+function Arena2v2Ladder() {
     //const [count, setCount] = useState(0); //store dynamic data, focus on arena ladder component
     const [ladder, setLadder] = useState<Player[]>();
 
@@ -86,4 +86,4 @@ function arena2v2Ladder() {
         }
 }
 
-export default arena2v2Ladder;
+export default Arena2v2Ladder;

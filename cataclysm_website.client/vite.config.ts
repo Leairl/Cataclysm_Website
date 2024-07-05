@@ -29,7 +29,7 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     }
 }
 
-const target = `http://localhost:7054`;
+const target = `http://localhost:8080`;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -42,6 +42,10 @@ export default defineConfig({
     server: {
         proxy: { //hiding backend only shows frontend
             '^/PvPLeaderboard': {
+                target,
+                secure: false
+            },
+            '^/Search': {
                 target,
                 secure: false
             }
