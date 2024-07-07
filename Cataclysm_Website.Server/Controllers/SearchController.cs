@@ -24,12 +24,12 @@ namespace Cataclysm_Website.Server.Controllers
         */
         [HttpGet("SearchChar")]
         //Iactionresult used when you have action results incoming (200/401/404)
-        public async Task<IActionResult> SearchChar(string search)
+        public async Task<ActionResult<CharacterProfileSummary[]>> SearchChar(string search)
         {
             //return character name and character score with descending order of outscore, uses select for specific properties in a list.
             var allCharacters = await _warcraftCachedData.CachedCharacters();
             //takes top 10 closest typed characters in search bar.
-            var SearchChars = Process.ExtractTop(search, allCharacters, limit: 10);
+            var SearchChars = Process.ExtractTop(search, allCharacters, s => s, limit: 10);
             var top10CharSummaries = SearchChars.Select(async player =>
             {
                 //when pulled out of redis, rearrange back into original key
@@ -38,6 +38,7 @@ namespace Cataclysm_Website.Server.Controllers
                 return await _warcraftCachedData.GetCharSummary(playerSplit[1], playerSplit[0], RegionHelper.SimplifyRegion(playerSplit[2]));
             });
             var result = await Task.WhenAll(top10CharSummaries);
+            result = result.Where(r => r!=null).ToArray();
             return Ok(result);
             
         }

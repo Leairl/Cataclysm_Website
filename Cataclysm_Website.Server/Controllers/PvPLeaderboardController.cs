@@ -21,7 +21,7 @@ namespace Cataclysm_Website.Server.Controllers
         "dynamic-classic-us" is static name for region in us, need to find other static region names in developer.battle.net
         */
         [HttpGet("Get3v3Ladder")]
-        public async Task<IActionResult> Get3v3Ladder() 
+        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> Get3v3Ladder() 
         {
             var fullLeaderboard = await _warcraftCachedData.Get3v3Leaderboard("us");
             var firstHundred3v3Players = fullLeaderboard.Entries.Take(100);
@@ -29,7 +29,7 @@ namespace Cataclysm_Website.Server.Controllers
         }
 
         [HttpGet("Get2v2Ladder")]
-        public async Task<IActionResult> Get2v2Ladder() 
+        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> Get2v2Ladder() 
         {
             var fullLeaderboard = await _warcraftCachedData.Get2v2Leaderboard("us");
             var firstHundred2v2Players = fullLeaderboard.Entries.Take(100);
@@ -37,7 +37,7 @@ namespace Cataclysm_Website.Server.Controllers
         }
 
         [HttpGet("Get5v5Ladder")]
-        public async Task<IActionResult> Get5v5Ladder() 
+        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> Get5v5Ladder() 
         {
             var fullLeaderboard = await _warcraftCachedData.Get5v5Leaderboard("us");
             var firstHundred5v5Players = fullLeaderboard.Entries.Take(100);
@@ -45,7 +45,7 @@ namespace Cataclysm_Website.Server.Controllers
         }
 
         [HttpGet("GetRBGLadder")]
-        public async Task<IActionResult> GetRBGLadder() 
+        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> GetRBGLadder() 
         {
             var fullLeaderboard = await _warcraftCachedData.GetRBGLeaderboard("us");
             var firstHundredRBGPlayers = fullLeaderboard.Entries.Take(100);

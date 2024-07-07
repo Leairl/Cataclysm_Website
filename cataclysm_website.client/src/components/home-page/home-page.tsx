@@ -1,21 +1,20 @@
 import { Card, Container, Flex } from "@radix-ui/themes";
-import Select from "rc-select";
-import { DefaultOptionType } from "rc-select/lib/Select";
+import Select, { Option } from "rc-select";
 import React, { useCallback } from "react";
 import { useState } from "react";
 import "./search-box.less";
 import debounce from "lodash/debounce";
-interface Dictionary<T> {
-  [Key: string]: T;
-}
+import { DragonblightClient } from "../../clients/dragonblightClient";
+import { ClassColor } from "../../helpers/classColorHelper";
+
 function HomePage() {
   //finding data with setSearchResults, and referencing / storing with searchResults
-  const [searchResults, setSearchResults] = useState<DefaultOptionType[]>();
+  const [searchResults, setSearchResults] = useState<JSX.Element[]>();
   const inputRef = React.createRef<HTMLInputElement>();
   const delayedSearch = useCallback(
     debounce(async (searchTerm) => {
       await SearchAsync(searchTerm);
-    }, 500),
+    }, 250),
     []
   );
   return (
@@ -42,29 +41,40 @@ function HomePage() {
                   ref={inputRef}
                 />
               )}
-              options={searchResults}
               //value of element is changing (text field is changing per character, and is called)
               //called from imported library (onChange), and compares what was previously typed to what is currently typed (if false, then print out search box dropdown)
               onChange={delayedSearch}
-            />
+              >
+              {searchResults}
+              </Select>
           </Card>
         </Flex>
       </Container>
     </div>
   );
+
   //sending in search string to backend
   async function SearchAsync(search: string) {
-    const response = await fetch("Search/SearchChar?search=" + search);
-    const data = await response.json();
-    //name is accessed as a dictionary (although not in a dictionary)
-    // eslint-disable-next-line no-unused-labels
-    const mapData = data.map((element: Dictionary<string>) => {
-        return {
-          //if element has a value, return name, else nothing (turnery operator)
-          value: element ? element["name"] : "",
-        };
+    setSearchResults([<Option disabled> Loading... </Option>])
+    if (search == ""){
+      setSearchResults([])
+    }
+    //returning data from character profile summary
+    const client = new DragonblightClient.Client();
+    client.searchChar(search).then((data) => {
+      const mapData = data.map(
+        (characterSummary: DragonblightClient.CharacterProfileSummary) => {
+          return <Option key={characterSummary.name}>
+            <div className="flex">
+            <img src={`../ClassIcons/${characterSummary.character_class?.name}.png`} height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
+            </img>
+            <span className="pl-2" style={{color: `${ClassColor.get(characterSummary.character_class?.name?? "")}`}}>{characterSummary.name}-{characterSummary.realm?.name}</span>
+            </div>
+        </Option>
+        }
+      );
+      setSearchResults(mapData);
     });
-    setSearchResults(mapData);
   }
 }
 
