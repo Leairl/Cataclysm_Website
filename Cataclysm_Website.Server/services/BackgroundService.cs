@@ -13,6 +13,7 @@ public class BgService : BackgroundService
             var services = scope.ServiceProvider;
             var charService = services.GetRequiredService<CharacterCacheService>();
             await charService.CacheAllLadders("us");
+            await charService.CacheAllLadders("eu");
         }
     }
 }

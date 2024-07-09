@@ -21,28 +21,28 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy)
     {
         //not using string since we are executing from GetRBGLeaderboard method in warcraftclient
         var rbgLeaderboard = await redisProxy.GetRBGLeaderboard(region);
-        await BatchCacheCharSummary(region, rbgLeaderboard.Entries);
+        await BatchCacheCharSummary(region, rbgLeaderboard.Entries.Take(2500).ToArray());
     }
     //get 2v2Leaderboard in redis (defined method with a defined type to execute x function)
     public async Task Cache2v2Ladder(string region)
     {
         //not using string since we are executing from Get2v2Leaderboard method in warcraftclient
         var leaderboard2v2 = await redisProxy.Get2v2Leaderboard(region);
-        await BatchCacheCharSummary(region, leaderboard2v2.Entries);
+        await BatchCacheCharSummary(region, leaderboard2v2.Entries.Take(2500).ToArray());
     }
     //get Leaderboard3v3 in redis (defined method with a defined type to execute x function)
     public async Task Cache3v3Ladder(string region)
     {
         //not using string since we are executing from Get3v3Leaderboard method in warcraftclient
         var leaderboard3v3 = await redisProxy.Get3v3Leaderboard(region);
-        await BatchCacheCharSummary(region, leaderboard3v3.Entries);
+        await BatchCacheCharSummary(region, leaderboard3v3.Entries.Take(2500).ToArray());
     }
     //get Leaderboard5v5 in redis (defined method with a defined type to execute x function)
     public async Task Cache5v5Ladder(string region)
     {
         //not using string since we are executing from Get5v5Leaderboard method in warcraftclient
         var leaderboard5v5 = await redisProxy.Get5v5Leaderboard(region);
-        await BatchCacheCharSummary(region, leaderboard5v5.Entries);
+        await BatchCacheCharSummary(region, leaderboard5v5.Entries.Take(2500).ToArray());
     }
     public async Task CacheAllLadders(string region)
     {

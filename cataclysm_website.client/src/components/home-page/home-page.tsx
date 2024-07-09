@@ -4,17 +4,17 @@ import React, { useCallback } from "react";
 import { useState } from "react";
 import "./search-box.less";
 import debounce from "lodash/debounce";
-import { DragonblightClient } from "../../clients/dragonblightClient";
 import { ClassColor } from "../../helpers/classColorHelper";
+import { Dragonblight } from "../../clients/Dragonblight";
 
 function HomePage() {
   //finding data with setSearchResults, and referencing / storing with searchResults
-  const [searchResults, setSearchResults] = useState<JSX.Element[]>();
+  const [searchResults, setSearchResults] = useState<React.ReactElement[]>();
   const inputRef = React.createRef<HTMLInputElement>();
   const delayedSearch = useCallback(
     debounce(async (searchTerm) => {
       await SearchAsync(searchTerm);
-    }, 250),
+    }, 500),
     []
   );
   return (
@@ -29,6 +29,7 @@ function HomePage() {
             <Select
               mode="combobox"
               notFoundContent={null}
+              defaultActiveFirstOption={true}
               className="text-white font-thin text-base w-full"
               getInputElement={() => (
                 <input
@@ -53,6 +54,20 @@ function HomePage() {
     </div>
   );
 
+  function GetRegionImage(characterSummary: Dragonblight.CharacterProfileSummary) {
+    if (characterSummary._links?.self?.href?.includes('us.api')){
+      return `../Regions/us.svg`
+    }
+    return `../Regions/eu.svg`
+  }
+  function GetRegion(characterSummary: Dragonblight.CharacterProfileSummary) {
+    if (characterSummary._links?.self?.href?.includes('us.api')){
+      return "us"
+    }
+    return "eu"
+  }
+
+
   //sending in search string to backend
   async function SearchAsync(search: string) {
     setSearchResults([<Option disabled> Loading... </Option>])
@@ -60,15 +75,22 @@ function HomePage() {
       setSearchResults([])
     }
     //returning data from character profile summary
-    const client = new DragonblightClient.Client();
+    const client = new Dragonblight.SearchClient();
     client.searchChar(search).then((data) => {
       const mapData = data.map(
-        (characterSummary: DragonblightClient.CharacterProfileSummary) => {
-          return <Option key={characterSummary.name}>
+        (characterSummary: Dragonblight.CharacterProfileSummary) => {
+          return <Option value={`${characterSummary.name}-${characterSummary.realm?.name}`} key={`${characterSummary.name}-${characterSummary.realm?.name}-${GetRegion(characterSummary)}`}>
             <div className="flex">
+            <div className="pr-1">
             <img src={`../ClassIcons/${characterSummary.character_class?.name}.png`} height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
             </img>
+            </div>
+            <img src={`../Factions/${characterSummary.faction?.name}.png`} className="flex" height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
+            </img>
             <span className="pl-2" style={{color: `${ClassColor.get(characterSummary.character_class?.name?? "")}`}}>{characterSummary.name}-{characterSummary.realm?.name}</span>
+            <div className="grow"></div>
+            <img src={GetRegionImage(characterSummary)} className="flex" height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
+            </img>
             </div>
         </Option>
         }

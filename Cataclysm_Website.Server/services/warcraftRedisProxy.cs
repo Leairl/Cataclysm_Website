@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
@@ -47,7 +48,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         region = GetDynamicRegion(region);
         return await GetBlizzardDataCached<PvpLeaderboard>("get2v2Leaderboard" + region, async () =>
         {
-            var curr2v2Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "2v2", region);
+            var curr2v2Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "2v2", region, GetRegion(region), GetLocale(region));
             return curr2v2Leaderboard.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -57,7 +58,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         region = GetDynamicRegion(region);
         return await GetBlizzardDataCached<PvpLeaderboard>("get3v3Leaderboard" + region, async () =>
         {
-            var curr3v3Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "3v3", region);
+            var curr3v3Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "3v3", region, GetRegion(region), GetLocale(region));
             return curr3v3Leaderboard.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -68,7 +69,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         region = GetDynamicRegion(region);
         return await GetBlizzardDataCached<PvpLeaderboard>("get5v5Leaderboard" + region, async () =>
         {
-            var curr5v5Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "5v5", region);
+            var curr5v5Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "5v5", region, GetRegion(region), GetLocale(region));
             return curr5v5Leaderboard.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -78,15 +79,27 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         region = GetDynamicRegion(region);
         return await GetBlizzardDataCached<PvpLeaderboard>("currRbgLadder" + region, async () =>
         {
-            var currRbgLadder = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "rbg", region);
+            var currRbgLadder = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "rbg", region, GetRegion(region), GetLocale(region));
             return currRbgLadder.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
+    }
+    public Region GetRegion(string region) {
+        if (region == "us" || region.Contains("-us")) {
+            return Region.US;
+        }
+        return Region.Europe;
+    }
+    public Locale GetLocale(string region) {
+        if (region == "us" || region.Contains("-us")) {
+            return Locale.en_US;
+        }
+        return Locale.en_GB;
     }
     public async Task<int> GetSeason(string region) // get currSeason in redis
     {
         return await GetBlizzardDataCached<int>("GetCurrSeason" + region, async () =>
         {
-            var GetCurrSeason = await warcraftClient.GetPvpSeasonsIndexAsync(region);
+            var GetCurrSeason = await warcraftClient.GetPvpSeasonsIndexAsync(region, GetRegion(region), GetLocale(region));
             return GetCurrSeason.Value.CurrentSeason.Id;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -100,7 +113,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         {
             //gets character data from wow api
             //storing into GetCharacter and pulls data with server, characterName, and region
-            var GetCharacter = await warcraftClient.GetCharacterProfileSummaryAsync(server, characterName, region);
+            var GetCharacter = await warcraftClient.GetCharacterProfileSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
             if (GetCharacter != null)
             {
                 //call method to insert char name in cache

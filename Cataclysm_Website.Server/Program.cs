@@ -12,14 +12,22 @@ var redisConnectionString = configuration.GetSection("Redis")["ConnectionString"
 var battlenetClient = configuration.GetSection("BattlenetApi")["clientId"];
 var battlenetSecret = configuration.GetSection("BattlenetApi")["clientSecret"];
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddWarcraftClients(battlenetClient, battlenetSecret);
 builder.Services.AddScoped<IWarcraftRedisProxy, warcraftRedisProxy>();
 builder.Services.AddScoped<CharacterCacheService>();
-builder.Services.AddHostedService<BgService>();
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "NSWAG")
+{
+    builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+    builder.Services.AddHostedService<BgService>();
+}
+
+builder.Services.AddSwaggerDocument(d =>
+{
+    d.Title = "Dragonblight API";
+});
 
 var app = builder.Build();
 app.UseDefaultFiles();
