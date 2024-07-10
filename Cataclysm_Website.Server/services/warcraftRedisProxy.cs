@@ -123,6 +123,40 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return null;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
+        // get character summary in redis for character appearance
+    public async Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region)
+    {
+        region = GetProfileRegion(region);
+        return await GetBlizzardDataCached<CharacterAppearanceSummary>("GetCharacterAppearance" + server + characterName + region, async () =>
+        {
+            //gets character data from wow api
+            //storing into GetCharacter and pulls data with server, characterName, and region
+            var GetCharacter = await warcraftClient.GetCharacterAppearanceSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
+            if (GetCharacter != null)
+            {
+                //call method to insert char name in cache
+                return GetCharacter.Value;
+            }
+            return null;
+        }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
+    }
+            // get character summary in redis for character equipment
+    public async Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region)
+    {
+        region = GetProfileRegion(region);
+        return await GetBlizzardDataCached<CharacterEquipmentSummary>("GetCharacterEquipment" + server + characterName + region, async () =>
+        {
+            //gets character data from wow api
+            //storing into GetCharacter and pulls data with server, characterName, and region
+            var GetCharacter = await warcraftClient.GetCharacterEquipmentSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
+            if (GetCharacter != null)
+            {
+                //call method to insert char name in cache
+                return GetCharacter.Value;
+            }
+            return null;
+        }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
+    }
     //for this method, we are retrieving a list of characters for CachedCharacters
     public async Task<List<string>> CachedCharacters()
     {

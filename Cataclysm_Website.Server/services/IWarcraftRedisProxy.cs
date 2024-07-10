@@ -9,5 +9,8 @@ public interface IWarcraftRedisProxy
     Task InsertCacheCharacter(string characterName, string server, string region);
     Task<List<string>> CachedCharacters();
     Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region);
+    Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region);
+    Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region);
+
     Task<int> GetSeason(string region);
 }

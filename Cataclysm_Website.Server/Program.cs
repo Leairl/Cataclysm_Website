@@ -28,7 +28,10 @@ builder.Services.AddSwaggerDocument(d =>
 {
     d.Title = "Dragonblight API";
 });
-
+builder.Services.Configure<HostOptions>(hostOptions =>
+{
+    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
 var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();

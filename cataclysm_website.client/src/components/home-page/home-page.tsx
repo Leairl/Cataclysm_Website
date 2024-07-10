@@ -6,6 +6,8 @@ import "./search-box.less";
 import debounce from "lodash/debounce";
 import { ClassColor } from "../../helpers/classColorHelper";
 import { Dragonblight } from "../../clients/Dragonblight";
+import { UsRealms, EuRealms } from "../../clients/ServerNames";
+import { Link, Outlet } from "react-router-dom";
 
 function HomePage() {
   //finding data with setSearchResults, and referencing / storing with searchResults
@@ -45,56 +47,176 @@ function HomePage() {
               //value of element is changing (text field is changing per character, and is called)
               //called from imported library (onChange), and compares what was previously typed to what is currently typed (if false, then print out search box dropdown)
               onChange={delayedSearch}
-              >
+            >
               {searchResults}
-              </Select>
+            </Select>
           </Card>
+          <div className="flex flex-row justify-center items-center z-10">
+        <Outlet></Outlet>
+      </div>
         </Flex>
       </Container>
     </div>
   );
 
-  function GetRegionImage(characterSummary: Dragonblight.CharacterProfileSummary) {
-    if (characterSummary._links?.self?.href?.includes('us.api')){
-      return `../Regions/us.svg`
+  function GetRegionImage(
+    characterSummary: Dragonblight.CharacterProfileSummary
+  ) {
+    if (characterSummary._links?.self?.href?.includes("us.api")) {
+      return `/Regions/us.svg`;
     }
-    return `../Regions/eu.svg`
+    return `/Regions/eu.svg`;
   }
   function GetRegion(characterSummary: Dragonblight.CharacterProfileSummary) {
-    if (characterSummary._links?.self?.href?.includes('us.api')){
-      return "us"
+    if (characterSummary._links?.self?.href?.includes("us.api")) {
+      return "us";
     }
-    return "eu"
+    return "eu";
   }
 
+  function GetAddCharacterOption(
+    characterName: string,
+    server: string,
+    region: string
+  ) {
+    return (
+      <Option
+        value={`${characterName}-${server}`}
+        key={`${characterName}-${server}-${region}-add`}
+      >
+        <Link to={`/profile/${region}/${server}/${characterName}`}>
+          <div className="flex">
+            <div className="pr-1">
+              <img
+                src={`/Radix/plus.svg`}
+                height="25px"
+                width="25px"
+                style={{ maxHeight: "25px", maxWidth: "25px" }}
+              ></img>
+            </div>
+            <span className="pl-2">
+              {characterName}-{server}
+            </span>
+            <div className="grow"></div>
+            <img
+              src={`/Regions/${region}.svg`}
+              className="flex"
+              height="25px"
+              width="25px"
+              style={{ maxHeight: "25px", maxWidth: "25px" }}
+            ></img>
+          </div>
+        </Link>
+      </Option>
+    );
+  }
 
   //sending in search string to backend
   async function SearchAsync(search: string) {
-    setSearchResults([<Option disabled> Loading... </Option>])
-    if (search == ""){
-      setSearchResults([])
+    setSearchResults([
+      <Option key={"loading"} disabled>
+        {" "}
+        Loading...{" "}
+      </Option>,
+    ]);
+    if (search == "") {
+      setSearchResults([]);
+      return;
     }
     //returning data from character profile summary
     const client = new Dragonblight.SearchClient();
     client.searchChar(search).then((data) => {
       const mapData = data.map(
         (characterSummary: Dragonblight.CharacterProfileSummary) => {
-          return <Option value={`${characterSummary.name}-${characterSummary.realm?.name}`} key={`${characterSummary.name}-${characterSummary.realm?.name}-${GetRegion(characterSummary)}`}>
-            <div className="flex">
-            <div className="pr-1">
-            <img src={`../ClassIcons/${characterSummary.character_class?.name}.png`} height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
-            </img>
-            </div>
-            <img src={`../Factions/${characterSummary.faction?.name}.png`} className="flex" height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
-            </img>
-            <span className="pl-2" style={{color: `${ClassColor.get(characterSummary.character_class?.name?? "")}`}}>{characterSummary.name}-{characterSummary.realm?.name}</span>
-            <div className="grow"></div>
-            <img src={GetRegionImage(characterSummary)} className="flex" height="25px" width="25px" style={{maxHeight: "25px", maxWidth: "25px" }}>
-            </img>
-            </div>
-        </Option>
+          return (
+            <Option
+              value={`${characterSummary.name}-${characterSummary.realm?.name}`}
+              key={`${characterSummary.name}-${
+                characterSummary.realm?.name
+              }-${GetRegion(characterSummary)}`}
+            >
+              <Link
+                to={`/profile/${GetRegion(characterSummary)}/${
+                  characterSummary.realm?.name
+                }/${characterSummary.name}`}
+              >
+                <div className="flex">
+                  <div className="pr-1">
+                    <img
+                      src={`/ClassIcons/${characterSummary.character_class?.name}.png`}
+                      height="25px"
+                      width="25px"
+                      style={{ maxHeight: "25px", maxWidth: "25px" }}
+                    ></img>
+                  </div>
+                  <img
+                    src={`/Factions/${characterSummary.faction?.name}.png`}
+                    className="flex"
+                    height="25px"
+                    width="25px"
+                    style={{ maxHeight: "25px", maxWidth: "25px" }}
+                  ></img>
+                  <span
+                    className="pl-2"
+                    style={{
+                      color: `${ClassColor.get(
+                        characterSummary.character_class?.name ?? ""
+                      )}`,
+                    }}
+                  >
+                    {characterSummary.name}-{characterSummary.realm?.name}
+                  </span>
+                  <div className="grow"></div>
+                  <img
+                    src={GetRegionImage(characterSummary)}
+                    className="flex"
+                    height="25px"
+                    width="25px"
+                    style={{ maxHeight: "25px", maxWidth: "25px" }}
+                  ></img>
+                </div>
+              </Link>
+            </Option>
+          );
         }
       );
+
+      //option for user to insert and load a character from search
+      const searchSplit = search.split("-");
+      const characterName = searchSplit[0];
+      //checks through the list of eu and us realms, and connects it with a similar named server typed in search.
+      const UsServers =
+        searchSplit.length > 1
+          ? UsRealms.find((r) =>
+              r.toLowerCase().startsWith(searchSplit[1].toLowerCase())
+            )
+          : UsRealms[0];
+      const EuServers =
+        searchSplit.length > 1
+          ? EuRealms.find((r) =>
+              r.toLowerCase().startsWith(searchSplit[1].toLowerCase())
+            )
+          : EuRealms[0];
+
+      //if the character name and server is the same in the search bar as the character not loaded in redis
+      if (
+        data.find(
+          (c) => c.name == characterName && c.realm?.name == UsServers
+        ) == undefined
+      ) {
+        if (UsServers != null) {
+          mapData.push(GetAddCharacterOption(characterName, UsServers, "us"));
+        }
+      }
+      if (
+        data.find(
+          (c) => c.name == characterName && c.realm?.name == EuServers
+        ) == undefined
+      ) {
+        if (EuServers != null) {
+          mapData.push(GetAddCharacterOption(characterName, EuServers, "eu"));
+        }
+      }
       setSearchResults(mapData);
     });
   }

@@ -1,6 +1,10 @@
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using ArgentPonyWarcraftClient;
 using FuzzySharp;
+using FuzzySharp.SimilarityRatio;
+using FuzzySharp.SimilarityRatio.Scorer.StrategySensitive;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cataclysm_Website.Server.Controllers
@@ -12,7 +16,25 @@ namespace Cataclysm_Website.Server.Controllers
         private readonly ILogger<SearchController> _logger;
         private readonly IWarcraftRedisProxy _warcraftCachedData; //underscore is syntax to global variable
 
+        static string RemoveDiacritics(string text)
+        {
+            var normalizedString = text.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder(capacity: normalizedString.Length);
 
+            for (int i = 0; i < normalizedString.Length; i++)
+            {
+                char c = normalizedString[i];
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder
+                .ToString()
+                .Normalize(NormalizationForm.FormC);
+        }
         public SearchController(ILogger<SearchController> logger, IWarcraftRedisProxy warcraftCachedData)
         {
             _logger = logger;
@@ -26,21 +48,27 @@ namespace Cataclysm_Website.Server.Controllers
         //Iactionresult used when you have action results incoming (200/401/404)
         public async Task<ActionResult<CharacterProfileSummary[]>> SearchChar(string search)
         {
+            //CachedCharacters saves data in redis seperated by comma (used for our split data to seperate characterName, Region, and Server)
+            //this will replace dash in our Search method with comma from redis data.
+            search = search.Replace('-', ',');
             //return character name and character score with descending order of outscore, uses select for specific properties in a list.
             var allCharacters = await _warcraftCachedData.CachedCharacters();
             //takes top 10 closest typed characters in search bar.
-            var SearchChars = Process.ExtractTop(search, allCharacters, s => s, limit: 10);
+            // var SearchChars = Process.ExtractTop(search.ToLower(), allCharacters, s => s.ToLower(), ScorerCache.Get<PartialRatioScorer>(), limit: 10)
+            //     .Where(s => s.Score >= 80)
+            //     .OrderByDescending(s => s.Score);
+            var SearchChars = allCharacters.Where(s => RemoveDiacritics(s).StartsWith(RemoveDiacritics(search), StringComparison.CurrentCultureIgnoreCase)).Take(10);
             var top10CharSummaries = SearchChars.Select(async player =>
             {
                 //when pulled out of redis, rearrange back into original key
                 //GetCharSummary is using InsertCacheCharacter (we split and rearrange this data after pulling from redis)
-                var playerSplit = player.Value.Split(',');
+                var playerSplit = player.Split(',');
                 return await _warcraftCachedData.GetCharSummary(playerSplit[1], playerSplit[0], RegionHelper.SimplifyRegion(playerSplit[2]));
             });
             var result = await Task.WhenAll(top10CharSummaries);
-            result = result.Where(r => r!=null).ToArray();
+            result = result.Where(r => r != null).ToArray();
             return Ok(result);
-            
+
         }
     }
 }
