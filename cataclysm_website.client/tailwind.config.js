@@ -7,6 +7,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        segoeFont: ['"Segoe"', "sans-serif"],
+        // Add more custom font families as needed
+      },
       colors: {
         primary: {
           50: '#e6effe',

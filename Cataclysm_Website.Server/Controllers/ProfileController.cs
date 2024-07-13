@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Cataclysm_Website.Server.Controllers
 {
+    //uses "api/ to seperate our backend controllers from our frontend
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ProfileController : ControllerBase
     {
         private readonly ILogger<ProfileController> _logger;
@@ -35,7 +36,6 @@ namespace Cataclysm_Website.Server.Controllers
             return Ok(result);
 
         }
-
         [HttpGet("GetEquipment")]
         public async Task<ActionResult<CharacterEquipmentSummary>> GetEquipment(string server, string characterName, string region)
         {

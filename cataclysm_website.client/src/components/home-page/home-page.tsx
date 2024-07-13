@@ -22,8 +22,8 @@ function HomePage() {
   return (
     <div>
       <img
-        className="object-left-top w-full h-full inset-0 absolute object-cover opacity-100 top-14"
-        src="https://i.imgur.com/LMjf4Lh.png"
+        className="object-left-top w-full h-full inset-0 absolute object-cover opacity-100 top-20"
+        src={`/Background/background.png`}
       ></img>
       <Container height="100vh">
         <Flex direction="column" gap="5" className=" w-full">
@@ -126,6 +126,7 @@ function HomePage() {
     //returning data from character profile summary
     const client = new Dragonblight.SearchClient();
     client.searchChar(search).then((data) => {
+      //map does for loop for each item and outputs a new item (converts to new type)
       const mapData = data.map(
         (characterSummary: Dragonblight.CharacterProfileSummary) => {
           return (

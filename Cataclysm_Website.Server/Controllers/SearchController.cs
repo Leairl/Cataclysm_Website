@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cataclysm_Website.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class SearchController : ControllerBase
     {
         private readonly ILogger<SearchController> _logger;

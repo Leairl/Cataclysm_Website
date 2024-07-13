@@ -1,0 +1,34 @@
+
+.blue-bottom-border {
+    border-bottom: 0px;
+    border-bottom-color: #4dc4fd;
+    border-bottom-style: solid;
+    opacity: 0.5;
+}
+
+.blue-bottom-border:hover {
+    opacity: 1;
+}
+
+.grey-login-border {
+    border-bottom: 0px;
+    border-color: grey;
+    border-bottom-style: solid;
+    opacity: 0.5;
+}
+
+.grey-login-border:hover {
+    opacity: 1;
+}
+
+.btn {
+    @apply font-bold py-2 px-8 rounded;
+  }
+  .btn-blue {
+    background-color: #4fc6ff;
+    opacity: .5;
+    color: white;
+  }
+  .btn-blue:hover {
+    opacity: 1;
+  }

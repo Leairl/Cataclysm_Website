@@ -21,7 +21,7 @@ export class ProfileClient {
     }
 
     getProfile(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterProfileSummary> {
-        let url_ = this.baseUrl + "/Profile/GetProfile?";
+        let url_ = this.baseUrl + "/api/Profile/GetProfile?";
         if (server === null)
             throw new Error("The parameter 'server' cannot be null.");
         else if (server !== undefined)
@@ -66,7 +66,7 @@ export class ProfileClient {
     }
 
     getAppearance(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterAppearanceSummary> {
-        let url_ = this.baseUrl + "/Profile/GetAppearance?";
+        let url_ = this.baseUrl + "/api/Profile/GetAppearance?";
         if (server === null)
             throw new Error("The parameter 'server' cannot be null.");
         else if (server !== undefined)
@@ -111,7 +111,7 @@ export class ProfileClient {
     }
 
     getEquipment(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterEquipmentSummary> {
-        let url_ = this.baseUrl + "/Profile/GetEquipment?";
+        let url_ = this.baseUrl + "/api/Profile/GetEquipment?";
         if (server === null)
             throw new Error("The parameter 'server' cannot be null.");
         else if (server !== undefined)
@@ -167,7 +167,7 @@ export class PvpLeaderboardClient {
     }
 
     get3v3Ladder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/PvpLeaderboard/Get3v3Ladder";
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get3v3Ladder";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -200,7 +200,7 @@ export class PvpLeaderboardClient {
     }
 
     get2v2Ladder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/PvpLeaderboard/Get2v2Ladder";
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get2v2Ladder";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -233,7 +233,7 @@ export class PvpLeaderboardClient {
     }
 
     get5v5Ladder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/PvpLeaderboard/Get5v5Ladder";
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get5v5Ladder";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -266,7 +266,7 @@ export class PvpLeaderboardClient {
     }
 
     getRBGLadder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/PvpLeaderboard/GetRBGLadder";
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetRBGLadder";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -310,7 +310,7 @@ export class SearchClient {
     }
 
     searchChar(search: string | undefined): Promise<CharacterProfileSummary[]> {
-        let url_ = this.baseUrl + "/Search/SearchChar?";
+        let url_ = this.baseUrl + "/api/Search/SearchChar?";
         if (search === null)
             throw new Error("The parameter 'search' cannot be null.");
         else if (search !== undefined)

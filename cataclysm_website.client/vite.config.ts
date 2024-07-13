@@ -41,11 +41,7 @@ export default defineConfig({
     },
     server: {
         proxy: { //hiding backend only shows frontend
-            '^/PvPLeaderboard': {
-                target,
-                secure: false
-            },
-            '^/Search': {
+            '^/api': {
                 target,
                 secure: false
             }

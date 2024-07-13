@@ -83,14 +83,18 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return currRbgLadder.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
-    public Region GetRegion(string region) {
-        if (region == "us" || region.Contains("-us")) {
+    public Region GetRegion(string region)
+    {
+        if (region == "us" || region.Contains("-us"))
+        {
             return Region.US;
         }
         return Region.Europe;
     }
-    public Locale GetLocale(string region) {
-        if (region == "us" || region.Contains("-us")) {
+    public Locale GetLocale(string region)
+    {
+        if (region == "us" || region.Contains("-us"))
+        {
             return Locale.en_US;
         }
         return Locale.en_GB;
@@ -123,7 +127,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return null;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
-        // get character summary in redis for character appearance
+    // get character summary in redis for character appearance
     public async Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region)
     {
         region = GetProfileRegion(region);
@@ -140,7 +144,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return null;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
-            // get character summary in redis for character equipment
+    // get character summary in redis for character equipment
     public async Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region)
     {
         region = GetProfileRegion(region);
@@ -174,9 +178,9 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
     public async Task InsertCacheCharacter(string characterName, string server, string region)
     {
         var db = redis.GetDatabase(); //var to redis database
-        await db.ListRemoveAsync("CachedCharacters", characterName + "," + server + "," + region);
+        await db.ListRemoveAsync("CachedCharacters", characterName.ToLowerInvariant() + "," + server + "," + region);
         //CachedCharacters is the KEY for CachedCharacters method, and pushes character into already made list
-        await db.ListRightPushAsync("CachedCharacters", characterName + "," + server + "," + region);
+        await db.ListRightPushAsync("CachedCharacters", characterName.ToLowerInvariant() + "," + server + "," + region);
     }
     public string GetProfileRegion(string region)
     {
