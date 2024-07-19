@@ -11,6 +11,7 @@ public interface IWarcraftRedisProxy
     Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region);
     Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region);
     Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region);
+    Task<ItemMedia> GetItemIcon(int itemId);
 
     Task<int> GetSeason(string region);
 }

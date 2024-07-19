@@ -110,7 +110,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
     // get character summary in redis
     public async Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region)
     {
-        Console.WriteLine("getting char summary for" + characterName + " " + server);
+        Console.WriteLine("getting char summary for" + " " + characterName + " " + server);
         //creates unique character key from their server, character name, and region (this will prevent any duplicates)
         region = GetProfileRegion(region);
         return await GetBlizzardDataCached<CharacterProfileSummary>("GetCharacter" + server + characterName + region, async () =>
@@ -190,5 +190,20 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
     public string GetDynamicRegion(string region)
     {
         return "dynamic-classic-" + region;
+    }
+        public async Task<ItemMedia> GetItemIcon(int itemId)
+    {
+        return await GetBlizzardDataCached<ItemMedia>("ItemIcon" + itemId, async () =>
+        {
+            //gets character data from wow api
+            //storing into GetCharacter and pulls data with server, characterName, and region
+            var getItemIcon = await warcraftClient.GetItemMediaAsync(itemId, "static-classic-us");
+            if (getItemIcon != null)
+            {
+                //call method to insert char name in cache
+                return getItemIcon.Value;
+            }
+            return null;
+        }, TimeSpan.FromDays(30)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
 }

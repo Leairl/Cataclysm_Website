@@ -6,6 +6,12 @@
 public record EquippedItem
 {
     /// <summary>
+    /// Gets a reference to the Item Set.
+    /// </summary>
+    [JsonPropertyName("set")]
+    public EquippedItemSet Set { get; init; }
+
+    /// <summary>
     /// Gets a reference to the item.
     /// </summary>
     [JsonPropertyName("item")]

@@ -22,7 +22,7 @@ function HomePage() {
   return (
     <div>
       <img
-        className="object-left-top w-full h-full inset-0 absolute object-cover opacity-100 top-20"
+        className="fixed opacity-50 -z-10 object-left-top w-full h-full inset-0 object-cover "
         src={`/Background/background.png`}
       ></img>
       <Container height="100vh">

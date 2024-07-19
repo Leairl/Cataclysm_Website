@@ -22,4 +22,10 @@ public record Enchantment
     /// </summary>
     [JsonPropertyName("source_item")]
     public ItemReference SourceItem { get; init; }
+
+        /// <summary>
+    /// Gets a reference to the item.
+    /// </summary>
+    [JsonPropertyName("enchantment_slot")]
+    public EnchantmentSlot EnchantmentSlot { get; init; }
 }

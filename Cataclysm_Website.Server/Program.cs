@@ -1,6 +1,8 @@
 using StackExchange.Redis;
 using ArgentPonyWarcraftClient.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using AspNetCore.Proxy;
+using AspNetCore.Proxy.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -12,6 +14,7 @@ var redisConnectionString = configuration.GetSection("Redis")["ConnectionString"
 var battlenetClient = configuration.GetSection("BattlenetApi")["clientId"];
 var battlenetSecret = configuration.GetSection("BattlenetApi")["clientSecret"];
 
+builder.Services.AddProxies();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,6 +27,39 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "NSWAG")
     builder.Services.AddHostedService<BgService>();
 }
 
+var options = HttpProxyOptionsBuilder.Instance
+.WithShouldAddForwardedHeaders(false)
+.WithHttpClientName("ProxyClient")
+.WithIntercept(context =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+        context.Response.Headers["Access-Control-Allow-Methods"] = "*";
+        context.Response.Headers["Access-Control-Allow-Headers"] = "*";
+        context.Response.Headers["Access-Control-Allow-Max-Age"] = "86400";
+
+
+        return ValueTask.FromResult(true);
+    }
+
+    return ValueTask.FromResult(false);
+}).WithAfterReceive((context, response) =>
+{
+    const string header = "Access-Control-Allow-Origin";
+    
+    if (response.Headers.Contains(header))
+    {
+        response.Headers.Remove(header);
+    }
+    
+    response.Headers.Add(header, "*");
+
+    return Task.CompletedTask;
+});
+
+builder.Services.AddSingleton(options);
 builder.Services.AddSwaggerDocument(d =>
 {
     d.Title = "Dragonblight API";
@@ -48,6 +84,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
-Console.WriteLine("test");
+CSVLoader.LoadAll();
 //calling character cache service to cache all character data into redis
 app.Run();

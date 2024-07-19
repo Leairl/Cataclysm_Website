@@ -10,7 +10,7 @@ function NavBar() {
         className="flex-none flex"
         style={{ maxWidth: "100%", height: "auto" }}
       >
-        <div className="flex pt-1 max-h-12 pl-16">
+        <div className="flex pt-1">
           <img src={`/Nav/db_io.webp`}></img>
         </div>
       </Link>
@@ -46,22 +46,27 @@ function NavBar() {
           </NavigationMenu.Item>
           <div className="pr-10 mx-4 h-10 border-l border-gray-300"></div>
           <NavigationMenu.Item>
+            <div className="px-3 py-2">
             <Link to="/login">
-              <NavigationMenu.Trigger className="group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] px-3 py-2 text-[15px] font-medium leading-none outline-none">
-                <button className="bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
+            {/* acts as a button */}
+              <NavigationMenu.Trigger className="group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
                 <span className="mt-1 text-xs font-segoeFont"> Login </span>
-                </button>
+                </div>
               </NavigationMenu.Trigger>
             </Link>
+            </div>
           </NavigationMenu.Item>
           <NavigationMenu.Item>
+            <div className="pr-40 px-3 py-2">
             <Link to="/register">
-              <NavigationMenu.Trigger className=" pr-40 group flex select-none items-center gap-[2px] rounded-[4px] px-3 py-2 text-[15px] font-medium leading-none outline-none">
-                <button className="btn btn-blue">
+              <NavigationMenu.Trigger className=" group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="btn btn-blue">
                   <span className="mt-1 text-xs font-segoeFont"> Register </span>
-                </button>
+                </div>
               </NavigationMenu.Trigger>
             </Link>
+            </div>
           </NavigationMenu.Item>
         </NavigationMenu.List>
       </NavigationMenu.Root>

@@ -347,6 +347,54 @@ export class SearchClient {
     }
 }
 
+export class DisplayIdClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getDisplayInfo(item_id: number | undefined): Promise<ItemDisplayInfo> {
+        let url_ = this.baseUrl + "/api/DisplayId/GetDisplayInfo?";
+        if (item_id === null)
+            throw new Error("The parameter 'item_id' cannot be null.");
+        else if (item_id !== undefined)
+            url_ += "item_id=" + encodeURIComponent("" + item_id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetDisplayInfo(_response);
+        });
+    }
+
+    protected processGetDisplayInfo(response: Response): Promise<ItemDisplayInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ItemDisplayInfo;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ItemDisplayInfo>(null as any);
+    }
+}
+
 export interface CharacterProfileSummary {
     _links?: Links | undefined;
     id: number;
@@ -532,6 +580,7 @@ export interface CharacterEquipmentSummary {
 }
 
 export interface EquippedItem {
+    set?: EquippedItemSet | undefined;
     item?: ItemReferenceWithoutName | undefined;
     slot?: EnumType | undefined;
     quantity: number;
@@ -562,6 +611,35 @@ export interface EquippedItem {
     sockets?: Socket[] | undefined;
     enchantments?: Enchantment[] | undefined;
     weapon?: Weapon | undefined;
+}
+
+export interface ItemSet {
+    _links?: Links | undefined;
+    id: number;
+    name?: string | undefined;
+    items?: ItemReference[] | undefined;
+    effects?: Effect[] | undefined;
+    is_effect_active: boolean;
+}
+
+export interface EquippedItemSet extends ItemSet {
+    items?: EquippedItemReference[] | undefined;
+}
+
+export interface EquippedItemReference {
+    item?: ItemReference | undefined;
+    is_equipped: boolean;
+}
+
+export interface ItemReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface Effect {
+    display_string?: string | undefined;
+    required_count: number;
 }
 
 export interface ItemReferenceWithoutName {
@@ -680,12 +758,6 @@ export interface Transmog {
     item_modified_appearance_id: number;
 }
 
-export interface ItemReference {
-    key?: Self | undefined;
-    name?: string | undefined;
-    id: number;
-}
-
 export interface ItemSpell {
     spell?: SpellReference | undefined;
     description?: string | undefined;
@@ -717,6 +789,12 @@ export interface Enchantment {
     display_string?: string | undefined;
     enchantment_id: number;
     source_item?: ItemReference | undefined;
+    enchantment_slot?: EnchantmentSlot | undefined;
+}
+
+export interface EnchantmentSlot {
+    type?: string | undefined;
+    id: number;
 }
 
 export interface Weapon {
@@ -766,6 +844,13 @@ export interface SeasonMatchStatistics {
 export interface PvpTierReferenceWithoutName {
     key?: Self | undefined;
     id: number;
+}
+
+export interface ItemDisplayInfo {
+    id: number;
+    inventoryType: number;
+    itemAppearanceId: number;
+    displayId: number;
 }
 
 export class ApiException extends Error {
