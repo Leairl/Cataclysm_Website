@@ -1,4 +1,5 @@
 export class WowModelViewer {
+    isLoaded(): boolean;
     destroy(): void;
     /**
      * Returns the list of animation names

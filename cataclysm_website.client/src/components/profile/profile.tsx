@@ -8,7 +8,6 @@ declare const $WowheadPower: { refreshLinks: () => void; };
 import { generateModels } from '../../helpers/wow-model-viewer'
 import { WowModelViewer } from '../../helpers/wow-model-viewer/types/wow_model_viewer';
 import { modelingType } from "../../helpers/wow-model-viewer";
-declare let $model: WowModelViewer;
 
 interface profileProps {}
 
@@ -81,7 +80,23 @@ const slotName: string[] = [
   "ranged",
   "tabard",
 ];
-
+const zooms = [5, 5, 5, 5, 6, 5, 6, 5, 6, 
+  5, 5, 6, 5, 6, 5, 6, 5, 6, 
+  5, 5, 5, 5, 6, 5, 6, 5, 6, 
+  5, 5, 5, 5, 6, 5, 6, 5, 6, 
+]
+function setAnimationAfterLoad(m: WowModelViewer, zoom: number) {
+  setTimeout(() => {
+    if (m.isLoaded())
+    {
+      m.setAnimation('DressingRoom')
+      m.setDistance(zoom)
+    }
+    else {
+      setAnimationAfterLoad(m, zoom);
+    }
+  }, 100)
+}
 // pulls from the current URL by using useParams
 const Profile: FC<profileProps> = () => {
   //set new useState for each data api the user is fetching
@@ -141,12 +156,9 @@ const Profile: FC<profileProps> = () => {
             "type": modelingType.CHARACTER
         };
 
-          generateModels(.5, `#model3d`, character, "classic").then(m => {
-            m.setAnimation("Run")
-            if ($model)
-              $model.destroy
-            $model = m
-        });
+        //   generateModels(2, `#model3d`, character, "classic").then(m => {
+        //     setAnimationAfterLoad(m, zooms[character.race ?? 1])
+        // });
           setLoading(false);
         }
         
@@ -171,9 +183,11 @@ const Profile: FC<profileProps> = () => {
               </Flex>
               <div className="paperdoll pt-2">
                 <div className="paperdoll-column paperdoll-left">{getSlotSkeleton(0,10)}</div>
+                <Skeleton width="0px"></Skeleton>
                 <Skeleton
-                  className="model3d mx-auto"
-                  width={"15vw"}
+                  className="model3dx mx-auto mt-1"
+                  width="350px"
+                  height="550px"
                 ></Skeleton>
                 <div className="paperdoll-column paperdoll-right"> {getSlotSkeleton(10,19)}</div>
               </div>
@@ -181,6 +195,7 @@ const Profile: FC<profileProps> = () => {
           )}
           {!loading && (
             <div>
+
               <div className="paperdoll-text pt-5">
                 {characterName + "-" + server}{" "}
               </div>
@@ -189,9 +204,11 @@ const Profile: FC<profileProps> = () => {
                   ? "<" + characterSummary?.guild?.name + ">"
                   : ""}{" "}
               </div>
+              <div id="model3d" className="model3d"></div>
+
               <div className="paperdoll pt-2">
                 <div className="paperdoll-column"> {getSlotIcons(0, 10)} </div>
-                <div id="model3d" className="model3d"></div>
+                <div id="model3d" className="model3dx"></div>
                 <div className="paperdoll-column"> {getSlotIcons(10, 19)} </div>
               </div>
             </div>

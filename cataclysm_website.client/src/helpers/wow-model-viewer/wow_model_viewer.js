@@ -3,6 +3,9 @@ import {getCharacterOptions} from "./character_modeling.js"
 
 // eslint-disable-next-line no-undef
 class WowModelViewer extends ZamModelViewer {
+    isLoaded() {
+        return this.method("isLoaded");
+    }
     /**
      * Returns the list of animation names
      * @returns {Array.<string>}
@@ -25,8 +28,10 @@ class WowModelViewer extends ZamModelViewer {
      * @param {string} val
      */
     setAnimation(val) {
-        this.method("setAnimation", val)
-        var a = this.method("getNumAnimations");
+        if (!this.getListAnimations().includes(val)) {
+            console.warn(`${this.constructor.name}: Animation ${val} not found`)
+        }
+        this.renderer.models[0].setAnimation(val)
     }
 
     /**
