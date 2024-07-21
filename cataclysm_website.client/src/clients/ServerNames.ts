@@ -4,7 +4,7 @@ const UsRealms = ["Atiesh","Myzrael","Old Blanchy","Azuresong","Mankrik","Pagle"
     "Sulfuras","Windseeker","Benediction",
     "Earthfury","Maladath","Angerforge","Eranikus"];
 const EuRealms = ["Everlook","Auberdine","Lakeshire","Chromie",
-    "Pyrewood Village","Mirage Raceway","Razorfen",
+    "Pyrewood Village","Mirage Raceway","Razorfen", "Firemaw",
     "Nethergarde Keep","Sulfuron","Golemagg"];
 
 export {UsRealms, EuRealms};

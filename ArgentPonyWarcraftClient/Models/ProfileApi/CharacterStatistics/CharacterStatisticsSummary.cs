@@ -42,6 +42,12 @@ public record CharacterStatisticsSummary
     public PrimaryStatistic Strength { get; init; }
 
     /// <summary>
+    /// Gets the character's spirit.
+    /// </summary>
+    [JsonPropertyName("spirit")]
+    public PrimaryStatistic Spirit { get; init; }
+
+    /// <summary>
     /// Gets the character's agility.
     /// </summary>
     [JsonPropertyName("agility")]

@@ -2,10 +2,10 @@ import React, { FC } from 'react';
 
 interface loginProps {}
 
-const login: FC<loginProps> = () => (
+const Login: FC<loginProps> = () => (
  <div>
     login Component
  </div>
 );
 
-export default login;
+export default Login;

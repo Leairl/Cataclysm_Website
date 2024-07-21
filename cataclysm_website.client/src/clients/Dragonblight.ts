@@ -299,6 +299,62 @@ export class PvpLeaderboardClient {
     }
 }
 
+export class PvpStatClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getPvPCurrentRating(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterPvpBracketStatistics[]> {
+        let url_ = this.baseUrl + "/api/PvpStat/GetPvPCurrentRating?";
+        if (server === null)
+            throw new Error("The parameter 'server' cannot be null.");
+        else if (server !== undefined)
+            url_ += "server=" + encodeURIComponent("" + server) + "&";
+        if (characterName === null)
+            throw new Error("The parameter 'characterName' cannot be null.");
+        else if (characterName !== undefined)
+            url_ += "characterName=" + encodeURIComponent("" + characterName) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetPvPCurrentRating(_response);
+        });
+    }
+
+    protected processGetPvPCurrentRating(response: Response): Promise<CharacterPvpBracketStatistics[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CharacterPvpBracketStatistics[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CharacterPvpBracketStatistics[]>(null as any);
+    }
+}
+
 export class SearchClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
@@ -344,6 +400,62 @@ export class SearchClient {
             });
         }
         return Promise.resolve<CharacterProfileSummary[]>(null as any);
+    }
+}
+
+export class StatClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getCharacterStats(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterStatisticsSummary> {
+        let url_ = this.baseUrl + "/api/Stat/GetCharacterStats?";
+        if (server === null)
+            throw new Error("The parameter 'server' cannot be null.");
+        else if (server !== undefined)
+            url_ += "server=" + encodeURIComponent("" + server) + "&";
+        if (characterName === null)
+            throw new Error("The parameter 'characterName' cannot be null.");
+        else if (characterName !== undefined)
+            url_ += "characterName=" + encodeURIComponent("" + characterName) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCharacterStats(_response);
+        });
+    }
+
+    protected processGetCharacterStats(response: Response): Promise<CharacterStatisticsSummary> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CharacterStatisticsSummary;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CharacterStatisticsSummary>(null as any);
     }
 }
 
@@ -844,6 +956,108 @@ export interface SeasonMatchStatistics {
 export interface PvpTierReferenceWithoutName {
     key?: Self | undefined;
     id: number;
+}
+
+export interface CharacterPvpBracketStatistics {
+    _links?: Links | undefined;
+    character?: CharacterReference | undefined;
+    faction?: EnumType | undefined;
+    bracket?: Bracket | undefined;
+    rating: number;
+    season?: PvpSeasonReference | undefined;
+    tier?: PvpTierReferenceWithoutName | undefined;
+    season_match_statistics?: PvpMatchStatistics | undefined;
+    weekly_match_statistics?: PvpMatchStatistics | undefined;
+}
+
+export interface Bracket {
+    id: number;
+    type?: string | undefined;
+}
+
+export interface PvpSeasonReference {
+    key?: Self | undefined;
+    id: number;
+}
+
+export interface PvpMatchStatistics {
+    played: number;
+    won: number;
+    lost: number;
+}
+
+export interface CharacterStatisticsSummary {
+    _links?: Links | undefined;
+    health: number;
+    power: number;
+    power_type?: PowerTypeReference | undefined;
+    speed?: RatingStatisticWithoutValue | undefined;
+    strength?: PrimaryStatistic | undefined;
+    spirit?: PrimaryStatistic | undefined;
+    agility?: PrimaryStatistic | undefined;
+    intellect?: PrimaryStatistic | undefined;
+    stamina?: PrimaryStatistic | undefined;
+    melee_crit?: RatingStatistic | undefined;
+    melee_haste?: RatingStatistic | undefined;
+    mastery?: RatingStatistic | undefined;
+    bonus_armor: number;
+    lifesteal?: RatingStatistic | undefined;
+    versatility: number;
+    versatility_damage_done_bonus: number;
+    versatility_healing_done_bonus: number;
+    versatility_damage_taken_bonus: number;
+    avoidance?: RatingStatisticWithoutValue | undefined;
+    attack_power: number;
+    main_hand_damage_min: number;
+    main_hand_damage_max: number;
+    main_hand_speed: number;
+    main_hand_dps: number;
+    off_hand_damage_min: number;
+    off_hand_damage_max: number;
+    off_hand_speed: number;
+    off_hand_dps: number;
+    spell_power: number;
+    spell_penetration: number;
+    spell_crit?: RatingStatistic | undefined;
+    mana_regen: number;
+    mana_regen_combat: number;
+    armor?: PrimaryStatistic | undefined;
+    dodge?: RatingStatistic | undefined;
+    parry?: RatingStatistic | undefined;
+    block?: RatingStatistic | undefined;
+    ranged_crit?: RatingStatistic | undefined;
+    ranged_haste?: RatingStatistic | undefined;
+    spell_haste?: RatingStatistic | undefined;
+    character?: CharacterReference | undefined;
+    corruption?: CorruptionStatistics | undefined;
+}
+
+export interface PowerTypeReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface RatingStatisticWithoutValue {
+    rating: number;
+    rating_bonus: number;
+}
+
+export interface PrimaryStatistic {
+    base: number;
+    effective: number;
+}
+
+export interface RatingStatistic {
+    rating: number;
+    rating_bonus: number;
+    value: number;
+}
+
+export interface CorruptionStatistics {
+    corruption: number;
+    corruption_resistance: number;
+    effective_corruption: number;
 }
 
 export interface ItemDisplayInfo {

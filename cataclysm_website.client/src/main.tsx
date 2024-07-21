@@ -8,12 +8,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from './components/home-page/home-page.tsx'
 import ProfilePage from './components/profile/profile.tsx'
 import RegisterPage from './components/register/register.tsx'
-import LoginPage from './components/login/login.tsx'
 import NavBar from './components/nav/nav-bar.tsx'
 import '@radix-ui/themes/styles.css'
 import { Theme } from '@radix-ui/themes'
 import './index.css'
 import RankingsPage from './components/rankings/rankings.tsx';
+import LoginPage from './components/login/login.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -25,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="profile/:region/:server/:characterName" Component={ProfilePage} />
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
-          <Route path="login" element={<LoginPage />} />
+          <Route path="login" element={<LoginPage/>} />
           <Route path="*" element={<div />} />
         </Route>
       </Routes>
