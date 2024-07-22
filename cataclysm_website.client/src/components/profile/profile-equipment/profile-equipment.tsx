@@ -113,6 +113,9 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
 
   //activates useEffect from change in region / server / charactername (when we load new character data), and
   useEffect(() => {
+    if (!props.characterProfileSummary){
+      return;
+    }
     setLoading(true);
     const CharacterClient = new Dragonblight.ProfileClient();
     const slug = server?.replace(" ", "-")

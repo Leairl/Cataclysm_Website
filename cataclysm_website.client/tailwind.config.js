@@ -11,6 +11,20 @@ export default {
         segoeFont: ['"Segoe"', "sans-serif"],
         // Add more custom font families as needed
       },
+      keyframes: {
+        slideDown: {
+          from: { height: '0px' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        slideUp: {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0px' },
+        },
+      },
+      animation: {
+        slideDown: 'slideDown 300ms cubic-bezier(0.87, 0, 0.13, 1)',
+        slideUp: 'slideUp 300ms cubic-bezier(0.87, 0, 0.13, 1)',
+      },
       colors: {
         primary: {
           50: '#e6effe',

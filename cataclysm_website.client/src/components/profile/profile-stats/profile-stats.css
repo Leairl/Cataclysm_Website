@@ -1,0 +1,12 @@
+.rt-DataListValue {
+    flex-flow: row-reverse;
+}
+.background-warning-color {
+    background-color: yellow;
+}
+.dropdown-accordionCard {
+    --card-padding: 0px !important;
+    --base-card-padding-left: 10px !important;
+    --base-card-padding-right: 10px !important;
+
+}
