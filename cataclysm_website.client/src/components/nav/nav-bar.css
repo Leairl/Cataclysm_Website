@@ -20,10 +20,18 @@
 .grey-login-border:hover {
     opacity: 1;
 }
-
+.desktop-nav-menu{
+  display: flex
+}
+@media only screen and (max-width: 800px) {
+.desktop-nav-menu{
+  display: none 
+}
+}
 .btn {
     @apply font-bold py-2 px-8 rounded;
   }
+  
   .btn-blue {
     background-color: #4fc6ff;
     opacity: .7;

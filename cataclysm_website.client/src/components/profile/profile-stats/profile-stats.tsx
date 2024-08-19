@@ -1,4 +1,10 @@
-import React, { FC, ForwardedRef, ReactElement, useEffect, useState } from "react";
+import React, {
+  FC,
+  ForwardedRef,
+  ReactElement,
+  useEffect,
+  useState,
+} from "react";
 import { Dragonblight } from "../../../clients/Dragonblight";
 import { useParams } from "react-router-dom";
 import {
@@ -17,29 +23,37 @@ import classNames from "classnames";
 //allows subset calls of profile from profile.tsx
 interface ProfileStatsProps {
   characterProfileSummary: Dragonblight.CharacterProfileSummary | undefined;
+  characterEquipmentSummary: Dragonblight.CharacterEquipmentSummary | undefined;
+  loading: boolean;
 }
 
 const ProfileStats: FC<ProfileStatsProps> = (props) => {
   const [characterStats, setcharacterStats] = useState<
     Dragonblight.CharacterStatisticsSummary
   >();
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const [loading, setLoading] = useState<boolean>();
   const { region, server, characterName } = useParams();
   const CardStyles: string[] = [
-    "m-4 mt-5 w-64 h-20",
-    "m-4 mt-5 w-64 h-20",
-    "m-4 mt-5 w-64 h-20",
-    "m-4 mt-5 w-64 h-20",
-    "m-4 mt-5 w-64 h-20",
-    "m-4 mt-5 w-64 h-20",
+    "mb-4 mt-0 w-90 h-36",
+    "mb-4 mt-0 w-90 h-36",
+    "mb-4 mt-0 w-90 h-36",
+    "mb-4 mt-0 w-90 h-10",
+    "mb-4 mt-0 w-90 h-10",
+    "mb-4 mt-0 w-90 h-10",
   ];
-  const AccordionTrigger = React.forwardRef<HTMLButtonElement, Accordion.AccordionTriggerProps>(
-    ({ children, className, ...props }, forwardedRef: ForwardedRef<HTMLButtonElement>) => (
-      <Accordion.Header className="flex">
+  const AccordionTrigger = React.forwardRef<
+    HTMLButtonElement,
+    Accordion.AccordionTriggerProps
+  >(
+    (
+      { children, className, ...props },
+      forwardedRef: ForwardedRef<HTMLButtonElement>
+    ) => (
+      <Accordion.Header className="flex ">
         <Accordion.Trigger
           className={classNames(
-            'shadow-mauve6 hover:bg-mauve2 group flex h-[45px] flex-1 cursor-default items-center justify-between text-[15px] leading-none outline-none',
+            "shadow-mauve6 hover:bg-mauve2 group flex h-[45px] flex-1 cursor-default items-center justify-between text-[15px] leading-none outline-none",
             className
           )}
           {...props}
@@ -54,7 +68,9 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
       </Accordion.Header>
     )
   );
-
+  useEffect(() => {
+    setLoading(props.loading);
+  }, [props.loading]); //connected to props from parent profile.tsx
   useEffect(() => {
     setLoading(true);
     const CharacterStatsClient = new Dragonblight.StatClient(); //talking to controller
@@ -68,7 +84,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     );
   }, [region, server, characterName]);
   return (
-    <div className="w-48 pl-3">
+    <div>
       <div>{loading && getSkeletonStatCards()}</div>
       <div>{!loading && getStats()}</div>
     </div>
@@ -85,14 +101,14 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     for (let i = 0; i < 6; i++) {
       SkeletonCards.push(getSkeleton(i));
     }
-    return <div className="flex flex-col">{SkeletonCards}</div>;
+    return <div className="flex flex-col profile-stats">{SkeletonCards}</div>;
   }
 
   function reforgeWarning(): ReactElement {
     return (
       <Tooltip
         className="background-warning-color"
-        content="No reforging data is available from the Blizzard API. This stat may be incorrect."
+        content="This stat may be incorrect. The stat or reforging data is not available from the Blizzard API."
       >
         <span className="text-white pl-1">⚠️</span>
       </Tooltip>
@@ -110,14 +126,14 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
           <DataList.Root size="1">
             <DataList.Item>
               <DataList.Label minWidth="90px"> Health </DataList.Label>
-              <DataList.Value>
+              <DataList.Value className="">
                 {" "}
                 {((characterStats?.health ?? 0) / 1000).toFixed(0) + "K"}
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label minWidth="90px"> Item Level </DataList.Label>
-              <DataList.Value>
+              <DataList.Value className="">
                 {" "}
                 {props.characterProfileSummary?.average_item_level}
               </DataList.Value>
@@ -143,7 +159,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 className={
                   (characterStats?.strength?.effective ?? 0) >
                   (characterStats?.strength?.base ?? 0)
-                    ? "green_text"
+                    ? "green_text "
                     : ""
                 }
               >
@@ -157,8 +173,8 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 className={
                   (characterStats?.agility?.effective ?? 0) >
                   (characterStats?.agility?.base ?? 0)
-                    ? "green_text text-right"
-                    : "text-right"
+                    ? "green_text "
+                    : ""
                 }
               >
                 {" "}
@@ -171,8 +187,8 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 className={
                   (characterStats?.stamina?.effective ?? 0) >
                   (characterStats?.stamina?.base ?? 0)
-                    ? "green_text text-right"
-                    : "text-right"
+                    ? "green_text "
+                    : " "
                 }
               >
                 {" "}
@@ -185,7 +201,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 className={
                   (characterStats?.intellect?.effective ?? 0) >
                   (characterStats?.intellect?.base ?? 0)
-                    ? "green_text"
+                    ? "green_text "
                     : ""
                 }
               >
@@ -195,19 +211,27 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
             </DataList.Item>
             <DataList.Item>
               <DataList.Label minWidth="90px">
-                {" "}
                 Spirit {reforgeWarning()}
               </DataList.Label>
               <DataList.Value
                 className={
                   (characterStats?.spirit?.effective ?? 0) >
-                  (characterStats?.spirit?.base ?? 0)
-                    ? "green_text"
-                    : ""
-                }
-              >
+                  (characterStats?.spirit?.base ?? 0) ? "green_text ": ""}>
                 {characterStats?.spirit?.effective}{" "}
               </DataList.Value>
+            </DataList.Item>
+            <DataList.Item>
+              <DataList.Label minWidth="90px">
+                Mastery {reforgeWarning()}
+                </DataList.Label>
+              <DataList.Value
+                className={
+                  (characterStats?.mastery?.rating_bonus ?? 0) > 0
+                    ? "green_text "
+                    : ""
+                }
+              > {(characterStats?.mastery?.value ?? 0).toFixed(2)} </DataList.Value>
+              
             </DataList.Item>
           </DataList.Root>
         </Card>
@@ -221,15 +245,13 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
         <Card className="dropdown-accordionCard">
           <Accordion.AccordionItem value="MeleeCard">
             <AccordionTrigger>
-              <Heading size="2">
-                Melee
-              </Heading>
+              <Heading size="2">Melee</Heading>
             </AccordionTrigger>
             <Accordion.AccordionContent className="AccordionContent">
               <DataList.Root size="1">
                 <DataList.Item>
                   <DataList.Label minWidth="90px"> Damage </DataList.Label>
-                  <DataList.Value>
+                  <DataList.Value className="">
                     {" "}
                     {Math.round(
                       characterStats?.main_hand_damage_min ?? 0
@@ -238,7 +260,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 </DataList.Item>
                 <DataList.Item>
                   <DataList.Label minWidth="90px"> DPS </DataList.Label>
-                  <DataList.Value>
+                  <DataList.Value className="">
                     {" "}
                     {(characterStats?.main_hand_dps ?? 0).toFixed(1)}{" "}
                   </DataList.Value>
@@ -248,7 +270,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {" "}
                     Attack Power{" "}
                   </DataList.Label>
-                  <DataList.Value>
+                  <DataList.Value className="">
                     {" "}
                     {characterStats?.attack_power ?? 0}{" "}
                   </DataList.Value>
@@ -258,7 +280,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {" "}
                     Haste {reforgeWarning()}
                   </DataList.Label>
-                  <DataList.Value>
+                  <DataList.Value className="">
                     {(characterStats?.melee_haste?.value ?? 0).toFixed(2) + "%"}
                   </DataList.Value>
                 </DataList.Item>
@@ -267,14 +289,14 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {" "}
                     Hit Chance {reforgeWarning()}
                   </DataList.Label>
-                  <DataList.Value></DataList.Value>
+                  <DataList.Value className=""> {(HitRating() / 120.109).toFixed(2) + "%"}</DataList.Value>
                 </DataList.Item>
                 <DataList.Item>
                   <DataList.Label minWidth="90px">
                     {" "}
                     Crit Chance {reforgeWarning()}
                   </DataList.Label>
-                  <DataList.Value>
+                  <DataList.Value className="">
                     {" "}
                     {(characterStats?.melee_crit?.value ?? 0).toFixed(2) + "%"}
                   </DataList.Value>
@@ -284,16 +306,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {" "}
                     Expertise {reforgeWarning()}
                   </DataList.Label>
-                  <DataList.Value></DataList.Value>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.Label minWidth="90px">
-                    {" "}
-                    Mastery {reforgeWarning()}
-                  </DataList.Label>
-                  <DataList.Value>
-                    {(characterStats?.mastery?.value ?? 0).toFixed(2) + "%"}
-                  </DataList.Value>
+                  <DataList.Value className="">{(ExpertiseRating()/30.0272).toFixed(2) + "%"}</DataList.Value>
                 </DataList.Item>
               </DataList.Root>
             </Accordion.AccordionContent>
@@ -306,78 +319,63 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     //connects specific bracket data into card, set to type ReactElement with tsx code inside return
     return (
       <div className="pt-3" key={"GetStatsRanged"}>
-        <Card className="dropdown-accordionCard"> 
-        <Accordion.AccordionItem value="RangedCard">
-        <AccordionTrigger>
-          <Heading size="2">
-            Ranged
-          </Heading>
-          </AccordionTrigger>
-          <Accordion.AccordionContent className="AccordionContent">
-          <DataList.Root size="1">
-            <DataList.Item>
-              <DataList.Label minWidth="90px"> Damage </DataList.Label>
-              <DataList.Value> </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px"> DPS </DataList.Label>
-              <DataList.Value> </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px"> Attack Power </DataList.Label>
-              <DataList.Value>
-                {" "}
-                {props.characterProfileSummary?.character_class?.name ==
-                "Hunter"
-                  ? props.characterProfileSummary.level * 2 +
-                    ((characterStats?.agility?.effective ?? 0) * 2 - 20)
-                  : "0"}{" "}
-              </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Haste {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value>
-                {(characterStats?.ranged_haste?.value ?? 0).toFixed(2) + "%"}
-              </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Hit Chance {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value></DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Crit Chance {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value>
-                {" "}
-                {(characterStats?.ranged_crit?.value ?? 0).toFixed(2) + "%"}
-              </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Expertise {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value></DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Mastery {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value>
-                {(characterStats?.mastery?.value ?? 0).toFixed(2) + "%"}
-              </DataList.Value>
-            </DataList.Item>
-          </DataList.Root>
-          </Accordion.AccordionContent>
+        <Card className="dropdown-accordionCard">
+          <Accordion.AccordionItem value="RangedCard">
+            <AccordionTrigger>
+              <Heading size="2">Ranged</Heading>
+            </AccordionTrigger>
+            <Accordion.AccordionContent className="AccordionContent">
+              <DataList.Root size="1">
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Damage {reforgeWarning()}{" "}
+                  </DataList.Label>
+                  <DataList.Value className=""> {(getRangedDamage())}</DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    DPS {reforgeWarning()}{" "}
+                  </DataList.Label>
+                  <DataList.Value className=""> {getRangedDPS()} </DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Attack Power {reforgeWarning()}{" "}
+                  </DataList.Label>
+                  <DataList.Value className=""> {getRangedAttackPower()} </DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Haste {reforgeWarning()}
+                  </DataList.Label>
+                  <DataList.Value className="">
+                    {(characterStats?.ranged_haste?.value ?? 0).toFixed(2) +
+                      "%"}
+                  </DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Hit Chance {reforgeWarning()}
+                  </DataList.Label>
+                  <DataList.Value className=""> {(HitRating() / 120.109).toFixed(2) + "%"}</DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Crit Chance {reforgeWarning()}
+                  </DataList.Label>
+                  <DataList.Value className="">
+                    {" "}
+                    {(characterStats?.ranged_crit?.value ?? 0).toFixed(2) + "%"}
+                  </DataList.Value>
+                </DataList.Item> 
+              </DataList.Root>
+            </Accordion.AccordionContent>
           </Accordion.AccordionItem>
         </Card>
       </div>
@@ -388,76 +386,68 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     return (
       <div className="pt-3" key={"GetStatsSpell"}>
         <Card className="dropdown-accordionCard">
-        <Accordion.AccordionItem value="SpellCard">
-        <AccordionTrigger>
-          <Heading size="2">
-            Spell
-          </Heading>
-          </AccordionTrigger>
-          <Accordion.AccordionContent className="AccordionContent">
-          <DataList.Root size="1">
-            <DataList.Item>
-              <DataList.Label minWidth="90px"> Spell Power </DataList.Label>
-              <DataList.Value> {characterStats?.spell_power} </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Haste {reforgeWarning()}{" "}
-              </DataList.Label>
-              <DataList.Value>
-                {(characterStats?.spell_haste?.value ?? 0).toFixed(2) + "%"}
-              </DataList.Value>{" "}
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Hit Chance {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value></DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Spell Penetration{" "}
-              </DataList.Label>
-              <DataList.Value>
-                {characterStats?.spell_penetration}
-              </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px"> Mana Regen </DataList.Label>
-              <DataList.Value>{characterStats?.mana_regen}</DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Combat Mana Regen{" "}
-              </DataList.Label>
-              <DataList.Value>
-                {characterStats?.mana_regen_combat}
-              </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Crit Chance {reforgeWarning()}
-              </DataList.Label>
-              <DataList.Value>
-                {(characterStats?.spell_crit?.value ?? 0).toFixed(2) + "%"}
-              </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label minWidth="90px">
-                {" "}
-                Mastery {reforgeWarning()}{" "}
-              </DataList.Label>
-              <DataList.Value>
-                {(characterStats?.mastery?.value ?? 0).toFixed(2) + "%"}
-              </DataList.Value>
-            </DataList.Item>
-          </DataList.Root>
-          </Accordion.AccordionContent>
+          <Accordion.AccordionItem value="SpellCard">
+            <AccordionTrigger>
+              <Heading size="2">Spell</Heading>
+            </AccordionTrigger>
+            <Accordion.AccordionContent className="AccordionContent">
+              <DataList.Root size="1">
+                <DataList.Item>
+                  <DataList.Label minWidth="90px"> Spell Power </DataList.Label>
+                  <DataList.Value className="">
+                    {" "}
+                    {characterStats?.spell_power}{" "}
+                  </DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Haste {reforgeWarning()}{" "}
+                  </DataList.Label>
+                  <DataList.Value className="">
+                    {(characterStats?.spell_haste?.value ?? 0).toFixed(2) + "%"}
+                  </DataList.Value>{" "}
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Hit Chance {reforgeWarning()}
+                  </DataList.Label>
+                  <DataList.Value className=""> {(HitRating() / 102.446).toFixed(2) + "%"}</DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Spell Penetration{" "}
+                  </DataList.Label>
+                  <DataList.Value className="">
+                    {characterStats?.spell_penetration}
+                  </DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px"> Mana Regen </DataList.Label>
+                  <DataList.Value className="">{characterStats?.mana_regen}</DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Combat Mana Regen{" "}
+                  </DataList.Label>
+                  <DataList.Value className="">
+                    {characterStats?.mana_regen_combat}
+                  </DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label minWidth="90px">
+                    {" "}
+                    Crit Chance {reforgeWarning()}
+                  </DataList.Label>
+                  <DataList.Value className="">
+                    {(characterStats?.spell_crit?.value ?? 0).toFixed(2) + "%"}
+                  </DataList.Value>
+                </DataList.Item>
+              </DataList.Root>
+            </Accordion.AccordionContent>
           </Accordion.AccordionItem>
         </Card>
       </div>
@@ -475,37 +465,153 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
           <DataList.Root size="1">
             <DataList.Item>
               <DataList.Label minWidth="90px"> Armor </DataList.Label>
-              <DataList.Value>
+              <DataList.Value className="">
                 {" "}
                 {characterStats?.armor?.effective}{" "}
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label minWidth="90px"> Dodge </DataList.Label>
-              <DataList.Value>
+              <DataList.Value className="">
                 {(characterStats?.dodge?.value ?? 0).toFixed(0) + "%"}
               </DataList.Value>{" "}
             </DataList.Item>
             <DataList.Item>
               <DataList.Label minWidth="90px"> Parry </DataList.Label>
-              <DataList.Value>
+              <DataList.Value className="">
                 {(characterStats?.parry?.value ?? 0).toFixed(0) + "%"}
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label minWidth="90px"> Block </DataList.Label>
-              <DataList.Value>
+              <DataList.Value className="">
                 {(characterStats?.block?.value ?? 0).toFixed(0) + "%"}
               </DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label minWidth="90px"> Resilience </DataList.Label>
-              <DataList.Value></DataList.Value>
+              <DataList.Value className=""> {getResilience()} </DataList.Value>
             </DataList.Item>
           </DataList.Root>
         </Card>
       </div>
     );
+  }
+  function getRangedAttackPower() {
+    let enchantAttackPower = 0
+    const regexStr = /(\d+)(?=\s*?( [Aa]ttack [Pp]ower))/gm;
+
+    props.characterEquipmentSummary?.equipped_items?.forEach((i) => {
+      i.enchantments?.forEach((e) => {
+        const regexResultArray = e.display_string?.match(regexStr);
+        if (regexResultArray) {
+          enchantAttackPower += Number(regexResultArray[0]);
+        }
+      });
+    })
+    switch (props.characterProfileSummary?.character_class?.name) {
+      case "Rogue":
+      case "Warrior":
+        return props.characterProfileSummary.level + ((characterStats?.agility?.effective ?? 0) - 10) + enchantAttackPower
+      case "Hunter":
+        return props.characterProfileSummary.level * 2 + ((characterStats?.agility?.effective ?? 0) * 2 - 20) + enchantAttackPower
+      default:
+        return 0
+    }
+  }
+  function getRangedDamage() {
+    const rangedItem = props.characterEquipmentSummary?.equipped_items?.find(i =>
+      i.slot?.type == "RANGED")
+      if (rangedItem != null){
+        const minVal = (getRangedAttackPower() * 0.0715 * ((rangedItem.weapon?.attack_speed?.value ?? 0)/ 1000)) + (rangedItem.weapon?.damage?.min_value ?? 0)
+        const maxVal = (getRangedAttackPower() * 0.0715 * ((rangedItem.weapon?.attack_speed?.value ?? 0)/ 1000)) + (rangedItem.weapon?.damage?.max_value ?? 0)
+        return minVal.toFixed(0) + " - " + maxVal.toFixed(0)
+      }
+  }
+  function getRangedDPS() {
+    const rangedItem = props.characterEquipmentSummary?.equipped_items?.find(i =>
+      i.slot?.type == "RANGED")
+      if (rangedItem != null){
+        const minVal = (getRangedAttackPower() * 0.0715 * ((rangedItem.weapon?.attack_speed?.value ?? 0)/ 1000)) + (rangedItem.weapon?.damage?.min_value ?? 0)
+        const maxVal = (getRangedAttackPower() * 0.0715 * ((rangedItem.weapon?.attack_speed?.value ?? 0)/ 1000)) + (rangedItem.weapon?.damage?.max_value ?? 0)
+        const dps = (((minVal + maxVal)/2)/((rangedItem.weapon?.attack_speed?.value ?? 1)/ 1000))
+        return dps.toFixed(1)
+      }
+  }
+  function getResilience() {
+    let resilSum = 0;
+    const regexStr = /(\d+)(?=\s*?( [Rr]esilience [Rr]ating))/gm;
+    let resilTier = 0;
+    props.characterEquipmentSummary?.equipped_items?.forEach((i) => {
+      i.stats?.forEach((r) => {
+        if (r.type?.type == "RESILIENCE_RATING") {
+          resilSum += r.value;
+        }
+      });
+      i.enchantments?.forEach((e) => {
+        const regexResultArray = e.display_string?.match(regexStr);
+        if (regexResultArray) {
+          resilSum += Number(regexResultArray[0]);
+        }
+      });
+      i.set?.effects?.forEach((tier) => {
+        const regexResultArrayTier = tier.display_string?.match(regexStr);
+        if (regexResultArrayTier) {
+          resilTier = Number(regexResultArrayTier[0]);
+        }
+      });
+    });
+    return resilSum + resilTier;
+  }
+  function HitRating() {
+    let hitSum = 0;
+    let hitTier = 0;
+    const regexStr = /(\d+)(?=\s*?( [Hh]it [Rr]ating))/gm;
+    props.characterEquipmentSummary?.equipped_items?.forEach((i) => {
+      i.stats?.forEach((h) => {
+        if (h.type?.type == "HIT_RATING") {
+          hitSum += h.value;
+        }
+      });
+      i.enchantments?.forEach((e) => {
+        const regexResultArray = e.display_string?.match(regexStr);
+        if (regexResultArray) {
+          hitSum += Number(regexResultArray[0]);
+        }
+      });
+      i.set?.effects?.forEach((tier) => {
+        const regexResultArrayTier = tier.display_string?.match(regexStr);
+        if (regexResultArrayTier) {
+          hitTier = Number(regexResultArrayTier[0]);
+        }
+      });
+    })
+    return hitSum + hitTier;
+  }
+  function ExpertiseRating() {
+    let ExpertiseSum = 0;
+    let ExpertiseTier = 0;
+    const regexStr = /(\d+)(?=\s*?( [Ee]xpertise [Rr]ating))/gm;
+    props.characterEquipmentSummary?.equipped_items?.forEach((i) => {
+      i.stats?.forEach((h) => {
+        if (h.type?.type == "EXPERTISE_RATING") {
+          ExpertiseSum += h.value;
+        }
+      });
+      i.enchantments?.forEach((e) => {
+        const regexResultArray = e.display_string?.match(regexStr);
+        if (regexResultArray) {
+          ExpertiseSum += Number(regexResultArray[0]);
+        }
+      });
+      i.set?.effects?.forEach((tier) => {
+        const regexResultArrayTier = tier.display_string?.match(regexStr);
+        if (regexResultArrayTier) {
+          ExpertiseTier = Number(regexResultArrayTier[0]);
+        }
+      });
+    })
+    return ExpertiseSum + ExpertiseTier;
   }
   //loops through each character rating (remember: characterratings is updated every time the user looks up a character, and has character data from controller)
   function getStats() {
@@ -520,13 +626,13 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     }
     return (
       <div>
-        <div className="flex flex-col w-48">{StatsCards.slice(0, 3)}</div>
+        <div className="flex flex-col profile-stats">{StatsCards.slice(0, 3)}</div>
         <Accordion.Root
-          className="bg-mauve6 w-[300px] rounded-md shadow-[0_2px_10px] shadow-black/5"
+          className="bg-mauve6 rounded-md shadow-[0_2px_5px] shadow-black/5"
           type="single"
           collapsible
         >
-          <div className="flex flex-col w-48">{StatsCards.slice(3, 6)}</div>
+          <div className="flex flex-col profile-stats">{StatsCards.slice(3, 6)}</div>
         </Accordion.Root>
       </div>
     );

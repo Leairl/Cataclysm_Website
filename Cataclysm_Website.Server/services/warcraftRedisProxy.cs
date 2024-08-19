@@ -1,5 +1,6 @@
 using System.Data.Common;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
@@ -160,6 +161,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return null;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
+    
     // get character summary in redis for character appearance
     public async Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region)
     {
@@ -169,6 +171,23 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             //gets character data from wow api
             //storing into GetCharacter and pulls data with server, characterName, and region
             var GetCharacter = await warcraftClient.GetCharacterAppearanceSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
+            if (GetCharacter != null)
+            {
+                //call method to insert char name in cache
+                return GetCharacter.Value;
+            }
+            return null;
+        }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
+    }
+        // get character summary in redis for character appearance
+    public async Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region)
+    {
+        region = GetProfileRegion(region);
+        return await GetBlizzardDataCached<CharacterAchievementsSummary>("GetCharacterAchievements" + server + characterName + region, async () =>
+        {
+            //gets character data from wow api
+            //storing into GetCharacter and pulls data with server, characterName, and region
+            var GetCharacter = await warcraftClient.GetCharacterAchievementsSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
             if (GetCharacter != null)
             {
                 //call method to insert char name in cache
@@ -212,8 +231,33 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
     {
         var db = redis.GetDatabase(); //var to redis database
         await db.ListRemoveAsync("CachedCharacters", characterName.ToLowerInvariant() + "," + server + "," + region);
-        //CachedCharacters is the KEY for CachedCharacters method, and pushes character into already made list
+        //CachedCharacters is the KEY for CachedCharacters method, and pushes character into already made list, string with commas seperated by it (JAX SAYS THIS IS BAD DONT REPLICATE)
         await db.ListRightPushAsync("CachedCharacters", characterName.ToLowerInvariant() + "," + server + "," + region);
+    }
+        public async Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        //connect strings from InsertCacheClassCharacter to key in CachedClassCharacters
+        string key = bracket + "_" + characterClass + "_" + region ;
+
+        //views filtered list from the key (changes from bracket or characterClass from InsertCacheClassCharacter)
+        var characterList = await db.ListRangeAsync(key);
+        //convert player to pvpleaderboardentry (for our filtered list of strings)
+        return characterList.Select(player =>
+        {
+            //deserialized out of json to become an object.
+            return JsonSerializer.Deserialize<PvpLeaderboardEntry>(player);
+        }).ToList();
+    }
+        public async Task InsertCacheClassCharacter(Bracket bracket, PvpLeaderboardEntry player, CharacterProfileSummary characterClass, string region)
+        //these all return a string, allowing us to connected to cachedclasscharacters function
+    {
+        string key = bracket.Type + "_" + characterClass.CharacterClass.Name + "_" + region;
+        var db = redis.GetDatabase(); //var to redis database
+        //convert our bucket into json to place into redis, and putting into 
+        await db.ListRemoveAsync(key, JsonSerializer.Serialize(player));
+        //looks at a player, finds the correct data and puts it inside the key values, then goes inside of sectioned list of data
+        await db.ListRightPushAsync(key, JsonSerializer.Serialize(player));
     }
     public string GetProfileRegion(string region)
     {

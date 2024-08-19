@@ -10,6 +10,110 @@
 
 export module Dragonblight {
 
+export class DisplayIdClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getDisplayInfo(item_id: number | undefined): Promise<ItemDisplayInfo> {
+        let url_ = this.baseUrl + "/api/DisplayId/GetDisplayInfo?";
+        if (item_id === null)
+            throw new Error("The parameter 'item_id' cannot be null.");
+        else if (item_id !== undefined)
+            url_ += "item_id=" + encodeURIComponent("" + item_id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetDisplayInfo(_response);
+        });
+    }
+
+    protected processGetDisplayInfo(response: Response): Promise<ItemDisplayInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ItemDisplayInfo;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ItemDisplayInfo>(null as any);
+    }
+}
+
+export class AchievementClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getCharacterAchievements(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterAchievementsSummary> {
+        let url_ = this.baseUrl + "/api/Achievement/GetCharacterAchievements?";
+        if (server === null)
+            throw new Error("The parameter 'server' cannot be null.");
+        else if (server !== undefined)
+            url_ += "server=" + encodeURIComponent("" + server) + "&";
+        if (characterName === null)
+            throw new Error("The parameter 'characterName' cannot be null.");
+        else if (characterName !== undefined)
+            url_ += "characterName=" + encodeURIComponent("" + characterName) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCharacterAchievements(_response);
+        });
+    }
+
+    protected processGetCharacterAchievements(response: Response): Promise<CharacterAchievementsSummary> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CharacterAchievementsSummary;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CharacterAchievementsSummary>(null as any);
+    }
+}
+
 export class ProfileClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
@@ -166,8 +270,20 @@ export class PvpLeaderboardClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    get3v3Ladder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get3v3Ladder";
+    get3v3Ladder(skip: number | undefined, take: number | undefined, region: string | undefined): Promise<PvpCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get3v3Ladder?";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -182,13 +298,13 @@ export class PvpLeaderboardClient {
         });
     }
 
-    protected processGet3v3Ladder(response: Response): Promise<PvpLeaderboardEntry[]> {
+    protected processGet3v3Ladder(response: Response): Promise<PvpCharacterSummary[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpLeaderboardEntry[];
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpCharacterSummary[];
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -196,11 +312,23 @@ export class PvpLeaderboardClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PvpLeaderboardEntry[]>(null as any);
+        return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 
-    get2v2Ladder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get2v2Ladder";
+    get2v2Ladder(skip: number | undefined, take: number | undefined, region: string | undefined): Promise<PvpCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get2v2Ladder?";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -215,13 +343,13 @@ export class PvpLeaderboardClient {
         });
     }
 
-    protected processGet2v2Ladder(response: Response): Promise<PvpLeaderboardEntry[]> {
+    protected processGet2v2Ladder(response: Response): Promise<PvpCharacterSummary[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpLeaderboardEntry[];
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpCharacterSummary[];
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -229,11 +357,23 @@ export class PvpLeaderboardClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PvpLeaderboardEntry[]>(null as any);
+        return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 
-    get5v5Ladder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get5v5Ladder";
+    get5v5Ladder(skip: number | undefined, take: number | undefined, region: string | undefined): Promise<PvpCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/Get5v5Ladder?";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -248,13 +388,13 @@ export class PvpLeaderboardClient {
         });
     }
 
-    protected processGet5v5Ladder(response: Response): Promise<PvpLeaderboardEntry[]> {
+    protected processGet5v5Ladder(response: Response): Promise<PvpCharacterSummary[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpLeaderboardEntry[];
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpCharacterSummary[];
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -262,11 +402,23 @@ export class PvpLeaderboardClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PvpLeaderboardEntry[]>(null as any);
+        return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 
-    getRBGLadder(): Promise<PvpLeaderboardEntry[]> {
-        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetRBGLadder";
+    getRBGLadder(skip: number | undefined, take: number | undefined, region: string | undefined): Promise<PvpCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetRBGLadder?";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -281,13 +433,13 @@ export class PvpLeaderboardClient {
         });
     }
 
-    protected processGetRBGLadder(response: Response): Promise<PvpLeaderboardEntry[]> {
+    protected processGetRBGLadder(response: Response): Promise<PvpCharacterSummary[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpLeaderboardEntry[];
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpCharacterSummary[];
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -295,7 +447,60 @@ export class PvpLeaderboardClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PvpLeaderboardEntry[]>(null as any);
+        return Promise.resolve<PvpCharacterSummary[]>(null as any);
+    }
+
+    getRBGLadderFiltered(skip: number | undefined, take: number | undefined, region: string | undefined, classes: string[], bracket: string | undefined): Promise<PvpCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetLadderFiltered?";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        if (bracket === null)
+            throw new Error("The parameter 'bracket' cannot be null.");
+        else if (bracket !== undefined)
+            url_ += "bracket=" + encodeURIComponent("" + bracket) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(classes);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetRBGLadderFiltered(_response);
+        });
+    }
+
+    protected processGetRBGLadderFiltered(response: Response): Promise<PvpCharacterSummary[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpCharacterSummary[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 }
 
@@ -459,52 +664,81 @@ export class StatClient {
     }
 }
 
-export class DisplayIdClient {
-    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+export interface ItemDisplayInfo {
+    id: number;
+    inventoryType: number;
+    itemAppearanceId: number;
+    displayId: number;
+}
 
-    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
-        this.http = http ? http : window as any;
-        this.baseUrl = baseUrl ?? "";
-    }
+export interface CharacterAchievementsSummary {
+    _links?: Links | undefined;
+    total_quantity: number;
+    total_points: number;
+    achievements?: AchievementProgress[] | undefined;
+    category_progress?: CategoryProgress[] | undefined;
+    recent_events?: RecentEvent[] | undefined;
+    character?: CharacterReference | undefined;
+    statistics?: Self | undefined;
+}
 
-    getDisplayInfo(item_id: number | undefined): Promise<ItemDisplayInfo> {
-        let url_ = this.baseUrl + "/api/DisplayId/GetDisplayInfo?";
-        if (item_id === null)
-            throw new Error("The parameter 'item_id' cannot be null.");
-        else if (item_id !== undefined)
-            url_ += "item_id=" + encodeURIComponent("" + item_id) + "&";
-        url_ = url_.replace(/[?&]$/, "");
+export interface Links {
+    self?: Self | undefined;
+}
 
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
+export interface Self {
+    href?: string | undefined;
+}
 
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetDisplayInfo(_response);
-        });
-    }
+export interface AchievementProgress {
+    id: number;
+    achievement?: AchievementReference | undefined;
+    criteria?: Criteria | undefined;
+    completed_timestamp?: Date | undefined;
+}
 
-    protected processGetDisplayInfo(response: Response): Promise<ItemDisplayInfo> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ItemDisplayInfo;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ItemDisplayInfo>(null as any);
-    }
+export interface AchievementReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface Criteria {
+    id: number;
+    is_completed: boolean;
+    child_criteria?: Criteria[] | undefined;
+    amount?: number | undefined;
+}
+
+export interface CategoryProgress {
+    category?: AchievementCategoryReference | undefined;
+    quantity: number;
+    points: number;
+}
+
+export interface AchievementCategoryReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface RecentEvent {
+    achievement?: AchievementReference | undefined;
+    timestamp: Date;
+}
+
+export interface CharacterReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+    realm?: RealmReference | undefined;
+}
+
+export interface RealmReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+    slug?: string | undefined;
 }
 
 export interface CharacterProfileSummary {
@@ -543,14 +777,6 @@ export interface CharacterProfileSummary {
     covenant_progress?: CovenantProgress | undefined;
 }
 
-export interface Links {
-    self?: Self | undefined;
-}
-
-export interface Self {
-    href?: string | undefined;
-}
-
 export interface EnumType {
     type?: string | undefined;
     name?: string | undefined;
@@ -572,13 +798,6 @@ export interface PlayableSpecializationReference {
     key?: Self | undefined;
     name?: string | undefined;
     id: number;
-}
-
-export interface RealmReference {
-    key?: Self | undefined;
-    name?: string | undefined;
-    id: number;
-    slug?: string | undefined;
 }
 
 export interface GuildReference {
@@ -619,13 +838,6 @@ export interface CharacterAppearanceSummary {
     guild_crest?: GuildCrest | undefined;
     appearance?: Appearance | undefined;
     items?: EquippedItemAppearance[] | undefined;
-}
-
-export interface CharacterReference {
-    key?: Self | undefined;
-    name?: string | undefined;
-    id: number;
-    realm?: RealmReference | undefined;
 }
 
 export interface GuildCrest {
@@ -922,6 +1134,11 @@ export interface Damage {
     damage_class?: EnumType | undefined;
 }
 
+export interface PvpCharacterSummary {
+    pvpEntry: PvpLeaderboardEntry;
+    charSummary: CharacterProfileSummary;
+}
+
 export interface PvpLeaderboardEntry {
     character?: Profile | undefined;
     faction?: EnumTypeWithoutName | undefined;
@@ -1058,13 +1275,6 @@ export interface CorruptionStatistics {
     corruption: number;
     corruption_resistance: number;
     effective_corruption: number;
-}
-
-export interface ItemDisplayInfo {
-    id: number;
-    inventoryType: number;
-    itemAppearanceId: number;
-    displayId: number;
 }
 
 export class ApiException extends Error {

@@ -2,11 +2,21 @@
     flex-flow: row-reverse;
 }
 .background-warning-color {
-    background-color: yellow;
+    background-color: white !important;
 }
 .dropdown-accordionCard {
     --card-padding: 0px !important;
     --base-card-padding-left: 10px !important;
     --base-card-padding-right: 10px !important;
 
+}
+.profile-stats {
+    width: 12.5rem;
+    padding-left: 10px;
+}
+@media only screen and (max-width: 800px) {
+    .profile-stats{
+        width: 95vw;
+        padding-left: 0px;
+    }
 }

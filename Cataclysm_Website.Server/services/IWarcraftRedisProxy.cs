@@ -8,13 +8,16 @@ public interface IWarcraftRedisProxy
     Task<PvpLeaderboard> GetRBGLeaderboard(string region);
 
     Task InsertCacheCharacter(string characterName, string server, string region);
+    Task InsertCacheClassCharacter(Bracket bracket, PvpLeaderboardEntry player, CharacterProfileSummary summary, string region);
     Task<List<string>> CachedCharacters();
+    Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket);
+
     Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region);
     Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region);
     Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region);
     Task<CharacterPvpBracketStatistics> GetPvpBracketRating(string server, string characterName, string pvpBracket, string region);
     Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region);
-
+    Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region);
     Task<ItemMedia> GetItemIcon(int itemId);
 
     Task<int> GetSeason(string region);

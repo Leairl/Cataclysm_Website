@@ -17,12 +17,13 @@ import LoginPage from './components/login/login.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Theme accentColor="blue" radius="none" appearance='dark'>
+    <Theme accentColor="blue" radius="small" appearance='dark'>
       <BrowserRouter>
       <Routes>
         <Route path="/" element={ <div><NavBar></NavBar><HomePage></HomePage></div> }>
           <Route index element={<div></div>} />
           <Route path="profile/:region/:server/:characterName" Component={ProfilePage} />
+          <Route path="rankings/:URLregion/:URLbracket" element={<RankingsPage/>} />
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage/>} />

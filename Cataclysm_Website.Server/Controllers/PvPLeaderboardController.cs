@@ -1,4 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,35 +22,116 @@ namespace Cataclysm_Website.Server.Controllers
         "dynamic-classic-us" is static name for region in us, need to find other static region names in developer.battle.net
         */
         [HttpGet("Get3v3Ladder")]
-        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> Get3v3Ladder() 
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> Get3v3Ladder(int skip, int take, string region)
         {
-            var fullLeaderboard = await _warcraftCachedData.Get3v3Leaderboard("us");
-            var firstHundred3v3Players = fullLeaderboard.Entries.Take(100);
-            return Ok(firstHundred3v3Players);
+            var fullLeaderboard = await _warcraftCachedData.Get3v3Leaderboard(region);
+            var firstHundred3v3Players = fullLeaderboard.Entries.Skip(skip).Take(take);
+            var Leaderboard3v3Entry = firstHundred3v3Players.Select(async entry3v3 =>
+            {
+                // connect our controller to our service to retrieve character profile data
+                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(entry3v3.Character.Realm.Slug, entry3v3.Character.Name, region);
+                return new PvpCharacterSummary
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    PvpEntry = entry3v3,
+                    charSummary = ProfileSummaryEntry
+                };
+            });
+            var result = await Task.WhenAll(Leaderboard3v3Entry);
+            return Ok(result);
         }
 
         [HttpGet("Get2v2Ladder")]
-        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> Get2v2Ladder() 
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> Get2v2Ladder(int skip, int take, string region)
         {
-            var fullLeaderboard = await _warcraftCachedData.Get2v2Leaderboard("us");
-            var firstHundred2v2Players = fullLeaderboard.Entries.Take(100);
-            return Ok(firstHundred2v2Players);
+            var fullLeaderboard = await _warcraftCachedData.Get2v2Leaderboard(region);
+            var firstHundred2v2Players = fullLeaderboard.Entries.Skip(skip).Take(take);
+            var Leaderboard2v2Entry = firstHundred2v2Players.Select(async entry2v2 =>
+            {
+                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(entry2v2.Character.Realm.Slug, entry2v2.Character.Name, region);
+                return new PvpCharacterSummary
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    PvpEntry = entry2v2,
+                    charSummary = ProfileSummaryEntry
+                };
+            });
+            var result = await Task.WhenAll(Leaderboard2v2Entry);
+            return Ok(result);
         }
 
         [HttpGet("Get5v5Ladder")]
-        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> Get5v5Ladder() 
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> Get5v5Ladder(int skip, int take, string region)
         {
-            var fullLeaderboard = await _warcraftCachedData.Get5v5Leaderboard("us");
-            var firstHundred5v5Players = fullLeaderboard.Entries.Take(100);
-            return Ok(firstHundred5v5Players);
+            var fullLeaderboard = await _warcraftCachedData.Get5v5Leaderboard(region);
+            var firstHundred5v5Players = fullLeaderboard.Entries.Skip(skip).Take(take);
+            var Leaderboard5v5Entry = firstHundred5v5Players.Select(async entry5v5 =>
+            {
+                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(entry5v5.Character.Realm.Slug, entry5v5.Character.Name, region);
+                return new PvpCharacterSummary
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    PvpEntry = entry5v5,
+                    charSummary = ProfileSummaryEntry
+                };
+            });
+            var result = await Task.WhenAll(Leaderboard5v5Entry);
+            return Ok(result);
         }
 
         [HttpGet("GetRBGLadder")]
-        public async Task<ActionResult<IEnumerable<PvpLeaderboardEntry>>> GetRBGLadder() 
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetRBGLadder(int skip, int take, string region)
+
         {
-            var fullLeaderboard = await _warcraftCachedData.GetRBGLeaderboard("us");
-            var firstHundredRBGPlayers = fullLeaderboard.Entries.Take(100);
-            return Ok(firstHundredRBGPlayers);
+            var fullLeaderboard = await _warcraftCachedData.GetRBGLeaderboard(region);
+            var firstHundredRBGPlayers = fullLeaderboard.Entries.Skip(skip).Take(take);
+            var RBGLeaderboardEntry = firstHundredRBGPlayers.Select(async rbgEntry =>
+            {
+                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(rbgEntry.Character.Realm.Slug, rbgEntry.Character.Name, region);
+                return new PvpCharacterSummary
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    PvpEntry = rbgEntry,
+                    charSummary = ProfileSummaryEntry
+                };
+            });
+            var result = await Task.WhenAll(RBGLeaderboardEntry);
+            return Ok(result);
+        }
+        [HttpGet("GetLadderFiltered")]
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetRBGLadderFiltered(int skip, int take, string region, List<string> classes, string bracket)
+        // foreach allows us to select multiple classes on our leaderboard
+        {
+            List<PvpCharacterSummary> result = [];
+            foreach (
+                var charClass in classes
+            )
+            {
+                var fullLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
+                var firstHundredLadderPlayers = fullLeaderboard.Skip(skip).Take(take);
+                //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
+                var LadderLeaderboardEntries = firstHundredLadderPlayers.Select(async ladderEntry =>
+                {
+                    var ProfileSummaryEntries = await _warcraftCachedData.GetCharSummary(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region);
+                    return new PvpCharacterSummary
+                    {
+                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                        PvpEntry = ladderEntry,
+                        charSummary = ProfileSummaryEntries
+                    };
+                });
+                result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
+            }
+            //displays correct ranking and returns all selected classes we want to filter
+            return Ok(result.OrderBy(r => r.PvpEntry.Rank));
+        }
+        public class PvpCharacterSummary
+        {
+            [JsonPropertyName("pvpEntry")]
+            public PvpLeaderboardEntry PvpEntry { get; init; }
+
+            [JsonPropertyName("charSummary")]
+            public CharacterProfileSummary charSummary { get; init; }
         }
     }
 }

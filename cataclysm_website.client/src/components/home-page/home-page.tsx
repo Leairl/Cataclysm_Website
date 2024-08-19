@@ -15,7 +15,7 @@ function HomePage() {
   const inputRef = React.createRef<HTMLInputElement>();
   const delayedSearch = useCallback(
     debounce(async (searchTerm) => {
-      await SearchAsync(searchTerm);
+      await SearchAsync(searchTerm.trim());
     }, 500),
     []
   );
@@ -26,9 +26,17 @@ function HomePage() {
         src={`/Background/background.png`}
       ></img>
       <Container height="100vh">
-        <Flex direction="column" gap="5" className=" w-full">
-          <Card className="m-20">
+        <Flex direction="column" gap="5" className=" w-full items-center">
+          <Card className="m-20 max-w-[70vw] w-full">
             <Select
+              onSelect={(v, option)=> 
+                { 
+                  const optionsSplit = option.key.split('-')
+                  const name = optionsSplit[0]
+                  const server = optionsSplit[1]
+                  const region = optionsSplit[2]
+                  window.location.href = `/profile/${region}/${server}/${name}`}
+              }
               mode="combobox"
               notFoundContent={null}
               defaultActiveFirstOption={true}
@@ -45,7 +53,7 @@ function HomePage() {
                 />
               )}
               //value of element is changing (text field is changing per character, and is called)
-              //called from imported library (onChange), and compares what was previously typed to what is currently typed (if false, then print out search box dropdown)
+              //compares what was previously typed to what is currently typed (if false, then print out search box dropdown)
               onChange={delayedSearch}
             >
               {searchResults}
@@ -84,7 +92,6 @@ function HomePage() {
         value={`${characterName}-${server}`}
         key={`${characterName}-${server}-${region}-add`}
       >
-        <Link to={`/profile/${region}/${server}/${characterName}`}>
           <div className="flex">
             <div className="pr-1">
               <img
@@ -94,10 +101,9 @@ function HomePage() {
                 style={{ maxHeight: "25px", maxWidth: "25px" }}
               ></img>
             </div>
-            <span className="pl-2">
+            <span className="pl-2 flex-grow">
               {characterName}-{server}
             </span>
-            <div className="grow"></div>
             <img
               src={`/Regions/${region}.svg`}
               className="flex"
@@ -106,7 +112,6 @@ function HomePage() {
               style={{ maxHeight: "25px", maxWidth: "25px" }}
             ></img>
           </div>
-        </Link>
       </Option>
     );
   }
@@ -158,7 +163,7 @@ function HomePage() {
                     style={{ maxHeight: "25px", maxWidth: "25px" }}
                   ></img>
                   <span
-                    className="pl-2"
+                    className="pl-2 flex-grow"
                     style={{
                       color: `${ClassColor.get(
                         characterSummary.character_class?.name ?? ""
@@ -167,7 +172,6 @@ function HomePage() {
                   >
                     {characterSummary.name}-{characterSummary.realm?.name}
                   </span>
-                  <div className="grow"></div>
                   <img
                     src={GetRegionImage(characterSummary)}
                     className="flex"

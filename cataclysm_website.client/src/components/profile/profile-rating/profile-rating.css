@@ -10,13 +10,42 @@
 
 .rating-cards {
     display: flex;
-    justify-content: space-around;
     width: 100%;
+    justify-self: center;
 }
 
+.width-60vw {
+    width: 60vw;
+    justify-self: center;
+}
+.mobile-padding{
+    margin-left: unset;
+    margin-right: unset;
+}
+.rating-padding{
+    margin: .25rem
+}
+
+@media only screen and (max-width: 800px) {
+    .width-60vw  {
+        width: auto;
+    }
+    .rating-card{
+        flex: 1 1 50% !important;
+    }
+    .rating-padding{
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        margin-left: 0rem;
+        margin-right: 0rem;
+    }
+    .mobile-padding{
+        margin-left: 0rem;
+        margin-right: 1rem !important;
+    }
+}
 .rating-card {
-    flex-grow: 1;
-    flex-basis: 0;
-    min-width: 0;
     text-align: center;
+    flex: 2 1 auto;
+
 }

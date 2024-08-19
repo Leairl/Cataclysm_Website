@@ -1,7 +1,8 @@
 import React, { FC, ReactElement, useEffect, useState } from "react";
 import { Dragonblight } from "../../../clients/Dragonblight";
 import { useParams } from "react-router-dom";
-import { Card, Skeleton } from "@radix-ui/themes";
+import { Card, Heading, Skeleton } from "@radix-ui/themes";
+import "./profile-rating.css"
 
 interface ProfileRatingProps {
 }
@@ -36,9 +37,11 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
 );
   function getSkeleton(i: number) {
     return (
-      <Skeleton className="m-4 mt-5 w-64 h-20" key={"SkeletonRating" + i}>
+      <div className="rating-card" key={"GetRating" + i}>
+      <Skeleton className={i == 0 || i == 2 ? "mt-5 mb-3 h-20 mobile-padding rating-padding" : "mt-5 mb-3 h-20 rating-padding"} key={"SkeletonRating" + i}>
         <Card></Card>
       </Skeleton>
+      </div>
     );
   }
   function getSkeletons() {
@@ -46,19 +49,19 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
     for (let i = 0; i < 4; i++) {
       SkeletonCards.push(getSkeleton(i));
     }
-    return <div className="flex flex-row">{SkeletonCards}</div>;
+    return <div className="flex-wrap flex flex-row width-60vw">{SkeletonCards}</div>;
   }
   
   function getRatingCard(BracketStatistics :Dragonblight.CharacterPvpBracketStatistics | null, index: number) : ReactElement { //connects specific bracket data into card, set to type ReactElement with tsx code inside return
     return (
-      <div key={"GetRating" + index}>
-        <Card>
+      <div className="rating-card" key={"GetRating" + index}>
+        <Card className={index == 0 || index == 2 ? "mt-5 mb-3 h-20 mobile-padding rating-padding" : "mt-5 mb-3 h-20 rating-padding"}>
             <div>
-              {index == 0 ? "2v2 Rating" : ""}
-              {index == 1 ? "3v3 Rating" : ""}
-              {index == 2 ? "5v5 Rating" : ""}
-              {index == 3 ? "RBG Rating" : ""}
-              
+            <Heading size="3" className="text-center pb-2"> {index == 0 ? "2v2" : ""} 
+              {index == 1 ? "3v3" : ""}
+              {index == 2 ? "5v5" : ""}
+              {index == 3 ? "RBG" : ""}
+              </Heading>
               </div>
               <div className="flex justify-center">{BracketStatistics?.rating ? BracketStatistics?.rating : "0"}</div>
 
@@ -74,7 +77,7 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
             RatingCards.push(getRatingCard(BracketStatistics, index)); // RatingCards[0] = {div+card+div}, pushes element data we are looking for into ratingcards
             })
         }
-    return <div className="flex flex-row">{RatingCards}</div>;
+    return <div className="flex-wrap flex flex-row width-60vw">{RatingCards}</div>;
   }
 };
 export default ProfileRating;

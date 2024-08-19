@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import "./nav-bar.css";
 function NavBar() {
   return (
-    <Card className="flex h-20">
+    <Card className="flex w-full h-20">
       <Link
         to="/"
         className="flex-none flex"
@@ -14,7 +14,7 @@ function NavBar() {
           <img src={`/Nav/db_io.webp`}></img>
         </div>
       </Link>
-      <NavigationMenu.Root className="flex justify-end w-11/12">
+      <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu">
         <NavigationMenu.List className="center flex justify-evenly list-none rounded-[6px] ">
           <NavigationMenu.Item>
             <Link to="/">

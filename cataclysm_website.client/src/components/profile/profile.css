@@ -1,3 +1,5 @@
 .green_text {
     color: #1eff00;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }

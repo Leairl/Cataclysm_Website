@@ -7,9 +7,12 @@
     --color-panel: var(--color-panel-translucent);
     --backdrop-filter-panel: blur(4px);
 }
-
+:where(.rt-Container.rt-r-size-4) .rt-ContainerInner {
+  max-width: unset;
+}
 .AccordionContent {
   overflow: hidden;
+  padding-bottom: 10px;
 }
 .AccordionContent[data-state='open'] {
   animation: slideDown 300ms ease-out;

@@ -7,6 +7,7 @@
   width: 98% !important;
   height: 98% !important;
   display: flex;
+  background-color: #292c31 !important;
   flex-direction: column;
 }
 .model3dx {
@@ -17,10 +18,14 @@
 }
 
 @media only screen and (max-width: 1600px) {
-  .model3d {
+  .model3d  {
       visibility: hidden;
   }
+  .model3dx {
+    visibility: hidden;
+  }
 }
+
 
 .paperdoll-text {
   position: relative;
@@ -33,6 +38,24 @@
   margin: 0px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+.TooltipContent {
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+  animation: scaleIn 0.5s ease-out;
+}
+.TooltipContent[data-side='top'] {
+  animation-name: slideUp;
+}
+.TooltipContent[data-side='bottom'] {
+  animation-name: slideDown;
+}
+.character-text {
+  text-shadow: 2px 2px 2px #1c1c1c;
+
+}
+.guild-text {
+  color: #29a71b;
+  text-shadow: 2px 2px 2px #1c1c1c;
+}
 
 .paperdoll-card {
   display: flex;
@@ -43,10 +66,18 @@
   background-color: #292c31;
   opacity: 1;
   width: 60vw;
-  min-width: 510px;
+  /*min-width: 510px; */
   --color-panel: #292c31;
 }
-
+@media only screen and (max-width: 800px) {
+  .paperdoll-card {
+    width: 95vw;
+  }
+  .center-column{
+    justify-content: center;
+    display: flex;
+  }
+}
 .paperdoll {
   display: flex;
   flex-direction: row; 
