@@ -22,7 +22,7 @@
   width: 950px;
 }
 .left50 {
-  width: calc(50% - 110px);
+  width: 25%;
 }
 .grow { 
   flex-grow: 1;
@@ -30,7 +30,9 @@
   }
 @media only screen and (max-width: 950px) {
   .left50 {
-    width: 0px;
+    flex-grow: 0;
+    width: 100%;
+    height: 5px;
   }
   .grow { 
     flex-grow: 0;

@@ -18,6 +18,7 @@ import "./rankings.css";
 import { ClassColor } from "../../helpers/classColorHelper";
 import { useParams } from "react-router-dom";
 import { Pagination } from "react-headless-pagination";
+import ClassFilter from "../class-filter/class-filter";
 
 const Skeletons = [0, 1, 2];
 
@@ -60,6 +61,7 @@ function Rankings() {
     <div>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
+          <ClassFilter></ClassFilter>
           <div className="left50"></div>
           <div className={loading ? "div-disabled" : ""}>
             <SegmentedControl.Root
