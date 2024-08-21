@@ -98,32 +98,34 @@ namespace Cataclysm_Website.Server.Controllers
             var result = await Task.WhenAll(RBGLeaderboardEntry);
             return Ok(result);
         }
-        [HttpGet("GetLadderFiltered")]
-        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetRBGLadderFiltered(int skip, int take, string region, List<string> classes, string bracket)
+        [HttpPost("GetLadderFiltered")]
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetLadderFiltered(int skip, int take, string region, List<string> classes, string bracket)
         // foreach allows us to select multiple classes on our leaderboard
         {
             List<PvpCharacterSummary> result = [];
+            List<PvpLeaderboardEntry?> filteredLadder = [];
             foreach (
                 var charClass in classes
             )
             {
                 var fullLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
-                var firstHundredLadderPlayers = fullLeaderboard.Skip(skip).Take(take);
-                //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
-                var LadderLeaderboardEntries = firstHundredLadderPlayers.Select(async ladderEntry =>
-                {
-                    var ProfileSummaryEntries = await _warcraftCachedData.GetCharSummary(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region);
-                    return new PvpCharacterSummary
-                    {
-                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
-                        PvpEntry = ladderEntry,
-                        charSummary = ProfileSummaryEntries
-                    };
-                });
-                result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
+                filteredLadder.AddRange(fullLeaderboard);
             }
+            filteredLadder = filteredLadder.OrderBy(r => r?.Rank).Skip(skip).Take(take).ToList();
+            //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
+            var LadderLeaderboardEntries = filteredLadder.Select(async ladderEntry =>
+            {
+                var ProfileSummaryEntries = await _warcraftCachedData.GetCharSummary(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region);
+                return new PvpCharacterSummary
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    PvpEntry = ladderEntry,
+                    charSummary = ProfileSummaryEntries
+                };
+            });
+            result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
             //displays correct ranking and returns all selected classes we want to filter
-            return Ok(result.OrderBy(r => r.PvpEntry.Rank));
+            return Ok(result);
         }
         public class PvpCharacterSummary
         {

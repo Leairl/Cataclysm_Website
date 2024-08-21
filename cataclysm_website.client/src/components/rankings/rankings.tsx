@@ -33,11 +33,17 @@ function Rankings() {
   const [bracket, setBracket] = useState<string>(URLbracket ?? "3v3");
   const navigate = useNavigate()
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>(["All Classes"]);
   //getting values that are changeable
   useEffect(() => {
     setLoading(true);
-    LadderData();
-  }, [bracket, region, page]);
+    if (selectedClasses.includes("All Classes")) {
+      LadderData();
+    }
+    else {
+      FilteredLadderData(selectedClasses, bracket);
+    }
+  }, [bracket, region, page, selectedClasses]);
 
   //when page changes, call useeffect and update the skip amount
   const handlePageChange = (page: number) => {
@@ -57,11 +63,12 @@ function Rankings() {
       setRegion(regionName);
     }
   }
+
   return (
     <div>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
-          <ClassFilter></ClassFilter>
+          <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
           <div className="left50"></div>
           <div className={loading ? "div-disabled" : ""}>
             <SegmentedControl.Root
@@ -486,6 +493,13 @@ function Rankings() {
       </Container>
     </div>
   );
+  async function FilteredLadderData(selectedClasses: string[], bracket: string) {
+    setLoading(true);
+    const DragonblightClient = new Dragonblight.PvpLeaderboardClient();
+    setLadderData([]);
+    setLadderData( await DragonblightClient.getLadderFiltered(page * 50, 50, region, selectedClasses, bracket) );
+    setLoading(false);
+  }
   //setting bracket we want to show on rankings page
   async function LadderData() {
     const DragonblightClient = new Dragonblight.PvpLeaderboardClient();

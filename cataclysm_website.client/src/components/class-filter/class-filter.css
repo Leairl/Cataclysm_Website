@@ -23,22 +23,20 @@
   opacity: 0.5; /* Default opacity for unselected items */
 }
 
-.DropdownMenuItem:last-child {
-  margin-bottom: 0; /* Remove gap after the last item */
+.DropdownMenuItem.selected {
+  opacity: 1; /* Full opacity for selected items */
+  background-color: transparent; /* Remove background color for selected items */
+  color: #000; /* Ensure text color is distinct */
 }
 
 .DropdownMenuItem:hover {
   background-color: #0070f3; /* Blue highlight for hover state */
 }
 
-.DropdownMenuItem.selected {
-  opacity: 1; /* Full opacity for selected items */
-  background-color: transparent; /* Remove background color for selected items */
-  color: #000; /* Ensure text color is distinct */
-}
 .DropdownMenuItem.selected:hover {
-    background-color: #0070f3; /* Blue highlight for hover state */
-  }
+  background-color: #0070f3; /* Blue highlight for hover state */
+}
+
 .CheckboxRoot {
   width: 20px;
   height: 20px;
@@ -48,6 +46,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none; /* Disable pointer events on the root element */
 }
 
 .CheckboxIndicator {
@@ -66,5 +65,27 @@
 }
 
 .CustomButton {
-    /* backdrop-filter: blur(64px) !important; */
+    background-color: #292c31; /* Transparent gray */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensure space between text and arrow */
+    outline: none; /* Remove focus outline */
+  }
+  .CustomButton:hover {
+    background-color: #3a3d42; /* Darken background on hover */
+  }
+  
+  .DropdownArrow {
+    margin-left: 8px; /* Space between text and arrow */
+    transition: transform 0.3s ease; /* Smooth transition for rotation */
+  }
+  
+  .DropdownArrow.open {
+    transform: rotate(180deg); /* Rotate the arrow when the dropdown is open */
+  }
+
+html body {
+    overflow: auto !important;
+    margin-right: 0px !important;
 }

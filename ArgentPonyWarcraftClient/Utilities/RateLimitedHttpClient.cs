@@ -34,6 +34,11 @@ public class RateLimitedHttpClient : IDisposable
         {
             return await httpClient.SendAsync(request);
         }
+        catch (HttpRequestException exception)
+        {
+            return new HttpResponseMessage(exception.StatusCode.HasValue ? exception.StatusCode.Value : System.Net.HttpStatusCode.InternalServerError);
+            // ignore exceptions for now
+        }
         finally
         {
             lease.Dispose(); //once reached max amount of requests, dispose lease

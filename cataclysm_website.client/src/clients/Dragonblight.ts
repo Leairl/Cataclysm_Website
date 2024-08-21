@@ -450,7 +450,7 @@ export class PvpLeaderboardClient {
         return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 
-    getRBGLadderFiltered(skip: number | undefined, take: number | undefined, region: string | undefined, classes: string[], bracket: string | undefined): Promise<PvpCharacterSummary[]> {
+    getLadderFiltered(skip: number | undefined, take: number | undefined, region: string | undefined, classes: string[], bracket: string | undefined): Promise<PvpCharacterSummary[]> {
         let url_ = this.baseUrl + "/api/PvpLeaderboard/GetLadderFiltered?";
         if (skip === null)
             throw new Error("The parameter 'skip' cannot be null.");
@@ -474,7 +474,7 @@ export class PvpLeaderboardClient {
 
         let options_: RequestInit = {
             body: content_,
-            method: "GET",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
@@ -482,11 +482,11 @@ export class PvpLeaderboardClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetRBGLadderFiltered(_response);
+            return this.processGetLadderFiltered(_response);
         });
     }
 
-    protected processGetRBGLadderFiltered(response: Response): Promise<PvpCharacterSummary[]> {
+    protected processGetLadderFiltered(response: Response): Promise<PvpCharacterSummary[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -661,6 +661,62 @@ export class StatClient {
             });
         }
         return Promise.resolve<CharacterStatisticsSummary>(null as any);
+    }
+}
+
+export class TalentClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getCharacterTalents(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterSpecializationsSummary> {
+        let url_ = this.baseUrl + "/api/Talent/GetCharacterTalents?";
+        if (server === null)
+            throw new Error("The parameter 'server' cannot be null.");
+        else if (server !== undefined)
+            url_ += "server=" + encodeURIComponent("" + server) + "&";
+        if (characterName === null)
+            throw new Error("The parameter 'characterName' cannot be null.");
+        else if (characterName !== undefined)
+            url_ += "characterName=" + encodeURIComponent("" + characterName) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCharacterTalents(_response);
+        });
+    }
+
+    protected processGetCharacterTalents(response: Response): Promise<CharacterSpecializationsSummary> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CharacterSpecializationsSummary;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CharacterSpecializationsSummary>(null as any);
     }
 }
 
@@ -1275,6 +1331,86 @@ export interface CorruptionStatistics {
     corruption: number;
     corruption_resistance: number;
     effective_corruption: number;
+}
+
+export interface CharacterSpecializationsSummary {
+    _links?: Links | undefined;
+    specializations?: CharacterSpecialization[] | undefined;
+    specialization_groups?: CharacterSpecializationGroup[] | undefined;
+    active_specialization?: PlayableSpecializationReference | undefined;
+    character?: CharacterReference | undefined;
+}
+
+export interface CharacterSpecialization {
+    specialization?: PlayableSpecializationReference | undefined;
+    talents?: TalentSelection[] | undefined;
+    pvp_talent_slots?: PvpTalentSlot[] | undefined;
+    loadouts?: SpecializationLoadout[] | undefined;
+}
+
+export interface TalentSelection {
+    talent?: TalentReference | undefined;
+    spell_tooltip?: SpellTooltipForAbility | undefined;
+    tier_index: number;
+    column_index: number;
+}
+
+export interface TalentReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface SpellTooltipForAbility {
+    spell?: SpellReference | undefined;
+    description?: string | undefined;
+    cast_time?: string | undefined;
+    cooldown?: string | undefined;
+}
+
+export interface PvpTalentSlot {
+    selected?: PvpTalentElementForAbility | undefined;
+    slot_number: number;
+}
+
+export interface PvpTalentElementForAbility {
+    talent?: PvpTalentReference | undefined;
+    spell_tooltip?: SpellTooltipForAbility | undefined;
+}
+
+export interface PvpTalentReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface SpecializationLoadout {
+    is_active: boolean;
+    talent_loadout_code?: string | undefined;
+    selected_class_talents?: LoadoutTalent[] | undefined;
+    selected_spec_talents?: LoadoutTalent[] | undefined;
+}
+
+export interface LoadoutTalent {
+    id: number;
+    rank: number;
+    tooltip?: TalentNodeTooltip | undefined;
+}
+
+export interface TalentNodeTooltip {
+    talent?: TalentReference | undefined;
+    spell_tooltip?: SpellTooltip | undefined;
+}
+
+export interface CharacterSpecializationGroup {
+    is_active: boolean;
+    specializations?: CharacterClassicSpecialization[] | undefined;
+}
+
+export interface CharacterClassicSpecialization {
+    talents?: TalentSelection[] | undefined;
+    specialization_name?: string | undefined;
+    spent_points: number;
 }
 
 export class ApiException extends Error {

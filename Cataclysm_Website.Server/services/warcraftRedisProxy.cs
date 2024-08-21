@@ -75,6 +75,16 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
 
+    public async Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region)
+    {
+        region = GetProfileRegion(region);
+        return await GetBlizzardDataCached<CharacterSpecializationsSummary>("characterSpecSummary" + region, async () =>
+        {
+            var charSpecSummary = await warcraftClient.GetCharacterSpecializationsSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
+            return charSpecSummary.Value;
+        }, TimeSpan.FromHours(6));
+    }
+
     public async Task<PvpLeaderboard> GetRBGLeaderboard(string region) //get rbgLeaderboard in redis
     {
         region = GetDynamicRegion(region);
@@ -249,10 +259,14 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return JsonSerializer.Deserialize<PvpLeaderboardEntry>(player);
         }).ToList();
     }
-        public async Task InsertCacheClassCharacter(Bracket bracket, PvpLeaderboardEntry player, CharacterProfileSummary characterClass, string region)
+    public async Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary characterClass, string region)
         //these all return a string, allowing us to connected to cachedclasscharacters function
     {
-        string key = bracket.Type + "_" + characterClass.CharacterClass.Name + "_" + region;
+        if (region == null) { return; }
+        if (bracket == null) { return; }
+        if (characterClass == null) { return; }
+        if (characterClass.CharacterClass == null) { return; }
+        string key = bracket + "_" + characterClass.CharacterClass.Name + "_" + region;
         var db = redis.GetDatabase(); //var to redis database
         //convert our bucket into json to place into redis, and putting into 
         await db.ListRemoveAsync(key, JsonSerializer.Serialize(player));

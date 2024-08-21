@@ -14,6 +14,7 @@ import { Theme } from '@radix-ui/themes'
 import './index.css'
 import RankingsPage from './components/rankings/rankings.tsx';
 import LoginPage from './components/login/login.tsx';
+import TalentViewer from "./components/talent-viewer/talent-viewer.tsx";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage/>} />
+          <Route path="talent-test" element={<TalentViewer></TalentViewer>} />
           <Route path="*" element={<div />} />
         </Route>
       </Routes>

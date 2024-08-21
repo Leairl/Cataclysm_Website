@@ -8,7 +8,7 @@ public interface IWarcraftRedisProxy
     Task<PvpLeaderboard> GetRBGLeaderboard(string region);
 
     Task InsertCacheCharacter(string characterName, string server, string region);
-    Task InsertCacheClassCharacter(Bracket bracket, PvpLeaderboardEntry player, CharacterProfileSummary summary, string region);
+    Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary summary, string region);
     Task<List<string>> CachedCharacters();
     Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket);
 
@@ -19,6 +19,7 @@ public interface IWarcraftRedisProxy
     Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region);
     Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region);
     Task<ItemMedia> GetItemIcon(int itemId);
+    Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region);
 
     Task<int> GetSeason(string region);
 }

@@ -17,6 +17,9 @@ public record CharacterSpecializationsSummary
     [JsonPropertyName("specializations")]
     public CharacterSpecialization[] Specializations { get; init; }
 
+    [JsonPropertyName("specialization_groups")]
+    public CharacterSpecializationGroup[] SpecializationGroups { get; init; }
+
     /// <summary>
     /// Gets the character's active specialization.
     /// </summary>
