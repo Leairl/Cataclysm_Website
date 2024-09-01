@@ -78,7 +78,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
     public async Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region)
     {
         region = GetProfileRegion(region);
-        return await GetBlizzardDataCached<CharacterSpecializationsSummary>("characterSpecSummary" + region, async () =>
+        return await GetBlizzardDataCached<CharacterSpecializationsSummary>("characterSpecSummary" + characterName + server + region, async () =>
         {
             var charSpecSummary = await warcraftClient.GetCharacterSpecializationsSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
             return charSpecSummary.Value;

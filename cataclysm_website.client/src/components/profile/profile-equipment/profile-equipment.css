@@ -50,8 +50,9 @@
 }
 .character-text {
   text-shadow: 2px 2px 2px #1c1c1c;
-
+  text-wrap: wrap;
 }
+
 .guild-text {
   color: #29a71b;
   text-shadow: 2px 2px 2px #1c1c1c;
@@ -62,20 +63,55 @@
   padding: 1 !important;
   flex-direction: column;
   position: relative;
-  
   background-color: #292c31;
   opacity: 1;
   width: 60vw;
   /*min-width: 510px; */
   --color-panel: #292c31;
 }
+.header-card {
+  display: flex;
+  padding: 1 !important;
+  flex-direction: column;
+  position: relative;
+  background-color: #292c31;
+  opacity: 1;
+  width: 60vw;
+  /*min-width: 510px; */
+  --color-panel: #292c31;
+}
+
+.talent-row{
+  width: 60vw;
+  
+}
+
+.achievement-row{
+  width: 60vw;
+  background-color: #292c31;
+  --color-panel: #292c31;
+}
 @media only screen and (max-width: 800px) {
   .paperdoll-card {
+    width: 95vw;
+  }
+  .achievement-row{
+    width: 95vw;
+  }
+  .header-card{
+    width: 95vw;
+  }
+  .achievement-row{
+    width: 95vw;
+  }
+  .talent-row{
     width: 95vw;
   }
   .center-column{
     justify-content: center;
     display: flex;
+    flex-wrap: wrap;
+    width: 95vw;
   }
 }
 .paperdoll {

@@ -3,6 +3,7 @@ const ClassColor = new Map<string, string>([
     ["Death Knight", "#C41E3A"],
     ["Druid", "#FF7C0A"],
     ["Hunter", "#AAD372"],
+    ["hunterpet", "#AAD372"],
     ["Mage", "#3FC7EB"],
     ["Paladin", "#F48CBA"],
     ["Priest", "#FFFFFF"],

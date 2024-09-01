@@ -2,6 +2,7 @@ import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { Card } from "@radix-ui/themes";
 import { Link } from "react-router-dom";
 import "./nav-bar.css";
+import DiscordButton from "../discord-button";
 function NavBar() {
   return (
     <Card className="flex w-full h-20">
@@ -25,7 +26,7 @@ function NavBar() {
                   height="35px" 
                   width="35px"
                   ></img>
-                  <span className="mb-1 mt-1 text-xs font-segoeFont">Armory</span>
+                  <span className="mb-1 mt-1 text-xs font-segoeFont">Home</span>
                 </div>
               </NavigationMenu.Trigger>
             </Link>
@@ -44,11 +45,10 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
           </NavigationMenu.Item>
-          <div className="pr-10 mx-4 h-10 border-l border-gray-300"></div>
-          <NavigationMenu.Item>
+          {/* <div className="pr-10 mx-4 h-10 border-l border-gray-300"></div> */}
+          {/* <NavigationMenu.Item>
             <div className="px-3 py-2">
             <Link to="/login">
-            {/* acts as a button */}
               <NavigationMenu.Trigger className="group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
                 <span className="mt-1 text-xs font-segoeFont"> Login </span>
@@ -56,8 +56,8 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
             </div>
-          </NavigationMenu.Item>
-          <NavigationMenu.Item>
+          </NavigationMenu.Item> */}
+          {/* <NavigationMenu.Item>
             <div className="pr-40 px-3 py-2">
             <Link to="/register">
               <NavigationMenu.Trigger className=" group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
@@ -67,7 +67,10 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
             </div>
-          </NavigationMenu.Item>
+          </NavigationMenu.Item> */}
+        </NavigationMenu.List>
+        <NavigationMenu.List>
+          <DiscordButton url="https://discord.gg/GEcqCjwA"></DiscordButton>
         </NavigationMenu.List>
       </NavigationMenu.Root>
     </Card>

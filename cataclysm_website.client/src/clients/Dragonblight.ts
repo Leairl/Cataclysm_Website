@@ -1405,12 +1405,18 @@ export interface TalentNodeTooltip {
 export interface CharacterSpecializationGroup {
     is_active: boolean;
     specializations?: CharacterClassicSpecialization[] | undefined;
+    glyphs?: Glyph[] | undefined;
 }
 
 export interface CharacterClassicSpecialization {
     talents?: TalentSelection[] | undefined;
     specialization_name?: string | undefined;
     spent_points: number;
+}
+
+export interface Glyph {
+    id: number;
+    name?: string | undefined;
 }
 
 export class ApiException extends Error {

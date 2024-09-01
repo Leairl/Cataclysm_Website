@@ -13,4 +13,7 @@ public record CharacterSpecializationGroup
     /// </summary>
     [JsonPropertyName("specializations")]
     public CharacterClassicSpecialization[] Specializations { get; init; }
+
+    [JsonPropertyName("glyphs")]
+    public Glyph[] Glyphs { get; init; }
 }

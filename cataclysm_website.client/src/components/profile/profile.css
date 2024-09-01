@@ -3,3 +3,34 @@
     text-overflow: ellipsis;
     overflow: hidden;
   }
+  .left25 {
+    width: 13.5vw;
+  }
+  .grow { 
+    flex-grow: 1;
+    }
+    .button-row{
+      width: 60vw;
+      display: flex;
+      margin-bottom: 0.25rem;
+      flex-direction: row;
+      flex-wrap: wrap;
+        }
+  @media only screen and (max-width: 950px) {
+    .left25 {
+      flex-grow: 0;
+      width: 100%;
+      height: 5px;
+    }
+    .grow { 
+      flex-grow: 0;
+      width: 100%;
+      height: 5px;
+    }
+  }
+  @media only screen and (max-width: 800px) {
+    .button-row{
+      width: 95vw;
+      justify-self: center;
+    }
+  }

@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./profile-equipment.css";
-import { Card, Flex, Heading, Skeleton } from "@radix-ui/themes";
+import { Callout, Card, Flex, Heading, Skeleton } from "@radix-ui/themes";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Dragonblight } from "../../../clients/Dragonblight";
 import { RandEnchant } from "../../../helpers/randomEnchantHelper";
@@ -10,10 +10,15 @@ import { generateModels } from "../../../helpers/wow-model-viewer";
 import { WowModelViewer } from "../../../helpers/wow-model-viewer/types/wow_model_viewer";
 import { modelingType } from "../../../helpers/wow-model-viewer";
 import { ClassColor } from "../../../helpers/classColorHelper";
+import TalentViewer from "../../talent-viewer/talent-viewer";
+import GlyphViewer  from "../../glyph-viewer/glyph-viewer";
+
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 
 interface profileEquipmentProps {
   characterProfileSummary: Dragonblight.CharacterProfileSummary | undefined;
   characterEquipmentSummary: Dragonblight.CharacterEquipmentSummary | undefined;
+  currTab: string | undefined;
   characterAchievementsSummary:
     | Dragonblight.CharacterAchievementsSummary
     | undefined;
@@ -178,8 +183,8 @@ const zooms = [
 const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [modelLoading, setModelLoading] = useState<boolean>(true);
-  window.onbeforeunload = () => setModelLoading(true) 
-  const { /*region,*/ server, characterName } = useParams();
+  window.onbeforeunload = () => setModelLoading(true);
+  const { region, server, characterName } = useParams();
   //need a useeffect in the child component to change boolean
   function setAnimationAfterLoad(m: WowModelViewer, zoom: number) {
     setTimeout(() => {
@@ -195,7 +200,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
     }, 500);
   }
   function SetupModelViewer() {
-    setModelLoading(true)
+    setModelLoading(true);
     //pushes equipment data into list before displaying character data
     const DisplayIdClient = new Dragonblight.DisplayIdClient();
     const equipments: number[][] = [];
@@ -215,7 +220,8 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             }
           })
         );
-      }}
+      }
+    }
     Promise.all(displayInfoPromises).then(() => {
       const character = {
         race: props.characterProfileSummary?.race?.id,
@@ -233,20 +239,21 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         wow_model_viewer = m;
         setAnimationAfterLoad(m, zooms[character.race ?? 1]);
       });
-  })
-}
+    });
+  }
+
   useEffect(() => {
-    //display 3d model viewer if selected to show the model in switch
-    if (props.showModelViewer){
-      SetupModelViewer()
-    }
-    else{
+    if (props.currTab == "gear") {
+      //display 3d model viewer if selected to show the model in switch
       //makes sure we dont try to destroy a model viewer thats not there
-      if(wow_model_viewer != undefined){
+      if (wow_model_viewer != undefined) {
         wow_model_viewer.destroy();
       }
+      if (props.showModelViewer) {
+        SetupModelViewer();
+      }
     }
-  }, [props.showModelViewer]);
+  }, [props.showModelViewer, props.currTab]);
   useEffect(() => {
     setLoading(props.loading);
   }, [props.loading]);
@@ -257,29 +264,46 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
       return;
     }
     //if cookie is set to false, skip this if statement
-    if(props.showModelViewer){
-      SetupModelViewer()
+    if (props.showModelViewer) {
+      SetupModelViewer();
     }
-    //remove loading if not showing model viewer 
-    else{
-      setModelLoading(false)
+    //remove loading if not showing model viewer
+    else {
+      setModelLoading(false);
     }
   }, [props.characterEquipmentSummary]); // useeffect changes when props character equipment data changes, called by props in profile.tsx
   useEffect(() => {
     $WowheadPower.refreshLinks();
   });
+
   return (
     <div className="page-container">
       <div className="center-column">
+          <Card className="mb-3 header-card">
+            {loading && (
+              <div className="flex flex-row">  
+                  {getSkeletonIconCards()}
+                  <div className="flex flex-col m-1">
+                    <Skeleton height="15px" width="250px"></Skeleton>
+                    <Skeleton className='mt-1.5'height="12px" width="125px"></Skeleton>
+                  </div>
+              </div>
+            )}
+            {!loading && <div>{getCharacterHeader()}</div>}
+          </Card>
+        {(GetNumAchievements() ?? 0) > 0 && (
+          <Card className="mb-3 achievement-row">
+            <div className="flex pl-1 flex-wrap justify-center">
+              {getAchievements()}
+            </div>
+          </Card>
+        )}
+        {props.currTab == "gear" && (
         <Card className="paperdoll-card overflow-visible">
           {loading && (
             <div>
               <Flex className="flex-row items-center">
-                <Skeleton width="0px"></Skeleton>
-                <Skeleton width="0px"></Skeleton>
-                <Skeleton className="w-[35%] h-5"></Skeleton>
                 <div className="flex-1"></div>
-                <div> {getSkeletonAchievementCards()}</div>
               </Flex>
               <div className="paperdoll pt-2">
                 <div className="paperdoll-column paperdoll-left">
@@ -300,64 +324,6 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
           )}
           {!loading && (
             <div>
-              <div className="flex flex-row px[1px] py-3">
-                <img
-                  className="mr-1 my-1"
-                  src={`/ProfileClassIcons/${props.characterProfileSummary?.character_class?.name
-                    ?.toLowerCase()
-                    .replace(" ", "")}.png`}
-                  height="34px"
-                  width="34px"
-                  style={{ maxHeight: "34px", maxWidth: "34px" }}
-                ></img>
-
-                <img
-                  className="my-1"
-                  src={`/RaceIcons/${props.characterProfileSummary?.race?.name
-                    ?.toLowerCase()
-                    .replace(" ", "")}${
-                    props.characterProfileSummary?.gender?.name == "Female"
-                      ? "-f"
-                      : "-m"
-                  }.png`}
-                  height="34px"
-                  width="34px"
-                  style={{ maxHeight: "34px", maxWidth: "34px" }}
-                ></img>
-                <img
-                  className="mx-1 my-1"
-                  src={`/ProfileFactions/${props.characterProfileSummary?.faction?.name}.png`}
-                  height="34px"
-                  width="34px"
-                  style={{ maxHeight: "34px", maxWidth: "34px" }}
-                ></img>
-                <div className="pl-2 flex flex-col justify-center">
-                  <Heading
-                    className="character-text"
-                    size="3"
-                    style={{
-                      color: `${ClassColor.get(
-                        props.characterProfileSummary?.character_class?.name ??
-                          ""
-                      )}`,
-                    }}
-                  >
-                    {(props.characterProfileSummary?.active_title?.name?.replace(
-                      "%s",
-                      characterName ?? ""
-                    ) ?? characterName) +
-                      " - " +
-                      server}{" "}
-                  </Heading>
-                  <Heading size="2" className="guild-text">
-                    {props.characterProfileSummary?.guild?.name
-                      ? "<" + props.characterProfileSummary?.guild?.name + ">"
-                      : ""}{" "}
-                  </Heading>
-                </div>
-                <div className="flex-1"></div>
-                <div className="flex justify-end pl-1">{getAchievements()}</div>
-              </div>
               <div className={modelLoading ? "model3d" : "model3d invisible"}>
                 <div className="grid min-h-[250px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
                   <svg
@@ -393,7 +359,11 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               </div>
               <div
                 id="model3d"
-                className={modelLoading || !props.showModelViewer? "invisible model3d" : "model3d"}
+                className={
+                  modelLoading || !props.showModelViewer
+                    ? "invisible model3d"
+                    : "model3d"
+                }
               ></div>
               <div className="paperdoll pt-2">
                 <div className="paperdoll-column"> {getSlotIcons(0, 10)} </div>
@@ -402,7 +372,54 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               </div>
             </div>
           )}
-        </Card>
+        </Card>)}
+        {props.currTab == "talents" && (
+          <Card className="talent-row">
+            <TalentViewer
+              pet={false}
+              charClass={
+                props.characterProfileSummary?.character_class?.name ?? ""
+              }
+              region={region ?? ""}
+              charName={characterName ?? ""}
+              server={server ?? ""}
+            ></TalentViewer>
+          </Card>
+        )}
+        {props.currTab == "pettalents" && (
+          <Card className="talent-row">
+                          <Callout.Root color="red">
+    <Callout.Icon>
+      <InfoCircledIcon />
+    </Callout.Icon>
+    <Callout.Text>
+      Pet talents coming soon when Blizzard API returns this information.
+    </Callout.Text>
+  </Callout.Root>
+            <TalentViewer
+              pet={true}
+              charClass={
+                'hunterpet' ?? ""
+              }
+              region={region ?? ""}
+              charName={characterName ?? ""}
+              server={server ?? ""}
+            ></TalentViewer>
+          </Card>
+        )}
+        {props.currTab == "glyphs" && (
+          <Card className="talent-row">
+            <GlyphViewer
+              pet={false}
+              charClass={
+                props.characterProfileSummary?.character_class?.name ?? ""
+              }
+              region={region ?? ""}
+              charName={characterName ?? ""}
+              server={server ?? ""}
+            ></GlyphViewer>
+          </Card>
+        )}
       </div>
     </div>
   );
@@ -458,6 +475,69 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         </div>
       </div>
     ));
+  }
+
+  function getCharacterHeader() {
+    return (
+      <div className="flex flex-row px[1px] ">
+        <img
+          className="m-1"
+          src={`/ProfileClassIcons/${props.characterProfileSummary?.character_class?.name
+            ?.toLowerCase()
+            .replace(" ", "")}.png`}
+          height="34px"
+          width="34px"
+          style={{ maxHeight: "34px", maxWidth: "34px" }}
+        ></img>
+
+        <img
+          className="my-1"
+          src={`/RaceIcons/${props.characterProfileSummary?.race?.name
+            ?.toLowerCase()
+            .replace(" ", "")}${
+            props.characterProfileSummary?.gender?.name == "Female"
+              ? "-f"
+              : "-m"
+          }.png`}
+          height="34px"
+          width="34px"
+          style={{ maxHeight: "34px", maxWidth: "34px" }}
+        ></img>
+        <img
+          className="m-1"
+          src={`/ProfileFactions/${props.characterProfileSummary?.faction?.name}.png`}
+          height="34px"
+          width="34px"
+          style={{ maxHeight: "34px", maxWidth: "34px" }}
+        ></img>
+        <div className="pl-2 flex flex-col justify-center">
+          <Heading
+            className="character-text"
+            size="3"
+            style={{
+              color: `${ClassColor.get(
+                props.characterProfileSummary?.character_class?.name ?? ""
+              )}`,
+            }}
+          >
+            <span className="hide-">
+              {(props.characterProfileSummary?.active_title?.name?.replace(
+                "%s",
+                characterName ?? ""
+              ) ?? characterName) +
+                " - " +
+                server}{" "}
+            </span>
+          </Heading>
+          <Heading size="2" className="guild-text">
+            {props.characterProfileSummary?.guild?.name
+              ? "<" + props.characterProfileSummary?.guild?.name + ">"
+              : ""}{" "}
+          </Heading>
+        </div>
+        <div className="flex-1"></div>
+      </div>
+    );
   }
   function getSlotIcons(skip: number, end: number) {
     //for loop (map) with slots in parameter s to pull correct gear ids, and place them in the correct spots for our profile page.
@@ -683,6 +763,37 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
     }
     return 0;
   }
+  function GetNumAchievements() {
+    const AchievementIcons = [];
+    //contains all the correct arena achievements obtained from that specific toon.
+    for (let i = 0; i < RankOneAchievements.length; i++) {
+      //if completed == true of that achievement id
+      const RankOneAchievement = props.characterAchievementsSummary?.achievements?.find(
+        (ar1) =>
+          ar1.id == RankOneAchievements[i][0] && ar1.criteria?.is_completed
+      );
+      const GladiatorAchievement = props.characterAchievementsSummary?.achievements?.find(
+        (ag) =>
+          ag.id == GladiatorAchievements[i][0] && ag.criteria?.is_completed
+      );
+      if (RankOneAchievement) {
+        AchievementIcons.push(
+          getAchievementIcon(
+            RankOneAchievements[i][0] as number,
+            RankOneAchievements[i][1] as string
+          )
+        );
+      } else if (GladiatorAchievement) {
+        AchievementIcons.push(
+          getAchievementIcon(
+            GladiatorAchievements[i][0] as number,
+            GladiatorAchievements[i][1] as string
+          )
+        );
+      }
+    }
+    return AchievementIcons.length;
+  }
   function getAchievements() {
     const AchievementIcons = [];
     //contains all the correct arena achievements obtained from that specific toon.
@@ -713,12 +824,12 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         );
       }
     }
-    return <div className="flex flex-row">{AchievementIcons}</div>;
+    return AchievementIcons;
   }
   function getSkeleton(i: number) {
     return (
       <Skeleton key={"SkeletonRating" + i}>
-        <Card className="w-[34px] h-[34px] mt-1 mr-1"></Card>
+        <Card className={i == 1 ? "w-[34px] h-[34px] my-1" : "w-[34px] h-[34px] m-1"}></Card>
       </Skeleton>
     );
   }
@@ -729,7 +840,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
       Tooltips = GladiatorTooltip.find((ag) => ag[0] == i);
     }
     return (
-      <Tooltip.Provider delayDuration={100}>
+      <Tooltip.Provider delayDuration={100} key={"achievementIcon" + i}>
         <Tooltip.Root>
           <Tooltip.Portal>
             <Tooltip.Content className=" block max-w-sm p-2 rounded-lg shadow dark:bg-neutral-700 dark:border-neutral-950">
@@ -755,12 +866,12 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
     );
   }
 
-  function getSkeletonAchievementCards() {
-    const SkeletonAchievementIcons = [];
-    for (let i = 0; i < 4; i++) {
-      SkeletonAchievementIcons.push(getSkeleton(i));
+  function getSkeletonIconCards() {
+    const SkeletonIconCards = [];
+    for (let i = 0; i < 3; i++) {
+      SkeletonIconCards.push(getSkeleton(i));
     }
-    return <div className="flex flex-row">{SkeletonAchievementIcons}</div>;
+    return <div className="flex flex-row">{SkeletonIconCards}</div>;
   }
 };
 export default ProfileEquipment;
