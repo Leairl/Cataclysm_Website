@@ -143,9 +143,9 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
             })?.glyphs
             if (ActiveGlyphIcon) {
               const GlyphData = (ActiveGlyphIcon.filter(glyph => {
-                return RetrieveGlyphs(glyph.id)?.Glyph_Type == glyphType
+                return RetrieveGlyphs(glyph?.id)?.Glyph_Type == glyphType
               })[i]);
-              return RetrieveGlyphs(GlyphData.id)?.SpellID
+              return RetrieveGlyphs(GlyphData?.id)?.SpellID
             }
         }
     function RetrieveGlyphs(id: number) {
