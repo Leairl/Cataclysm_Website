@@ -81,10 +81,11 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
                                                         <a className="block w-[40px] h-[40px] talentIcon"
                                                         href={`https://www.wowhead.com/cata/spell=${GetTalentedSpell(tab.Name_lang, talent)}`}
                                                         data-points="0" data-max-points="3">
-                                                        </a>
-                                                        <span className="tree-talent-points pointer-events-none" data-talented={GetPointsForTalent(tab.Name_lang, talent) != 0}>
+                                                            
+                                                        <span className="tree-talent-points-db pointer-events-none" data-talented={GetPointsForTalent(tab.Name_lang, talent) != 0}>
                                                             {GetPointsForTalent(tab.Name_lang, talent)}/{getNumPoints(talent)}
                                                         </span>
+                                                        </a>
                                                     </div>
                                                     )}
                                                 </div>

@@ -40,6 +40,7 @@ export default defineConfig({
         }
     },
     server: {
+        host: "",
         proxy: { //hiding backend only shows frontend
             '^/api': {
                 target,
