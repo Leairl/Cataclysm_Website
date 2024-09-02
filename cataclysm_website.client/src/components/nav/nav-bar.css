@@ -23,9 +23,15 @@
 .desktop-nav-menu{
   display: flex
 }
+.mobile-nav {
+  display: none
+}
 @media only screen and (max-width: 800px) {
 .desktop-nav-menu{
   display: none 
+}
+.mobile-nav {
+  display: flex
 }
 }
 .btn {

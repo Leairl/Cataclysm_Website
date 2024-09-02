@@ -38,3 +38,50 @@
     height: 0;
   }
 }
+
+
+
+.wow-tooltip {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: visible !important;
+  z-index: 100000006;
+  float: left;
+  padding-top: 1px;
+  width: 320px;
+}
+
+.wow-tooltip table, .wow-tooltip td, .wow-tooltip th, .wow-tooltip tbody {
+  border: 0 !important;
+}
+.wow-tooltip td {
+  padding: 8px 4px 1px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+.wow-tooltip .whtt-name {
+  color: #ffcc00;
+}
+.wow-tooltip td, .wow-tooltip th {
+  background: url(/tooltip.png);
+  color: #fff;
+  font-family: Verdana, "Open Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 17px;
+}
+.wow-tooltip td th, .wow-tooltip td td {
+  background: none;
+}
+.wow-tooltip td td {
+  padding: 0;
+  text-align: left;
+}
+.wow-tooltip th {
+  padding: 3px;
+  vertical-align: top;
+}
+
+.tt-desc a {
+  color: #ffcc00;
+  text-decoration: none;
+}

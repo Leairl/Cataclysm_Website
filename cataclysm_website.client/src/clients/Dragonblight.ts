@@ -720,6 +720,50 @@ export class TalentClient {
     }
 }
 
+export class TwitchClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getWowTwitchStreams(): Promise<Stream[]> {
+        let url_ = this.baseUrl + "/api/Twitch/GetWowTwitchStreams";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetWowTwitchStreams(_response);
+        });
+    }
+
+    protected processGetWowTwitchStreams(response: Response): Promise<Stream[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as Stream[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Stream[]>(null as any);
+    }
+}
+
 export interface ItemDisplayInfo {
     id: number;
     inventoryType: number;
@@ -1417,6 +1461,24 @@ export interface CharacterClassicSpecialization {
 export interface Glyph {
     id: number;
     name?: string | undefined;
+}
+
+export interface Stream {
+    id?: string | undefined;
+    userId?: string | undefined;
+    userLogin?: string | undefined;
+    userName?: string | undefined;
+    gameId?: string | undefined;
+    gameName?: string | undefined;
+    communityIds?: string[] | undefined;
+    type?: string | undefined;
+    title?: string | undefined;
+    viewerCount: number;
+    startedAt: Date;
+    language?: string | undefined;
+    thumbnailUrl?: string | undefined;
+    tagIds?: string[] | undefined;
+    isMature: boolean;
 }
 
 export class ApiException extends Error {

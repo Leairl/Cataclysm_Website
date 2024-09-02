@@ -5,6 +5,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy)
     //uses PvpLeaderboardEntry in generic method in order to locate character slug / name in warcraft client
     public async Task BatchCacheCharSummary(string bracket, string region, PvpLeaderboardEntry[] array, int batchSize = 5)
     {
+        await redisProxy.ClearAllCachedClassCharacters(bracket, region);
         var batchAmount = array.Length/batchSize;
         for(int i = 0; i<batchAmount; i++)
         {

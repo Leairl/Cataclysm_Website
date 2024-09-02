@@ -244,7 +244,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         //CachedCharacters is the KEY for CachedCharacters method, and pushes character into already made list, string with commas seperated by it (JAX SAYS THIS IS BAD DONT REPLICATE)
         await db.ListRightPushAsync("CachedCharacters", characterName.ToLowerInvariant() + "," + server + "," + region);
     }
-        public async Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket)
+    public async Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket)
     {
         var db = redis.GetDatabase(); //var to redis database
         //connect strings from InsertCacheClassCharacter to key in CachedClassCharacters
@@ -259,6 +259,16 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return JsonSerializer.Deserialize<PvpLeaderboardEntry>(player);
         }).ToList();
     }
+    public async Task ClearAllCachedClassCharacters(string bracket, string region)
+    {
+        List<string> wowClasses = ["All Classes", "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid"];
+        var db = redis.GetDatabase(); //var to redis database
+        //clears all cached class characters
+        foreach (var wowClass in wowClasses)
+        {
+            await db.KeyDeleteAsync(bracket + "_" + wowClass + "_" + region);
+        }
+    }
     public async Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary characterClass, string region)
         //these all return a string, allowing us to connected to cachedclasscharacters function
     {
@@ -268,10 +278,10 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         if (characterClass.CharacterClass == null) { return; }
         string key = bracket + "_" + characterClass.CharacterClass.Name + "_" + region;
         var db = redis.GetDatabase(); //var to redis database
-        //convert our bucket into json to place into redis, and putting into 
-        await db.ListRemoveAsync(key, JsonSerializer.Serialize(player));
         //looks at a player, finds the correct data and puts it inside the key values, then goes inside of sectioned list of data
-        await db.ListRightPushAsync(key, JsonSerializer.Serialize(player));
+        var serializedPlayer = JsonSerializer.Serialize(player);
+        await db.ListRemoveAsync(key, serializedPlayer);
+        await db.ListRightPushAsync(key, serializedPlayer);
     }
     public string GetProfileRegion(string region)
     {

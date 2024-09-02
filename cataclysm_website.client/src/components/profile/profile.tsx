@@ -4,9 +4,10 @@ import ProfileRating from './profile-rating/profile-rating';
 import ProfileStats from './profile-stats/profile-stats';
 import { Dragonblight } from '../../clients/Dragonblight';
 import { useParams } from 'react-router-dom';
-import { Flex, Text, SegmentedControl, Switch } from '@radix-ui/themes';
+import { Flex, Text, SegmentedControl, Switch, Callout } from '@radix-ui/themes';
 import "./profile.css"
 import { useCookies } from 'react-cookie';
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 
 interface ProfileProps {}
 
@@ -23,17 +24,28 @@ const Profile: FC<ProfileProps> = () => {
     );
     const { region, server, characterName, urlTab } = useParams();
     const [currTab, setCurrTab] = useState<string>();
+    const [err, setErr] = useState<string>();
 
     useEffect(() => {
       setCookie("showModelViewer", showModelViewer.toString(), { path: "/" });
     }, [showModelViewer, setCookie]);
     useEffect(() => {
+      if (server == null || characterName == null || region == null) {
+        return;
+      }
         const CharacterClient = new Dragonblight.ProfileClient();
         const CharacterAchievementClient = new Dragonblight.AchievementClient();
         const slug = server?.replace(" ", "-")
+
         //profile data displayed before equipment sequentially
         setLoading(true)
+        setErr("");
         CharacterClient.getProfile(slug, characterName, region).then((data) => {
+          if (data == null) {
+            setErr("Character not found");
+            setLoading(false);
+            return;
+          }
             setcharacterSummary(data);
             CharacterClient.getEquipment(slug, characterName, region).then((dataEquip) => {
                 setCharacterEquipmentSummary(dataEquip);
@@ -42,7 +54,9 @@ const Profile: FC<ProfileProps> = () => {
                 })
                 setLoading(false)
                 })
-        })
+        }).catch(() => {
+            setLoading(false);
+        });
     },
     [server, characterName, region])
 
@@ -60,7 +74,18 @@ const Profile: FC<ProfileProps> = () => {
       }
     }
 
-    return(
+    return( ((err && err != "") ? 
+      <div className="w-[70vw]">
+        <Callout.Root color="red">
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text className="text-white txt-shadow">
+            {err}
+          </Callout.Text>
+        </Callout.Root>
+      </div>
+      :
         // uses loading useState in profile.tsx, but is affected by useEffect in child profile components to allow change in display.
  <div className='grid'>
  <div className="button-row">
@@ -70,13 +95,14 @@ const Profile: FC<ProfileProps> = () => {
           <div className={loading ? "div-disabled" : ""}>
             <SegmentedControl.Root
               className=" w-[250px] flex-grow-0"
+              value={currTab}
               defaultValue={"gear"}
             >
               <SegmentedControl.Item
                 onClick={() => {
                   ChangeTab("gear");
                 }}
-                value="Gear"
+                value="gear"
               >
                 Gear
               </SegmentedControl.Item>
@@ -84,7 +110,7 @@ const Profile: FC<ProfileProps> = () => {
                 onClick={() => {
                   ChangeTab("talents");
                 }}
-                value="Talents"
+                value="talents"
               >
                 Talents
               </SegmentedControl.Item>
@@ -92,7 +118,7 @@ const Profile: FC<ProfileProps> = () => {
                 onClick={() => {
                   ChangeTab("pettalents");
                 }}
-                value="Pet"
+                value="pettalents"
               >
                 Pet
               </SegmentedControl.Item>)}
@@ -100,7 +126,7 @@ const Profile: FC<ProfileProps> = () => {
                 onClick={() => {
                   ChangeTab("glyphs");
                 }}
-                value="Glyphs"
+                value="glyphs"
               >
                 Glyphs
               </SegmentedControl.Item>
@@ -138,6 +164,6 @@ const Profile: FC<ProfileProps> = () => {
     <ProfileStats characterProfileSummary={characterSummary} characterEquipmentSummary={characterEquipmentSummary} loading={loading}></ProfileStats>
 </div>
 </div>
-)};
+))};
 
 export default Profile;

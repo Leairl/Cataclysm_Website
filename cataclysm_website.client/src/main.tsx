@@ -14,6 +14,7 @@ import { Theme } from '@radix-ui/themes'
 import './index.css'
 import RankingsPage from './components/rankings/rankings.tsx';
 import LoginPage from './components/login/login.tsx';
+import News from "./components/news/news.tsx";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -21,13 +22,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
       <Routes>
         <Route path="/" element={ <div><NavBar></NavBar><HomePage></HomePage></div> }>
-          <Route index element={<div></div>} />
+          <Route index element={<News/>} />
           <Route path="profile/:region/:server/:characterName/:urlTab?" Component={ProfilePage} />
           <Route path="rankings/:URLregion/:URLbracket" element={<RankingsPage/>} />
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage/>} />
-          <Route path="*" element={<div />} />
+          <Route path="*" element={<div/>} />
         </Route>
       </Routes>
     </BrowserRouter>

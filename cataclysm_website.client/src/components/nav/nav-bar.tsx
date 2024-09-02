@@ -1,8 +1,8 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { Card } from "@radix-ui/themes";
+import { Button, Card } from "@radix-ui/themes";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Link } from "react-router-dom";
 import "./nav-bar.css";
-import DiscordButton from "../discord-button";
 function NavBar() {
   return (
     <Card className="flex w-full h-20">
@@ -33,7 +33,7 @@ function NavBar() {
           </NavigationMenu.Item>
           <NavigationMenu.Item>
             <Link to="/rankings">
-              <NavigationMenu.Trigger className=" pr-10 group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+              <NavigationMenu.Trigger className="group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
                   <img
                     src={`/Nav/ranks icon.svg`}
@@ -45,8 +45,22 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
           </NavigationMenu.Item>
-          {/* <div className="pr-10 mx-4 h-10 border-l border-gray-300"></div> */}
-          {/* <NavigationMenu.Item>
+          <NavigationMenu.Item>
+            <Link to="https://discord.gg/WKv3d2Rw" target="_blank" rel="noopener noreferrer">
+              <NavigationMenu.Trigger className=" pr-10 group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
+                  <img
+                    src={`/Nav/discord.svg`}
+                    height="35px"
+                    width="35px"
+                  ></img>
+                  <span className="mb-1 mt-1 text-xs font-segoeFont">Discord</span>
+                </div>
+              </NavigationMenu.Trigger>
+            </Link>
+          </NavigationMenu.Item>
+          {/* <div className="pr-10 mx-4 h-10 border-l border-gray-300"></div>
+          <NavigationMenu.Item>
             <div className="px-3 py-2">
             <Link to="/login">
               <NavigationMenu.Trigger className="group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
@@ -56,8 +70,8 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
             </div>
-          </NavigationMenu.Item> */}
-          {/* <NavigationMenu.Item>
+          </NavigationMenu.Item>
+          <NavigationMenu.Item>
             <div className="pr-40 px-3 py-2">
             <Link to="/register">
               <NavigationMenu.Trigger className=" group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
@@ -69,10 +83,86 @@ function NavBar() {
             </div>
           </NavigationMenu.Item> */}
         </NavigationMenu.List>
-        <NavigationMenu.List>
-          <DiscordButton url="https://discord.gg/GEcqCjwA"></DiscordButton>
+      </NavigationMenu.Root>
+
+      <div className="mobile-nav justify-center w-11/12">
+        <Dialog.Root>
+          <Dialog.Trigger asChild>
+            <Button className="self-center flex-none flex items-center justify-center p-2 ml-auto cursor-pointer" variant="outline">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </Button>
+          </Dialog.Trigger>
+          <Dialog.Portal>
+            <Dialog.Overlay className="backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
+            <Dialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-[99vh] translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
+              <div className=" flex justify-center">
+                <Dialog.Close asChild>
+                  <button className="pt-7 text-2xl hover:opacity-50 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none">
+                    <svg
+                      width="30"
+                      height="30"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
+                        fill="currentColor"
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                  </button>
+                </Dialog.Close>
+              </div>
+              <div>
+              <NavigationMenu.Root className="justify-left w-full">
+        <NavigationMenu.List className="center flex flex-col items-left list-none rounded-[6px] ">
+          
+          <NavigationMenu.Item>
+            <div className="px-3 py-2 w-full">
+            <a onClick={() => { window.location.href = "/" }}>
+            {/* acts as a button */}
+              <NavigationMenu.Trigger className=" h-20  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont"> Home </span>
+                </div>
+              </NavigationMenu.Trigger>
+            </a>
+            </div>
+          </NavigationMenu.Item>
+          <NavigationMenu.Item>
+            <div className="px-3 py-2 w-full">
+            <a onClick={() => { window.location.href = "/rankings" }}>
+            {/* acts as a button */}
+              <NavigationMenu.Trigger className=" h-20  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-blue-600 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-blue-500"> Rankings </span>
+                </div>
+              </NavigationMenu.Trigger>
+            </a>
+            </div>
+          </NavigationMenu.Item>
         </NavigationMenu.List>
       </NavigationMenu.Root>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </div>
     </Card>
   );
 }

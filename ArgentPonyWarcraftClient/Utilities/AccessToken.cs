@@ -3,7 +3,7 @@ namespace ArgentPonyWarcraftClient;
 /// <summary>
 /// An OAuth access token for the Blizzard API.
 /// </summary>
-internal record OAuthAccessToken
+public record OAuthAccessToken
 {
     [JsonPropertyName("access_token")]
     public string AccessToken { get; init; }

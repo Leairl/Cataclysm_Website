@@ -9,6 +9,7 @@ public interface IWarcraftRedisProxy
 
     Task InsertCacheCharacter(string characterName, string server, string region);
     Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary summary, string region);
+    Task ClearAllCachedClassCharacters(string bracket, string region);
     Task<List<string>> CachedCharacters();
     Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket);
 

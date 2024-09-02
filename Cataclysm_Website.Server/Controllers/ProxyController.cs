@@ -18,6 +18,12 @@ namespace CORSProxy
             this.proxyOptions = proxyOptions.Build();
         }
 
+        [Route("data/news")]
+        public Task news()
+        {
+            return this.ProxyAsync("https://www.wowhead.com/cata/blue-tracker?rss", null, httpProxyOptions: proxyOptions);
+        }
+
         [Route("data/modelviewer/cata/background-classic-181818.png")]
         public FileContentResult image() {
             return File(System.IO.File.ReadAllBytes("background.png"), "image/png", System.IO.Path.GetFileName("background.png")); 

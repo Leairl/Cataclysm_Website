@@ -12,6 +12,7 @@ import { Link, Outlet } from "react-router-dom";
 function HomePage() {
   //finding data with setSearchResults, and referencing / storing with searchResults
   const [searchResults, setSearchResults] = useState<React.ReactElement[]>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const inputRef = React.createRef<HTMLInputElement>();
   const delayedSearch = useCallback(
     debounce(async (searchTerm) => {
@@ -27,7 +28,7 @@ function HomePage() {
       ></img>
       <Container height="100vh">
         <Flex direction="column" gap="5" className=" w-full items-center">
-          <Card className="m-20 max-w-[70vw] w-full">
+          <Card className="mb-5 m-20 max-w-[70vw] w-full">
             <Select
               onSelect={(v, option)=> 
                 { 

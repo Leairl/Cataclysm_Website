@@ -143,7 +143,7 @@ const slotName: string[] = [
 const zooms = [
   5,
   5,
-  5,
+  6,
   5,
   6,
   5,
@@ -228,7 +228,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         gender: props.characterProfileSummary?.gender?.type == "FEMALE" ? 1 : 0,
         skin: 4,
         face: 0,
-        hairStyle: 5,
+        hairStyle: props.characterProfileSummary?.race?.id == 2 ? 4 : 5,
         hairColor: 5,
         facialStyle: 5,
         items: equipments,
@@ -298,7 +298,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             </div>
           </Card>
         )}
-        {props.currTab == "gear" && (
+        {(props.currTab == "gear" || props?.currTab == undefined) && (
         <Card className="paperdoll-card overflow-visible">
           {loading && (
             <div>
@@ -534,10 +534,53 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               ? "<" + props.characterProfileSummary?.guild?.name + ">"
               : ""}{" "}
           </Heading>
-        </div>
+          
+          </div>
         <div className="flex-1"></div>
+        {ownerIcon()}
+        {JaxIcon()}
       </div>
     );
+  }
+  function ownerIcon() {
+    return(
+    <Tooltip.Provider delayDuration={100} key={"ownerIcon"}>
+        <Tooltip.Root>
+          <Tooltip.Portal>
+            <Tooltip.Content className=" block max-w-sm p-2 rounded-lg shadow dark:bg-neutral-700 dark:border-neutral-950">
+              <Card className="z-100">
+                Owner of Dragonblight
+              </Card>{" "}
+            </Tooltip.Content>
+          </Tooltip.Portal>
+          <Tooltip.Trigger className="cursor-default">
+            <div className="pr-1">
+            {characterName == 'Awakenz' && server == 'Benediction' && (<img className="float-right" height="50px" width="50px"src="/Nav/Logo-PNG-s.png"></img>)}
+            </div>
+          </Tooltip.Trigger>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+    )
+  }
+  function JaxIcon() {
+    return(
+    <Tooltip.Provider delayDuration={100} key={"ownerIcon"}>
+        <Tooltip.Root>
+          <Tooltip.Portal>
+            <Tooltip.Content className=" block max-w-sm p-2 rounded-lg shadow dark:bg-neutral-700 dark:border-neutral-950">
+              <Card className="z-100">
+                Co-Owner of Dragonblight
+              </Card>{" "}
+            </Tooltip.Content>
+          </Tooltip.Portal>
+          <Tooltip.Trigger className="cursor-default">
+            <div className="pr-1">
+            {characterName == 'Jaxington' && server == 'Benediction' && (<img className="float-right" height="50px" width="50px"src="/Nav/Logo-PNG-s.png"></img>)}
+            </div>
+          </Tooltip.Trigger>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+    )
   }
   function getSlotIcons(skip: number, end: number) {
     //for loop (map) with slots in parameter s to pull correct gear ids, and place them in the correct spots for our profile page.
@@ -588,7 +631,8 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                 s
               )}&pcs=${getPcs(s)}&transmog=${getTransmog(
                 props.characterEquipmentSummary,
-                s
+                s,
+                true
               )}`}
             ></a>
             <div className="item-details ">
@@ -607,7 +651,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                   s
                 )}&rand=${getRandomEnchantments(s)}&pcs=${getPcs(
                   s
-                )}&transmog=${getTransmog(props.characterEquipmentSummary, s)}`}
+                )}&transmog=${getTransmog(props.characterEquipmentSummary, s, true)}`}
               >
                 {getItemName(s)}
               </a>
@@ -750,7 +794,8 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   //check to make sure the correct transmog is shown when featuring profile
   function getTransmog(
     charSummary: Dragonblight.CharacterEquipmentSummary | undefined,
-    s: number
+    s: number,
+    tt: boolean = false
   ) {
     if (charSummary?.equipped_items != null) {
       const equipmentItem = charSummary.equipped_items.find(
@@ -758,7 +803,17 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
       );
       //checking to see if a player does or does not have gear equipped.
       if (equipmentItem != undefined) {
-        return equipmentItem.transmog?.item?.id ?? equipmentItem?.item?.id;
+        if (equipmentItem.transmog?.item?.id != null) {
+          return equipmentItem.transmog?.item?.id;
+        }
+        else if (equipmentItem?.item?.id != null) {
+          if (tt) {
+            return 0;
+          }
+          else {
+            return equipmentItem?.item?.id;
+          }
+        }
       }
     }
     return 0;
