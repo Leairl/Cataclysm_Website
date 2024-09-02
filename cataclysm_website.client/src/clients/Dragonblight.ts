@@ -1037,17 +1037,13 @@ export interface EquippedItem {
     weapon?: Weapon | undefined;
 }
 
-export interface ItemSet {
+export interface EquippedItemSet {
     _links?: Links | undefined;
     id: number;
     name?: string | undefined;
-    items?: ItemReference[] | undefined;
+    items?: EquippedItemReference[] | undefined;
     effects?: Effect[] | undefined;
     is_effect_active: boolean;
-}
-
-export interface EquippedItemSet extends ItemSet {
-    items?: EquippedItemReference[] | undefined;
 }
 
 export interface EquippedItemReference {
