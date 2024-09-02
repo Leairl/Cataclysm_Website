@@ -8,12 +8,9 @@ function NavBar() {
     <Card className="flex w-full h-20">
       <Link
         to="/"
-        className="flex-none flex"
-        style={{ maxWidth: "100%", height: "auto" }}
+        className="flex-none flex h-[50px] w-[240px]"
       >
-        <div className="flex pt-1">
           <img src={`/Nav/db_io.webp`}></img>
-        </div>
       </Link>
       <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu">
         <NavigationMenu.List className="center flex justify-evenly list-none rounded-[6px] ">
@@ -107,9 +104,9 @@ function NavBar() {
           </Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Overlay className="backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
-            <Dialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-[99vh] translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
-              <div className=" flex justify-center">
-                <Dialog.Close asChild>
+            <Dialog.Content className="mt-[40px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-[300px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
+              <div className=" flex justify-end">
+              <Dialog.Close asChild>
                   <button className="pt-7 text-2xl hover:opacity-50 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none">
                     <svg
                       width="30"
@@ -130,13 +127,13 @@ function NavBar() {
               </div>
               <div>
               <NavigationMenu.Root className="justify-left w-full">
-        <NavigationMenu.List className="center flex flex-col items-left list-none rounded-[6px] ">
+        <NavigationMenu.List className="center flex flex-col items-left list-none rounded-[6px] mt-10 ">
           
           <NavigationMenu.Item>
             <div className="px-3 py-2 w-full">
             <a onClick={() => { window.location.href = "/" }}>
             {/* acts as a button */}
-              <NavigationMenu.Trigger className=" h-20  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+              <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
                 <span className="mt-1 text-xl font-semibold  font-segoeFont"> Home </span>
                 </div>
@@ -148,9 +145,21 @@ function NavBar() {
             <div className="px-3 py-2 w-full">
             <a onClick={() => { window.location.href = "/rankings" }}>
             {/* acts as a button */}
-              <NavigationMenu.Trigger className=" h-20  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+              <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-blue-600 rounded">
                 <span className="mt-1 text-xl font-semibold  font-segoeFont text-blue-500"> Rankings </span>
+                </div>
+              </NavigationMenu.Trigger>
+            </a>
+            </div>
+          </NavigationMenu.Item>
+          <NavigationMenu.Item>
+            <div className="px-3 py-2 w-full">
+            <a onClick={() => { window.location.href = "https://discord.gg/WKv3d2Rw" }}>
+            {/* acts as a button */}
+              <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-teal-500 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-teal-500"> Discord </span>
                 </div>
               </NavigationMenu.Trigger>
             </a>
