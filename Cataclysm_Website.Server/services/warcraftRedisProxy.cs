@@ -113,7 +113,8 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
 }
 public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region)
 {
-           var db = redis.GetDatabase(); //var to redis database
+        region = GetDynamicRegion(region);
+        var db = redis.GetDatabase(); //var to redis database
         string keyAndRegion = key + region ;
 
         var ladder = await db.ListRangeAsync(keyAndRegion);

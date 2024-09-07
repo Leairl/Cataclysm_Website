@@ -1,10 +1,11 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { Button, Card } from "@radix-ui/themes";
+import { Button, Card, Theme } from "@radix-ui/themes";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Link } from "react-router-dom";
 import "./nav-bar.css";
 function NavBar() {
   return (
+    <Theme radius="none">
     <Card className="flex w-full h-20">
       <Link
         to="/"
@@ -12,7 +13,7 @@ function NavBar() {
       >
           <img src={`/Nav/db_io.webp`}></img>
       </Link>
-      <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu">
+      <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu mr-[12vw]">
         <NavigationMenu.List className="center flex justify-evenly list-none rounded-[6px] ">
           <NavigationMenu.Item>
             <Link to="/">
@@ -21,7 +22,7 @@ function NavBar() {
                   <img 
                   src={`/Nav/armory.svg`} 
                   height="35px" 
-                  width="35px"
+                  width="35px" 
                   ></img>
                   <span className="mb-1 mt-1 text-xs font-segoeFont">Home</span>
                 </div>
@@ -56,7 +57,7 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
           </NavigationMenu.Item>
-          <NavigationMenu.Item>
+          <NavigationMenu.Item >
             <Link to="https://discord.gg/WKv3d2Rw" target="_blank" rel="noopener noreferrer">
               <NavigationMenu.Trigger className="group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
@@ -133,8 +134,8 @@ function NavBar() {
                       <path
                         d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
                         fill="currentColor"
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
+                        fillRule="evenodd"
+                        clipRule="evenodd"
                       ></path>
                     </svg>
                   </button>
@@ -200,6 +201,7 @@ function NavBar() {
         </Dialog.Root>
       </div>
     </Card>
+    </Theme>
   );
 }
 

@@ -36,10 +36,10 @@ namespace Cataclysm_Website.Server.Controllers
                     var player in currLadder.Entries
                 )
                 {
-                    var previousPlayer = previousLadder.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                    if (player.SeasonMatchStatistics.Played != previousPlayer.SeasonMatchStatistics.Played)
+                    var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
+                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                     {
-                        result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = DateTime.Now - currLadder.Time});
+                        result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = currLadder.Time.TimeAgo() });
                         //current ladder break
                         if (result.Count() >= skip + take)
                         {
@@ -66,7 +66,7 @@ namespace Cataclysm_Website.Server.Controllers
             
 
         }
-        [HttpGet("LadderHistoryFiltered")]
+        [HttpPost("LadderHistoryFiltered")]
         public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistoryFiltered(string key, string region, List<string> classes, int skip, int take)
         {
             var result = new List<ActivityCharacterSummary>();
@@ -81,11 +81,16 @@ namespace Cataclysm_Website.Server.Controllers
                 )
                 {
                     var previousPlayer = previousLadder.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                    if (player.SeasonMatchStatistics.Played != previousPlayer.SeasonMatchStatistics.Played)
+                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                     {
                         var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
                         if (classes.Contains(charSummary.CharacterClass.Name)){
-                            result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = DateTime.Now - currLadder.Time});
+                            result.Add(new ActivityCharacterSummary { 
+                                charSummary = charSummary,
+                                currPvpEntry = player, 
+                                prevPvpEntry = previousPlayer, 
+                                timeDifference = currLadder.Time.TimeAgo() 
+                            });
                         }
                         //current ladder break
                         if (result.Count() >= skip + take)
@@ -108,7 +113,7 @@ namespace Cataclysm_Website.Server.Controllers
         public class ActivityCharacterSummary
         {
             [JsonPropertyName("time")]
-            public TimeSpan timeDifference { get; init; }
+            public string timeDifference { get; init; }
 
             [JsonPropertyName("currPvpEntry")]
             public PvpLeaderboardEntry currPvpEntry { get; init; }

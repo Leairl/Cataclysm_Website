@@ -29,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage/>} />
+          <Route path="activity/:URLregion/:URLbracket" element={<ActivityPage/>} />
           <Route path='activity' element={<ActivityPage/>}></Route>
           <Route path="*" element={<div/>} />
         </Route>

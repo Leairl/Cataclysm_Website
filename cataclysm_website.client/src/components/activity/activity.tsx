@@ -53,13 +53,13 @@ function Activity() {
   //changes bracket from segmented control
   function BracketClick(bracketName: string) {
     if (bracket != bracketName) {
-      window.history.pushState(null, "", `/rankings/${region}/${bracketName}`);
+      window.history.pushState(null, "", `/activity/${region}/${bracketName}`);
       setBracket(bracketName);
     }
   }
   function RegionClick(regionName: string) {
     if (region != regionName) {
-      window.history.pushState(null, "", `/rankings/${regionName}/${bracket}`);
+      window.history.pushState(null, "", `/activity/${regionName}/${bracket}`);
       setRegion(regionName);
     }
   }
@@ -155,6 +155,9 @@ function Activity() {
                   <Table.ColumnHeaderCell className="desktopOnly">
                     Loss
                   </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell className="desktopOnly">
+                    Tracked
+                  </Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell className="mobileOnly">
                     Details
                   </Table.ColumnHeaderCell>
@@ -163,9 +166,9 @@ function Activity() {
 
               <Table.Body>
                 {loading &&
-                  Skeletons?.map(() => {
+                  Skeletons?.map((i) => {
                     return (
-                      <Table.Row>
+                      <Table.Row key={"skeleton"+i}>
                         <Table.Cell>
                           <Skeleton></Skeleton>
                         </Table.Cell>
@@ -188,9 +191,9 @@ function Activity() {
                     );
                   })}
                 {/* map acts as a for loop to find character data in ladder */}
-                {ladderData?.map((characterEntry) => {
+                {ladderData?.map((characterEntry, i) => {
                     return(
-                  <Table.Row className="h-[23px] align-middle hover:bg-blue-300/30 cursor-pointer">
+                  <Table.Row className="h-[23px] align-middle hover:bg-blue-300/30 cursor-pointer" key={"activityRow"+i}>
                     <Table.Cell
                       onClick={() => {
                         if (characterEntry.charSummary == null) {
@@ -200,7 +203,9 @@ function Activity() {
                       }}
                     >
                       {characterEntry.currPvpEntry.rank}
-                      ( {characterEntry.currPvpEntry.rank > characterEntry.prevPvpEntry.rank ? '+' : "-"} {characterEntry.currPvpEntry.rank - characterEntry.prevPvpEntry.rank} )
+                      {" "}<span className={characterEntry.currPvpEntry.rank >= characterEntry.prevPvpEntry.rank ? "text-green-300" : "text-red-300"}>
+                            {characterEntry.currPvpEntry.rank > characterEntry.prevPvpEntry.rank ? '+' : ""}{characterEntry.currPvpEntry.rank - characterEntry.prevPvpEntry.rank}
+                            </span>
                     </Table.Cell>
                     <Table.Cell
                       onClick={() => {
@@ -280,7 +285,9 @@ function Activity() {
                       className="desktopOnly"
                     >
                     {characterEntry.currPvpEntry.rating}
-                    ( {characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? '+' : "-"} {characterEntry.currPvpEntry.rating - characterEntry.prevPvpEntry.rating} )
+                    {" "}<span className={characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? "text-green-300" : "text-red-300"}>
+                                      {characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? '+' : ""}{characterEntry.currPvpEntry.rating - characterEntry.prevPvpEntry.rating}
+                          </span>
                     </Table.Cell>
                     <Table.Cell
                       onClick={() => {
@@ -308,6 +315,19 @@ function Activity() {
                                       (characterEntry.currPvpEntry.season_match_statistics?.lost ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.lost ?? 0)
                                     }
                     </Table.Cell>
+                    <Table.Cell
+                      onClick={() => {
+                        if (characterEntry.charSummary == null) {
+                          return;
+                        }
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                      }}
+                      className="desktopOnly"
+                    >
+                        {
+                          (characterEntry.time)
+                        }
+                    </Table.Cell>
                     <Table.Cell className="mobileOnly">
                       <Dialog.Root>
                         <Dialog.Trigger asChild>
@@ -331,8 +351,8 @@ function Activity() {
                                     <path
                                       d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
                                       fill="currentColor"
-                                      fill-rule="evenodd"
-                                      clip-rule="evenodd"
+                                      fillRule="evenodd"
+                                      clipRule="evenodd"
                                     ></path>
                                   </svg>
                                 </button>
@@ -344,11 +364,15 @@ function Activity() {
                                   <DataList.Label className=" p-2 font-bold text-white">
                                     Rank
                                   </DataList.Label>
-                                  <DataList.Value className="justify-end text-left">
-                                    {" "}
-                                    {characterEntry.currPvpEntry.rank}
-                                    ( {characterEntry.currPvpEntry.rank > characterEntry.prevPvpEntry.rank ? '+' : "-"} {characterEntry.currPvpEntry.rank - characterEntry.prevPvpEntry.rank} )
+                                  <DataList.Value className="justify-end">
+                                    <div className="flex flex-row justify-center">
+                                      {" "}
+                                      {characterEntry.currPvpEntry.rank} &nbsp;
 
+                                      {" "}<span className={characterEntry.currPvpEntry.rank >= characterEntry.prevPvpEntry.rank ? "text-green-300" : "text-red-300"}>
+                                          {characterEntry.currPvpEntry.rank > characterEntry.prevPvpEntry.rank ? '+' : ""}{characterEntry.currPvpEntry.rank - characterEntry.prevPvpEntry.rank}
+                                          </span>
+                                    </div>
                                   </DataList.Value>
                                 </DataList.Item>
                                 <DataList.Item>
@@ -356,8 +380,12 @@ function Activity() {
                                     Rating
                                   </DataList.Label>
                                   <DataList.Value className="justify-end">
-                                    {characterEntry.currPvpEntry.rating}
-                                    ( {characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? '+' : "-"} {characterEntry.currPvpEntry.rating - characterEntry.prevPvpEntry.rating} )
+                                    <div className="flex flex-row justify-center">
+                                      {characterEntry.currPvpEntry.rating} &nbsp;
+                                      <span className={characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? "text-green-300" : "text-red-300"}>
+                                        {characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? '+' : ""}{characterEntry.currPvpEntry.rating - characterEntry.prevPvpEntry.rating}
+                                        </span>
+                                    </div>
                                   </DataList.Value>
                                 </DataList.Item>
                                 <DataList.Item>
@@ -413,7 +441,7 @@ function Activity() {
                                   <DataList.Label className=" p-2  font-bold text-white">
                                     Wins
                                   </DataList.Label>
-                                  <DataList.Value className=" justify-end winColor">
+                                  <DataList.Value className=" justify-end text-green-300">
                                   {
                                       (characterEntry.currPvpEntry.season_match_statistics?.won ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.won ?? 0)
                                     }
@@ -426,9 +454,22 @@ function Activity() {
                                   >
                                     Losses
                                   </DataList.Label>
-                                  <DataList.Value className="justify-end lossColor">
+                                  <DataList.Value className="justify-end text-red-300">
                                     {
                                       (characterEntry.currPvpEntry.season_match_statistics?.lost ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.lost ?? 0)
+                                    }
+                                  </DataList.Value>
+                                </DataList.Item>
+                                <DataList.Item>
+                                  <DataList.Label
+                                    width={"50vw"}
+                                    className=" p-2 font-bold text-white"
+                                  >
+                                    Tracked
+                                  </DataList.Label>
+                                  <DataList.Value className="justify-end">
+                                    {
+                                      (characterEntry.time)
                                     }
                                   </DataList.Value>
                                 </DataList.Item>
@@ -465,9 +506,9 @@ function Activity() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
                   <path d="m15 18-6-6 6-6"></path>
                 </svg>
@@ -488,9 +529,9 @@ function Activity() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
                   <path d="m9 18 6-6-6-6"></path>
                 </svg>
