@@ -14,6 +14,7 @@ import { Theme } from '@radix-ui/themes'
 import './index.css'
 import RankingsPage from './components/rankings/rankings.tsx';
 import LoginPage from './components/login/login.tsx';
+import ActivityPage from "./components/activity/activity.tsx";
 import News from "./components/news/news.tsx";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -28,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage/>} />
+          <Route path='activity' element={<ActivityPage/>}></Route>
           <Route path="*" element={<div/>} />
         </Route>
       </Routes>

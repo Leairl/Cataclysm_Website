@@ -12,7 +12,7 @@ public interface IWarcraftRedisProxy
     Task ClearAllCachedClassCharacters(string bracket, string region);
     Task<List<string>> CachedCharacters();
     Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket);
-
+    Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region);
     Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region);
     Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region);
     Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region);

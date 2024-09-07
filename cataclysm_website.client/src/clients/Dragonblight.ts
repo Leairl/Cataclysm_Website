@@ -114,6 +114,119 @@ export class AchievementClient {
     }
 }
 
+export class ActivityClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getLadderHistory(key: string | undefined, region: string | undefined, skip: number | undefined, take: number | undefined): Promise<ActivityCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/Activity/LadderHistory?";
+        if (key === null)
+            throw new Error("The parameter 'key' cannot be null.");
+        else if (key !== undefined)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetLadderHistory(_response);
+        });
+    }
+
+    protected processGetLadderHistory(response: Response): Promise<ActivityCharacterSummary[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ActivityCharacterSummary[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ActivityCharacterSummary[]>(null as any);
+    }
+
+    getLadderHistoryFiltered(key: string | undefined, region: string | undefined, classes: string[], skip: number | undefined, take: number | undefined): Promise<ActivityCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/Activity/LadderHistoryFiltered?";
+        if (key === null)
+            throw new Error("The parameter 'key' cannot be null.");
+        else if (key !== undefined)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(classes);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetLadderHistoryFiltered(_response);
+        });
+    }
+
+    protected processGetLadderHistoryFiltered(response: Response): Promise<ActivityCharacterSummary[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ActivityCharacterSummary[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ActivityCharacterSummary[]>(null as any);
+    }
+}
+
 export class ProfileClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
@@ -841,6 +954,49 @@ export interface RealmReference {
     slug?: string | undefined;
 }
 
+export interface ActivityCharacterSummary {
+    time: string;
+    currPvpEntry: PvpLeaderboardEntry;
+    prevPvpEntry: PvpLeaderboardEntry;
+    charSummary: CharacterProfileSummary;
+}
+
+export interface PvpLeaderboardEntry {
+    character?: Profile | undefined;
+    faction?: EnumTypeWithoutName | undefined;
+    rank: number;
+    rating: number;
+    season_match_statistics?: SeasonMatchStatistics | undefined;
+    tier?: PvpTierReferenceWithoutName | undefined;
+}
+
+export interface Profile {
+    name?: string | undefined;
+    id: number;
+    realm?: RealmReferenceWithoutName | undefined;
+}
+
+export interface RealmReferenceWithoutName {
+    key?: Self | undefined;
+    id: number;
+    slug?: string | undefined;
+}
+
+export interface EnumTypeWithoutName {
+    type?: string | undefined;
+}
+
+export interface SeasonMatchStatistics {
+    played: number;
+    won: number;
+    lost: number;
+}
+
+export interface PvpTierReferenceWithoutName {
+    key?: Self | undefined;
+    id: number;
+}
+
 export interface CharacterProfileSummary {
     _links?: Links | undefined;
     id: number;
@@ -1233,42 +1389,6 @@ export interface Damage {
 export interface PvpCharacterSummary {
     pvpEntry: PvpLeaderboardEntry;
     charSummary: CharacterProfileSummary;
-}
-
-export interface PvpLeaderboardEntry {
-    character?: Profile | undefined;
-    faction?: EnumTypeWithoutName | undefined;
-    rank: number;
-    rating: number;
-    season_match_statistics?: SeasonMatchStatistics | undefined;
-    tier?: PvpTierReferenceWithoutName | undefined;
-}
-
-export interface Profile {
-    name?: string | undefined;
-    id: number;
-    realm?: RealmReferenceWithoutName | undefined;
-}
-
-export interface RealmReferenceWithoutName {
-    key?: Self | undefined;
-    id: number;
-    slug?: string | undefined;
-}
-
-export interface EnumTypeWithoutName {
-    type?: string | undefined;
-}
-
-export interface SeasonMatchStatistics {
-    played: number;
-    won: number;
-    lost: number;
-}
-
-export interface PvpTierReferenceWithoutName {
-    key?: Self | undefined;
-    id: number;
 }
 
 export interface CharacterPvpBracketStatistics {

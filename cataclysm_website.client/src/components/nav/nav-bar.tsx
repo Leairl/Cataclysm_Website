@@ -43,8 +43,22 @@ function NavBar() {
             </Link>
           </NavigationMenu.Item>
           <NavigationMenu.Item>
+            <Link to="/activity">
+              <NavigationMenu.Trigger className="group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
+                  <img
+                    src={`/Nav/activity.svg`}
+                    height="35px"
+                    width="35px"
+                  ></img>
+                  <span className="mb-1 mt-1 text-xs font-segoeFont">Activity</span>
+                </div>
+              </NavigationMenu.Trigger>
+            </Link>
+          </NavigationMenu.Item>
+          <NavigationMenu.Item>
             <Link to="https://discord.gg/WKv3d2Rw" target="_blank" rel="noopener noreferrer">
-              <NavigationMenu.Trigger className=" pr-10 group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+              <NavigationMenu.Trigger className="group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
                   <img
                     src={`/Nav/discord.svg`}
@@ -56,6 +70,7 @@ function NavBar() {
               </NavigationMenu.Trigger>
             </Link>
           </NavigationMenu.Item>
+          
           {/* <div className="pr-10 mx-4 h-10 border-l border-gray-300"></div>
           <NavigationMenu.Item>
             <div className="px-3 py-2">
@@ -104,7 +119,7 @@ function NavBar() {
           </Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Overlay className="backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
-            <Dialog.Content className="mt-[40px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-[300px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
+            <Dialog.Content className="mt-[40px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-auto translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
               <div className=" flex justify-end">
               <Dialog.Close asChild>
                   <button className="pt-7 text-2xl hover:opacity-50 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none">
@@ -148,6 +163,18 @@ function NavBar() {
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-blue-600 rounded">
                 <span className="mt-1 text-xl font-semibold  font-segoeFont text-blue-500"> Rankings </span>
+                </div>
+              </NavigationMenu.Trigger>
+            </a>
+            </div>
+          </NavigationMenu.Item>
+          <NavigationMenu.Item>
+            <div className="px-3 py-2 w-full">
+            <a onClick={() => { window.location.href = "/activity" }}>
+            {/* acts as a button */}
+              <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-yellow-600 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-yellow-500"> Activity </span>
                 </div>
               </NavigationMenu.Trigger>
             </a>

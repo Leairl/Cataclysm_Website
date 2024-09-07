@@ -1,5 +1,9 @@
 ﻿namespace ArgentPonyWarcraftClient;
 
+public record PvpLeaderboardAndTime : PvpLeaderboard
+{
+    public DateTime Time { get; init; }
+}
 /// <summary>
 /// A PvP leaderboard of a specific PvP bracket for a PvP season.
 /// </summary>

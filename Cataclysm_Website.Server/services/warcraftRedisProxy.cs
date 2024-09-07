@@ -50,6 +50,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("get2v2Leaderboard" + region, async () =>
         {
             var curr2v2Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "2v2", region, GetRegion(region), GetLocale(region));
+            await AddToLadderHistory("2v2LadderHistory", region, curr2v2Leaderboard.Value);
             return curr2v2Leaderboard.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -60,6 +61,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("get3v3Leaderboard" + region, async () =>
         {
             var curr3v3Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "3v3", region, GetRegion(region), GetLocale(region));
+            await AddToLadderHistory("3v3LadderHistory", region, curr3v3Leaderboard.Value);
             return curr3v3Leaderboard.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -71,6 +73,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("get5v5Leaderboard" + region, async () =>
         {
             var curr5v5Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "5v5", region, GetRegion(region), GetLocale(region));
+            await AddToLadderHistory("5v5LadderHistory", region, curr5v5Leaderboard.Value);
             return curr5v5Leaderboard.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
@@ -91,9 +94,36 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("currRbgLadder" + region, async () =>
         {
             var currRbgLadder = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "rbg", region, GetRegion(region), GetLocale(region));
+            await AddToLadderHistory("rbgLadderHistory", region, currRbgLadder.Value);
             return currRbgLadder.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
+        public async Task AddToLadderHistory(string key, string region, PvpLeaderboard currLadder) //get rbgLeaderboard in redis
+{
+            var currLadderAndTime = new PvpLeaderboardAndTime 
+            {
+                Entries = currLadder.Entries,
+                Links = currLadder.Links,
+                Name = currLadder.Name,
+                Season = currLadder.Season,
+                Time = DateTime.Now
+            };
+            var db = redis.GetDatabase();
+            await db.ListRightPushAsync(key + region, JsonSerializer.Serialize(currLadderAndTime));
+}
+public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region)
+{
+           var db = redis.GetDatabase(); //var to redis database
+        string keyAndRegion = key + region ;
+
+        var ladder = await db.ListRangeAsync(keyAndRegion);
+        //convert player to pvpleaderboardentry (for our filtered list of strings)
+        return ladder.Select(player =>
+        {
+            //deserialized out of json to become an object.
+            return JsonSerializer.Deserialize<PvpLeaderboardAndTime>(player);
+        }).ToList();
+}
     public Region GetRegion(string region)
     {
         if (region == "us" || region.Contains("-us"))
