@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import * as Avatar from "@radix-ui/react-avatar";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import "@preline/select"; // Import Preline JavaScript
 import {
   Card,
@@ -12,6 +12,7 @@ import {
   DataList,
   SegmentedControl,
   Skeleton,
+  Callout,
 } from "@radix-ui/themes";
 import { Dragonblight } from "../../clients/Dragonblight";
 import "./activity.css";
@@ -19,6 +20,7 @@ import { ClassColor } from "../../helpers/classColorHelper";
 import { useParams } from "react-router-dom";
 import { Pagination } from "react-headless-pagination";
 import ClassFilter from "../class-filter/class-filter";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 
 const Skeletons = [0, 1, 2];
 
@@ -27,21 +29,27 @@ function Activity() {
   const [ladderData, setLadderData] = useState<
     Dragonblight.ActivityCharacterSummary[]
   >();
+  const [rewards, setRewards] = useState<
+  Dragonblight.PvpRewardsIndex
+>();
   const { URLregion, URLbracket } = useParams();
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [page, setPage] = useState<number>(0);
   const [bracket, setBracket] = useState<string>(URLbracket ?? "3v3");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
-  const [selectedClasses, setSelectedClasses] = useState<string[]>(["All Classes"]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([
+    "All Classes",
+  ]);
   //getting values that are changeable
   useEffect(() => {
-    setLoading(true);
-    if (selectedClasses.includes("All Classes")) {
-      LadderData();
-    }
-    else {
-      FilteredLadderData(selectedClasses, bracket);
+    if (selectedClasses != null && selectedClasses.length > 0) {
+      setLoading(true);
+      if (selectedClasses.includes("All Classes")) {
+        LadderData();
+      } else {
+        FilteredLadderData(selectedClasses, bracket);
+      }
     }
   }, [bracket, region, page, selectedClasses]);
 
@@ -66,6 +74,25 @@ function Activity() {
 
   return (
     <div>
+      <div className="flex flex-row h-[64px] justify-center">
+          <div className={!(loading && rewards != undefined) ? "fadeIn flex flex-row" : "fadeOut flex flex-row"}>
+        { 
+      rewards?.rewards?.filter(r => {
+        //if result is positive during sort, swap values to sort in ascending order
+      return r.bracket?.type?.includes(bracket) || (r.bracket?.type?.includes('BATTLEGROUNDS') && bracket == 'rbg')
+      }).sort((c,p) => {
+        return p.rating_cutoff - c.rating_cutoff
+      }).map((i) => {
+        return (
+          <Card className="w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0 flex-wrap wrap">
+            <b>{i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT]', '')}</b> {" "}
+            <br></br>
+            {i.rating_cutoff}
+          </Card>
+        );
+      })
+        }</div>
+      </div>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
           <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
@@ -168,7 +195,7 @@ function Activity() {
                 {loading &&
                   Skeletons?.map((i) => {
                     return (
-                      <Table.Row key={"skeleton"+i}>
+                      <Table.Row key={"skeleton" + i}>
                         <Table.Cell>
                           <Skeleton></Skeleton>
                         </Table.Cell>
@@ -192,297 +219,379 @@ function Activity() {
                   })}
                 {/* map acts as a for loop to find character data in ladder */}
                 {ladderData?.map((characterEntry, i) => {
-                    return(
-                  <Table.Row className="h-[23px] align-middle hover:bg-blue-300/30 cursor-pointer" key={"activityRow"+i}>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
+                  return (
+                    <Table.Row
+                      className="h-[23px] align-middle hover:bg-blue-300/30 cursor-pointer"
+                      key={"activityRow" + i}
                     >
-                      {characterEntry.currPvpEntry.rank}
-                      {" "}<span className={characterEntry.currPvpEntry.rank >= characterEntry.prevPvpEntry.rank ? "text-green-300" : "text-red-300"}>
-                            {characterEntry.currPvpEntry.rank > characterEntry.prevPvpEntry.rank ? '+' : ""}{characterEntry.currPvpEntry.rank - characterEntry.prevPvpEntry.rank}
-                            </span>
-                    </Table.Cell>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
-                    >
-                      <Flex>
-                        <Avatar.Root className="h-[23px] w-[23px] mr-1">
-                          <Avatar.Image
-                            src={(() => {
-                              if (characterEntry.charSummary == null) {
-                                return `/unknown.png`;
-                              }
-                              return `/RaceIcons/${characterEntry.charSummary?.race?.name
-                                ?.toLowerCase()
-                                .replace(" ", "")}${
-                                characterEntry.charSummary?.gender?.name ==
-                                "Female"
-                                  ? "-f"
-                                  : "-m"
-                              }.png`;
-                            })()}
-                          />
-                          <Avatar.Fallback />
-                        </Avatar.Root>
-                        <Avatar.Root className="h-[23px] w-[23px] mr-1">
-                          <Avatar.Image
-                            src={(() => {
-                              if (characterEntry.charSummary == null) {
-                                return `/unknown.png`;
-                              }
-                              return `/ProfileClassIcons/${characterEntry.charSummary?.character_class?.name
-                                ?.toLowerCase()
-                                .replace(" ", "")}.png`;
-                            })()}
-                          />
-                          <Avatar.Fallback />
-                        </Avatar.Root>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                      >
+                        {characterEntry.currPvpEntry.rank}{" "}
                         <span
-                          style={{
-                            color: `${ClassColor.get(
-                              characterEntry.charSummary?.character_class
-                                ?.name ?? ""
-                            )}`,
-                          }}
+                          className={
+                            characterEntry.currPvpEntry.rank >=
+                            characterEntry.prevPvpEntry.rank
+                              ? "text-red-300"
+                              : "text-green-300"
+                          }
                         >
-                          {characterEntry.currPvpEntry.character?.name}
+                          {characterEntry.currPvpEntry.rank >
+                          characterEntry.prevPvpEntry.rank
+                            ? "+"
+                            : ""}
+                          {characterEntry.currPvpEntry.rank -
+                            characterEntry.prevPvpEntry.rank}
                         </span>
-                      </Flex>
-                    </Table.Cell>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
-                      className="desktopOnly"
-                    >
-                      {characterEntry.currPvpEntry.character?.realm?.slug
-                        ?.charAt(0)
-                        .toUpperCase() +
-                        (characterEntry.currPvpEntry.character?.realm?.slug?.slice(
-                          1
-                        ) ?? "")}
-                    </Table.Cell>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
-                      className="desktopOnly"
-                    >
-                    {characterEntry.currPvpEntry.rating}
-                    {" "}<span className={characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? "text-green-300" : "text-red-300"}>
-                                      {characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? '+' : ""}{characterEntry.currPvpEntry.rating - characterEntry.prevPvpEntry.rating}
+                      </Table.Cell>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                      >
+                        <Flex>
+                          <Avatar.Root className="h-[23px] w-[23px] mr-1">
+                            <Avatar.Image
+                              src={(() => {
+                                if (characterEntry.charSummary == null) {
+                                  return `/unknown.png`;
+                                }
+                                return `/RaceIcons/${characterEntry.charSummary?.race?.name
+                                  ?.toLowerCase()
+                                  .replace(" ", "")}${
+                                  characterEntry.charSummary?.gender?.name ==
+                                  "Female"
+                                    ? "-f"
+                                    : "-m"
+                                }.png`;
+                              })()}
+                            />
+                            <Avatar.Fallback />
+                          </Avatar.Root>
+                          <Avatar.Root className="h-[23px] w-[23px] mr-1">
+                            <Avatar.Image
+                              src={(() => {
+                                if (characterEntry.charSummary == null) {
+                                  return `/unknown.png`;
+                                }
+                                return `/ProfileClassIcons/${characterEntry.charSummary?.character_class?.name
+                                  ?.toLowerCase()
+                                  .replace(" ", "")}.png`;
+                              })()}
+                            />
+                            <Avatar.Fallback />
+                          </Avatar.Root>
+                          <span
+                            style={{
+                              color: `${ClassColor.get(
+                                characterEntry.charSummary?.character_class
+                                  ?.name ?? ""
+                              )}`,
+                            }}
+                          >
+                            {characterEntry.currPvpEntry.character?.name}
                           </span>
-                    </Table.Cell>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
-                      className="text-green-300 desktopOnly"
-                    >
-                                    {
-                                      (characterEntry.currPvpEntry.season_match_statistics?.won ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.won ?? 0)
-                                    }
-                    </Table.Cell>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
-                      className="text-red-300 desktopOnly"
-                    >
-                                    {
-                                      (characterEntry.currPvpEntry.season_match_statistics?.lost ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.lost ?? 0)
-                                    }
-                    </Table.Cell>
-                    <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
-                      }}
-                      className="desktopOnly"
-                    >
-                        {
-                          (characterEntry.time)
-                        }
-                    </Table.Cell>
-                    <Table.Cell className="mobileOnly">
-                      <Dialog.Root>
-                        <Dialog.Trigger asChild>
-                          <Button className="z-10" variant="outline">
-                            View
-                          </Button>
-                        </Dialog.Trigger>
-                        <Dialog.Portal>
-                          <Dialog.Overlay className="backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
-                          <Dialog.Content className="min-h-[400px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-[70vh] translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
-                            <div className=" flex justify-end">
-                              <Dialog.Close asChild>
-                                <button className="pt-7 text-2xl hover:opacity-50 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none">
-                                  <svg
-                                    width="30"
-                                    height="30"
-                                    viewBox="0 0 15 15"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
-                                      fill="currentColor"
-                                      fillRule="evenodd"
-                                      clipRule="evenodd"
-                                    ></path>
-                                  </svg>
-                                </button>
-                              </Dialog.Close>
-                            </div>
-                            <div>
-                              <DataList.Root className=" text-white text-left mt-2 px-10">
-                                <DataList.Item align={"center"}>
-                                  <DataList.Label className=" p-2 font-bold text-white">
-                                    Rank
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    <div className="flex flex-row justify-center">
-                                      {" "}
-                                      {characterEntry.currPvpEntry.rank} &nbsp;
-
-                                      {" "}<span className={characterEntry.currPvpEntry.rank >= characterEntry.prevPvpEntry.rank ? "text-green-300" : "text-red-300"}>
-                                          {characterEntry.currPvpEntry.rank > characterEntry.prevPvpEntry.rank ? '+' : ""}{characterEntry.currPvpEntry.rank - characterEntry.prevPvpEntry.rank}
-                                          </span>
-                                    </div>
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label className=" p-2  font-bold text-white">
-                                    Rating
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    <div className="flex flex-row justify-center">
-                                      {characterEntry.currPvpEntry.rating} &nbsp;
-                                      <span className={characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? "text-green-300" : "text-red-300"}>
-                                        {characterEntry.currPvpEntry.rating >= characterEntry.prevPvpEntry.rating ? '+' : ""}{characterEntry.currPvpEntry.rating - characterEntry.prevPvpEntry.rating}
-                                        </span>
-                                    </div>
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label className=" p-2  font-bold text-white">
-                                    Player
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    {characterEntry.currPvpEntry.character?.name}
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label className=" p-2  font-bold text-white">
-                                    Class
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    <span
-                                      style={{
-                                        color: `${ClassColor.get(
-                                          characterEntry.charSummary
-                                            ?.character_class?.name ?? ""
-                                        )}`,
-                                      }}
+                        </Flex>
+                      </Table.Cell>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                        className="desktopOnly"
+                      >
+                        {characterEntry.currPvpEntry.character?.realm?.slug
+                          ?.charAt(0)
+                          .toUpperCase() +
+                          (characterEntry.currPvpEntry.character?.realm?.slug?.slice(
+                            1
+                          ) ?? "")}
+                      </Table.Cell>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                        className="desktopOnly"
+                      >
+                        {characterEntry.currPvpEntry.rating}{" "}
+                        <span
+                          className={
+                            characterEntry.currPvpEntry.rating >=
+                            characterEntry.prevPvpEntry.rating
+                              ? "text-green-300"
+                              : "text-red-300"
+                          }
+                        >
+                          {characterEntry.currPvpEntry.rating >=
+                          characterEntry.prevPvpEntry.rating
+                            ? "+"
+                            : ""}
+                          {characterEntry.currPvpEntry.rating -
+                            characterEntry.prevPvpEntry.rating}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                        className="text-green-300 desktopOnly"
+                      >
+                        {(characterEntry.currPvpEntry.season_match_statistics
+                          ?.won ?? 0) -
+                          (characterEntry.prevPvpEntry.season_match_statistics
+                            ?.won ?? 0)}
+                      </Table.Cell>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                        className="text-red-300 desktopOnly"
+                      >
+                        {(characterEntry.currPvpEntry.season_match_statistics
+                          ?.lost ?? 0) -
+                          (characterEntry.prevPvpEntry.season_match_statistics
+                            ?.lost ?? 0)}
+                      </Table.Cell>
+                      <Table.Cell
+                        onClick={() => {
+                          if (characterEntry.charSummary == null) {
+                            return;
+                          }
+                          navigate(
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                          );
+                        }}
+                        className="desktopOnly"
+                      >
+                        {characterEntry.time}
+                      </Table.Cell>
+                      <Table.Cell className="mobileOnly">
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <Button className="z-10" variant="outline">
+                              View
+                            </Button>
+                          </Dialog.Trigger>
+                          <Dialog.Portal>
+                            <Dialog.Overlay className="backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
+                            <Dialog.Content className="min-h-[400px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-[70vh] translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
+                              <div className=" flex justify-end">
+                                <Dialog.Close asChild>
+                                  <button className="pt-7 text-2xl hover:opacity-50 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none">
+                                    <svg
+                                      width="30"
+                                      height="30"
+                                      viewBox="0 0 15 15"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
                                     >
+                                      <path
+                                        d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
+                                        fill="currentColor"
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
+                                      ></path>
+                                    </svg>
+                                  </button>
+                                </Dialog.Close>
+                              </div>
+                              <div>
+                                <DataList.Root className=" text-white text-left mt-2 px-10">
+                                  <DataList.Item align={"center"}>
+                                    <DataList.Label className=" p-2 font-bold text-white">
+                                      Rank
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
+                                      <div className="flex flex-row justify-center">
+                                        {" "}
+                                        {characterEntry.currPvpEntry.rank}{" "}
+                                        &nbsp;{" "}
+                                        <span
+                                          className={
+                                            characterEntry.currPvpEntry.rank >=
+                                            characterEntry.prevPvpEntry.rank
+                                              ? "text-green-300"
+                                              : "text-red-300"
+                                          }
+                                        >
+                                          {characterEntry.currPvpEntry.rank >
+                                          characterEntry.prevPvpEntry.rank
+                                            ? "+"
+                                            : ""}
+                                          {characterEntry.currPvpEntry.rank -
+                                            characterEntry.prevPvpEntry.rank}
+                                        </span>
+                                      </div>
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label className=" p-2  font-bold text-white">
+                                      Rating
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
+                                      <div className="flex flex-row justify-center">
+                                        {characterEntry.currPvpEntry.rating}{" "}
+                                        &nbsp;
+                                        <span
+                                          className={
+                                            characterEntry.currPvpEntry
+                                              .rating >=
+                                            characterEntry.prevPvpEntry.rating
+                                              ? "text-green-300"
+                                              : "text-red-300"
+                                          }
+                                        >
+                                          {characterEntry.currPvpEntry.rating >=
+                                          characterEntry.prevPvpEntry.rating
+                                            ? "+"
+                                            : ""}
+                                          {characterEntry.currPvpEntry.rating -
+                                            characterEntry.prevPvpEntry.rating}
+                                        </span>
+                                      </div>
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label className=" p-2  font-bold text-white">
+                                      Player
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
                                       {
-                                        characterEntry.charSummary
-                                          ?.character_class?.name
+                                        characterEntry.currPvpEntry.character
+                                          ?.name
                                       }
-                                    </span>
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label className="p-2   font-bold text-white">
-                                    Faction
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    {characterEntry.charSummary?.faction?.name}
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label className=" p-2  font-bold text-white">
-                                    Server
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    {characterEntry.currPvpEntry.character?.realm?.slug
-                                      ?.charAt(0)
-                                      .toUpperCase() +
-                                      (characterEntry.currPvpEntry.character?.realm?.slug?.slice(
-                                        1
-                                      ) ?? "")}
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label className=" p-2  font-bold text-white">
-                                    Wins
-                                  </DataList.Label>
-                                  <DataList.Value className=" justify-end text-green-300">
-                                  {
-                                      (characterEntry.currPvpEntry.season_match_statistics?.won ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.won ?? 0)
-                                    }
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label
-                                    width={"50vw"}
-                                    className=" p-2 font-bold text-white"
-                                  >
-                                    Losses
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end text-red-300">
-                                    {
-                                      (characterEntry.currPvpEntry.season_match_statistics?.lost ?? 0) - (characterEntry.prevPvpEntry.season_match_statistics?.lost ?? 0)
-                                    }
-                                  </DataList.Value>
-                                </DataList.Item>
-                                <DataList.Item>
-                                  <DataList.Label
-                                    width={"50vw"}
-                                    className=" p-2 font-bold text-white"
-                                  >
-                                    Tracked
-                                  </DataList.Label>
-                                  <DataList.Value className="justify-end">
-                                    {
-                                      (characterEntry.time)
-                                    }
-                                  </DataList.Value>
-                                </DataList.Item>
-                              </DataList.Root>
-                            </div>
-                          </Dialog.Content>
-                        </Dialog.Portal>
-                      </Dialog.Root>
-                    </Table.Cell>
-                  </Table.Row>
-                )})}
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label className=" p-2  font-bold text-white">
+                                      Class
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
+                                      <span
+                                        style={{
+                                          color: `${ClassColor.get(
+                                            characterEntry.charSummary
+                                              ?.character_class?.name ?? ""
+                                          )}`,
+                                        }}
+                                      >
+                                        {
+                                          characterEntry.charSummary
+                                            ?.character_class?.name
+                                        }
+                                      </span>
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label className="p-2   font-bold text-white">
+                                      Faction
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
+                                      {
+                                        characterEntry.charSummary?.faction
+                                          ?.name
+                                      }
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label className=" p-2  font-bold text-white">
+                                      Server
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
+                                      {characterEntry.currPvpEntry.character?.realm?.slug
+                                        ?.charAt(0)
+                                        .toUpperCase() +
+                                        (characterEntry.currPvpEntry.character?.realm?.slug?.slice(
+                                          1
+                                        ) ?? "")}
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label className=" p-2  font-bold text-white">
+                                      Wins
+                                    </DataList.Label>
+                                    <DataList.Value className=" justify-end text-green-300">
+                                      {(characterEntry.currPvpEntry
+                                        .season_match_statistics?.won ?? 0) -
+                                        (characterEntry.prevPvpEntry
+                                          .season_match_statistics?.won ?? 0)}
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label
+                                      width={"50vw"}
+                                      className=" p-2 font-bold text-white"
+                                    >
+                                      Losses
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end text-red-300">
+                                      {(characterEntry.currPvpEntry
+                                        .season_match_statistics?.lost ?? 0) -
+                                        (characterEntry.prevPvpEntry
+                                          .season_match_statistics?.lost ?? 0)}
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                  <DataList.Item>
+                                    <DataList.Label
+                                      width={"50vw"}
+                                      className=" p-2 font-bold text-white"
+                                    >
+                                      Tracked
+                                    </DataList.Label>
+                                    <DataList.Value className="justify-end">
+                                      {characterEntry.time}
+                                    </DataList.Value>
+                                  </DataList.Item>
+                                </DataList.Root>
+                              </div>
+                            </Dialog.Content>
+                          </Dialog.Portal>
+                        </Dialog.Root>
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
               </Table.Body>
             </Table.Root>
+            {ladderData?.length == 0 && !loading && (
+                  <Callout.Root color="red">
+                    <Callout.Icon>
+                      <InfoCircledIcon />
+                    </Callout.Icon>
+                    <Callout.Text>No Ladder Activity</Callout.Text>
+                  </Callout.Root>
+                )}
           </Card>
         </Flex>
         <Pagination
@@ -542,38 +651,71 @@ function Activity() {
       </Container>
     </div>
   );
-  async function FilteredLadderData(selectedClasses: string[], bracket: string) {
+  async function FilteredLadderData(
+    selectedClasses: string[],
+    bracket: string
+  ) {
     setLoading(true);
     const DragonblightClient = new Dragonblight.ActivityClient();
     setLadderData([]);
-    setLadderData( await DragonblightClient.getLadderHistoryFiltered(bracket + 'LadderHistory', region, selectedClasses, page * 50, 50) );
+    setLadderData(
+      await DragonblightClient.getLadderHistoryFiltered(
+        bracket + "LadderHistory",
+        region,
+        selectedClasses,
+        page * 50,
+        50
+      )
+    );
     setLoading(false);
   }
   //setting bracket we want to show on rankings page
   async function LadderData() {
     const DragonblightClient = new Dragonblight.ActivityClient();
+    const DragonblightLeaderboardClient = new Dragonblight.PvpLeaderboardClient();
     setLadderData([]);
     if (bracket == "3v3") {
       setLadderData(
-        await DragonblightClient.getLadderHistory('3v3LadderHistory', region, page * 50, 50)
+        await DragonblightClient.getLadderHistory(
+          "3v3LadderHistory",
+          region,
+          page * 50,
+          50
+        )
       );
     }
     if (bracket == "2v2") {
-        setLadderData(
-            await DragonblightClient.getLadderHistory('2v2LadderHistory', region, page * 50, 50)
-          );
+      setLadderData(
+        await DragonblightClient.getLadderHistory(
+          "2v2LadderHistory",
+          region,
+          page * 50,
+          50
+        )
+      );
     }
     if (bracket == "5v5") {
-        setLadderData(
-            await DragonblightClient.getLadderHistory('5v5LadderHistory', region, page * 50, 50)
-          );
+      setLadderData(
+        await DragonblightClient.getLadderHistory(
+          "5v5LadderHistory",
+          region,
+          page * 50,
+          50
+        )
+      );
     }
     if (bracket == "rbg") {
-        setLadderData(
-            await DragonblightClient.getLadderHistory('rbgLadderHistory', region, page * 50, 50)
-          );
+      setLadderData(
+        await DragonblightClient.getLadderHistory(
+          "rbgLadderHistory",
+          region,
+          page * 50,
+          50
+        )
+      );
     }
     setLoading(false);
+    setRewards(await DragonblightLeaderboardClient.getPvPRewards(region))
   }
 }
 

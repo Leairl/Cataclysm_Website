@@ -14,6 +14,7 @@ public interface IWarcraftRedisProxy
     Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket);
     Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region);
     Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region);
+    Task<PvpRewardsIndex> GetPvPRewards(string region);
     Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region);
     Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region);
     Task<CharacterPvpBracketStatistics> GetPvpBracketRating(string server, string characterName, string pvpBracket, string region);

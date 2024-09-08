@@ -13,7 +13,7 @@ function NavBar() {
       >
           <img src={`/Nav/db_io.webp`}></img>
       </Link>
-      <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu mr-[12vw]">
+      <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu mr-[1vw]">
         <NavigationMenu.List className="center flex justify-evenly list-none rounded-[6px] ">
           <NavigationMenu.Item>
             <Link to="/">

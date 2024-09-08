@@ -98,6 +98,12 @@ namespace Cataclysm_Website.Server.Controllers
             var result = await Task.WhenAll(RBGLeaderboardEntry);
             return Ok(result);
         }
+        [HttpGet("GetPvPRewards")]
+        public async Task<ActionResult<PvpRewardsIndex>> GetPvPRewards(string region)
+
+        {
+            return await _warcraftCachedData.GetPvPRewards(region);
+        }
         [HttpPost("GetLadderFiltered")]
         public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetLadderFiltered(int skip, int take, string region, List<string> classes, string bracket)
         // foreach allows us to select multiple classes on our leaderboard

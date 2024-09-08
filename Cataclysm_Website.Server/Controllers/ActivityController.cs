@@ -84,7 +84,7 @@ namespace Cataclysm_Website.Server.Controllers
                     if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                     {
                         var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
-                        if (classes.Contains(charSummary.CharacterClass.Name)){
+                        if (charSummary != null && classes.Contains(charSummary.CharacterClass.Name)){
                             result.Add(new ActivityCharacterSummary { 
                                 charSummary = charSummary,
                                 currPvpEntry = player, 

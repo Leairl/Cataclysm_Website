@@ -27,6 +27,9 @@ function Rankings() {
   const [ladderData, setLadderData] = useState<
     Dragonblight.PvpCharacterSummary[]
   >();
+  const [rewards, setRewards] = useState<
+  Dragonblight.PvpRewardsIndex
+>();
   const { URLregion, URLbracket } = useParams();
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [page, setPage] = useState<number>(0);
@@ -66,6 +69,25 @@ function Rankings() {
 
   return (
     <div>
+        <div className="flex flex-row h-[64px] justify-center">
+          <div className={!(loading && rewards != undefined) ? "fadeIn flex flex-row" : "fadeOut flex flex-row"}>
+        { 
+      rewards?.rewards?.filter(r => {
+        //if result is positive during sort, swap values to sort in ascending order
+      return r.bracket?.type?.includes(bracket) || (r.bracket?.type?.includes('BATTLEGROUNDS') && bracket == 'rbg')
+      }).sort((c,p) => {
+        return p.rating_cutoff - c.rating_cutoff
+      }).map((i) => {
+        return (
+          <Card className="w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0 flex-wrap wrap">
+            <b>{i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT]', '')}</b> {" "}
+            <br></br>
+            {i.rating_cutoff}
+          </Card>
+        );
+      })
+        }</div>
+      </div>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
           <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
@@ -524,8 +546,11 @@ function Rankings() {
         await DragonblightClient.getRBGLadder(page * 50, 50, region)
       );
     }
+
     setLoading(false);
+    setRewards(await DragonblightClient.getPvPRewards(region))
   }
+  
 }
 
 export default Rankings;

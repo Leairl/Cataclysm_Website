@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
+using Namotion.Reflection;
 using StackExchange.Redis;
 
 class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer redis) : IWarcraftRedisProxy
@@ -96,6 +97,17 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             var currRbgLadder = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "rbg", region, GetRegion(region), GetLocale(region));
             await AddToLadderHistory("rbgLadderHistory", region, currRbgLadder.Value);
             return currRbgLadder.Value;
+        }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
+    }
+        public async Task<PvpRewardsIndex> GetPvPRewards(string region)
+    {
+        
+        region = GetDynamicRegion(region);
+        int season = await GetSeason(region);
+        return await GetBlizzardDataCached<PvpRewardsIndex>("GetPvPRewards" + season + region, async () =>
+        {
+            var ActivePvpRewards = await warcraftClient.GetPvpRewardsIndexAsync(season, region, GetRegion(region), GetLocale(region));
+            return ActivePvpRewards.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
         public async Task AddToLadderHistory(string key, string region, PvpLeaderboard currLadder) //get rbgLeaderboard in redis
