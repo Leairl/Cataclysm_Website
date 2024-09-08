@@ -16,7 +16,7 @@ public class BgService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(4));
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(2));
         return Task.CompletedTask;
     }
 
