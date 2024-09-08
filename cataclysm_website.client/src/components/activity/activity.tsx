@@ -74,8 +74,8 @@ function Activity() {
 
   return (
     <div>
-      <div className="flex flex-row h-[64px] justify-center">
-          <div className={!(loading && rewards != undefined) ? "fadeIn flex flex-row" : "fadeOut flex flex-row"}>
+      <div className="flex flex-row min-h-[64px] justify-center">
+          <div className={!(loading && rewards != undefined) ? "mobileLeftPadding fadeIn flex flex-row flex-wrap wrap" : "mobileLeftPadding fadeOut flex flex-row flex-wrap wrap"}>
         { 
       rewards?.rewards?.filter(r => {
         //if result is positive during sort, swap values to sort in ascending order
@@ -84,7 +84,7 @@ function Activity() {
         return p.rating_cutoff - c.rating_cutoff
       }).map((i) => {
         return (
-          <Card className="w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0 flex-wrap wrap">
+          <Card className="w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0">
             <b>{i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT]', '')}</b> {" "}
             <br></br>
             {i.rating_cutoff}
