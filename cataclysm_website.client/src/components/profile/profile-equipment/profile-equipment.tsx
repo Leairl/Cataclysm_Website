@@ -84,9 +84,9 @@ const RankOneAchievements = [
 ];
 const GladiatorAchievements = [
   [886, "glad-s1.png"],
-  [15199, "glad-s2.png"],
-  [15204, "glad-s3.png"],
-  [15200, "glad-s4.png"],
+  [887, "glad-s2.png"],
+  [888, "glad-s3.png"],
+  [2316, "glad-s4.png"],
   [3096, "glad-s5.png"],
   [3756, "glad-s6.png"],
   [3757, "glad-s7.png"],
@@ -108,9 +108,9 @@ const RankOneTooltip = [
 
 const GladiatorTooltip = [
   [886, "Achieved Gladiator Season 1"],
-  [15199, "Achieved Gladiator Season 2"],
-  [15204, "Achieved Gladiator Season 3"],
-  [15200, "Achieved Gladiator Season 4"],
+  [887, "Achieved Gladiator Season 2"],
+  [888, "Achieved Gladiator Season 3"],
+  [2316, "Achieved Gladiator Season 4"],
   [3096, "Achieved Gladiator Season 5"],
   [3756, "Achieved Gladiator Season 6"],
   [3757, "Achieved Gladiator Season 7"],
