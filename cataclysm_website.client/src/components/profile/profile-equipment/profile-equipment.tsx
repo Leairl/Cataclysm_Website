@@ -537,51 +537,10 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
           
           </div>
         <div className="flex-1"></div>
-        {ownerIcon()}
-        {JaxIcon()}
       </div>
     );
   }
-  function ownerIcon() {
-    return(
-    <Tooltip.Provider delayDuration={100} key={"ownerIcon"}>
-        <Tooltip.Root>
-          <Tooltip.Portal>
-            <Tooltip.Content className=" block max-w-sm p-2 rounded-lg shadow dark:bg-neutral-700 dark:border-neutral-950">
-              <Card className="z-100">
-                Owner of Dragonblight
-              </Card>{" "}
-            </Tooltip.Content>
-          </Tooltip.Portal>
-          <Tooltip.Trigger className="cursor-default">
-            <div className="pr-1">
-            {characterName == 'Awakenz' && server == 'Benediction' && (<img className="float-right" height="50px" width="50px"src="/Nav/Logo-PNG-s.png"></img>)}
-            </div>
-          </Tooltip.Trigger>
-        </Tooltip.Root>
-      </Tooltip.Provider>
-    )
-  }
-  function JaxIcon() {
-    return(
-    <Tooltip.Provider delayDuration={100} key={"ownerIcon2"}>
-        <Tooltip.Root>
-          <Tooltip.Portal>
-            <Tooltip.Content className=" block max-w-sm p-2 rounded-lg shadow dark:bg-neutral-700 dark:border-neutral-950">
-              <Card className="z-100">
-                Co-Owner of Dragonblight
-              </Card>{" "}
-            </Tooltip.Content>
-          </Tooltip.Portal>
-          <Tooltip.Trigger className="cursor-default">
-            <div className="pr-1">
-            {characterName == 'Jaxington' && server == 'Benediction' && (<img className="float-right" height="50px" width="50px"src="/Nav/Logo-PNG-s.png"></img>)}
-            </div>
-          </Tooltip.Trigger>
-        </Tooltip.Root>
-      </Tooltip.Provider>
-    )
-  }
+
   function getSlotIcons(skip: number, end: number) {
     //for loop (map) with slots in parameter s to pull correct gear ids, and place them in the correct spots for our profile page.
     //pulls from slots array, and checks with each function for that piece of gear.
