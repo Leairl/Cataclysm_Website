@@ -19,6 +19,7 @@ import { ClassColor } from "../../helpers/classColorHelper";
 import { useParams } from "react-router-dom";
 import { Pagination } from "react-headless-pagination";
 import ClassFilter from "../class-filter/class-filter";
+import Cutoffs from "../cutoffs/cutoffs";
 
 const Skeletons = [0, 1, 2];
 
@@ -27,9 +28,6 @@ function Rankings() {
   const [ladderData, setLadderData] = useState<
     Dragonblight.PvpCharacterSummary[]
   >();
-  const [rewards, setRewards] = useState<
-  Dragonblight.PvpRewardsIndex
->();
   const { URLregion, URLbracket } = useParams();
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [page, setPage] = useState<number>(0);
@@ -69,26 +67,7 @@ function Rankings() {
 
   return (
     <div>
-        <div className="flex flex-row min-h-[64px] justify-center">
-          <div className={!(loading && rewards != undefined) ? "mobileLeftPadding fadeIn flex flex-row flex-wrap wrap" : "mobileLeftPadding fadeOut flex flex-row flex-wrap wrap"}>
-        { 
-      rewards?.rewards?.filter(r => {
-        //if result is positive during sort, swap values to sort in ascending order
-      return r.bracket?.type?.includes(bracket) || (r.bracket?.type?.includes('BATTLEGROUNDS') && bracket == 'rbg')
-      }).sort((c,p) => {
-        return p.rating_cutoff - c.rating_cutoff
-      }).map((i) => {
-        return (
-          <Card className="w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0">
-
-            <b>{i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT]', '')}</b> {" "}
-            <br></br>
-            {i.rating_cutoff}
-          </Card>
-        );
-      })
-        }</div>
-      </div>
+      <Cutoffs region={region} bracket={bracket}></Cutoffs>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
           <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
@@ -549,7 +528,6 @@ function Rankings() {
     }
 
     setLoading(false);
-    setRewards(await DragonblightClient.getPvPRewards(region))
   }
   
 }

@@ -2,6 +2,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
+using TwitchLib.Api.Helix.Models.ChannelPoints;
 
 namespace Cataclysm_Website.Server.Controllers
 {
@@ -98,11 +99,48 @@ namespace Cataclysm_Website.Server.Controllers
             var result = await Task.WhenAll(RBGLeaderboardEntry);
             return Ok(result);
         }
+        //needs to create a seperate instance of pvpseasonreward to implement our rank property
         [HttpGet("GetPvPRewards")]
-        public async Task<ActionResult<PvpRewardsIndex>> GetPvPRewards(string region)
+        public async Task<ActionResult<IEnumerable<PvpSeasonRewardWithRank>>> GetPvPRewards(string region)
 
         {
-            return await _warcraftCachedData.GetPvPRewards(region);
+            var pvpSeasonRewardWithRank = (await _warcraftCachedData.GetPvPRewards(region)).Rewards.Select(async r => {
+                return new PvpSeasonRewardWithRank {
+                    Bracket = r.Bracket,
+                    Achievement = r.Achievement,
+                    RatingCutoff = r.RatingCutoff,
+                    Faction = r.Faction,
+                    rank = await GetRankFromCutoffs(r.RatingCutoff, r.Bracket.Type, region)
+                };
+            });
+            var result = await Task.WhenAll(pvpSeasonRewardWithRank);
+            return Ok(result);
+        }
+        // generates an instance to compare data with (using record) as opposed to checking the instance of that class
+        public record PvpSeasonRewardWithRank : PvpSeasonReward
+            
+        {
+           [JsonPropertyName("rank")]
+            public int rank { get; set; }
+        }
+        
+        [HttpGet("GetRankFromCutoffs")]
+        public async Task<int> GetRankFromCutoffs(int cutoff, string bracket, string region)
+
+        {
+            if (bracket == "ARENA_2v2"){
+                return (await _warcraftCachedData.Get2v2Leaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+            }
+            if (bracket == "ARENA_3v3"){
+                return (await _warcraftCachedData.Get3v3Leaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+            }
+            if (bracket == "ARENA_5v5"){
+                return (await _warcraftCachedData.Get5v5Leaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+            }
+            if (bracket == "BATTLEGROUNDS"){
+                return (await _warcraftCachedData.GetRBGLeaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+            }
+            return 0;
         }
         [HttpPost("GetLadderFiltered")]
         public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetLadderFiltered(int skip, int take, string region, List<string> classes, string bracket)

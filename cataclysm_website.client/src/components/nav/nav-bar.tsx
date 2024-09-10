@@ -120,7 +120,7 @@ function NavBar() {
           </Dialog.Trigger>
           <Dialog.Portal>
             <Dialog.Overlay className="backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
-            <Dialog.Content className="mt-[40px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-auto translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
+            <Dialog.Content className="pb-5 mt-[40px] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] w-[90vw] h-auto translate-x-[-50%] translate-y-[-50%] rounded-[6px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] bg-[#292c31] focus:outline-none">
               <div className=" flex justify-end">
               <Dialog.Close asChild>
                   <button className="pt-7 text-2xl hover:opacity-50 focus:shadow-green7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none">

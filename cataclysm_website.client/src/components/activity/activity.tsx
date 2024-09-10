@@ -21,6 +21,7 @@ import { useParams } from "react-router-dom";
 import { Pagination } from "react-headless-pagination";
 import ClassFilter from "../class-filter/class-filter";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
+import Cutoffs from "../cutoffs/cutoffs";
 
 const Skeletons = [0, 1, 2];
 
@@ -29,9 +30,7 @@ function Activity() {
   const [ladderData, setLadderData] = useState<
     Dragonblight.ActivityCharacterSummary[]
   >();
-  const [rewards, setRewards] = useState<
-  Dragonblight.PvpRewardsIndex
->();
+
   const { URLregion, URLbracket } = useParams();
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [page, setPage] = useState<number>(0);
@@ -74,25 +73,7 @@ function Activity() {
 
   return (
     <div>
-      <div className="flex flex-row min-h-[64px] justify-center">
-          <div className={!(loading && rewards != undefined) ? "mobileLeftPadding fadeIn flex flex-row flex-wrap wrap" : "mobileLeftPadding fadeOut flex flex-row flex-wrap wrap"}>
-        { 
-      rewards?.rewards?.filter(r => {
-        //if result is positive during sort, swap values to sort in ascending order
-      return r.bracket?.type?.includes(bracket) || (r.bracket?.type?.includes('BATTLEGROUNDS') && bracket == 'rbg')
-      }).sort((c,p) => {
-        return p.rating_cutoff - c.rating_cutoff
-      }).map((i) => {
-        return (
-          <Card className="w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0">
-            <b>{i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT]', '')}</b> {" "}
-            <br></br>
-            {i.rating_cutoff}
-          </Card>
-        );
-      })
-        }</div>
-      </div>
+   <Cutoffs region={region} bracket={bracket}></Cutoffs>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
           <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
@@ -441,8 +422,8 @@ function Activity() {
                                           className={
                                             characterEntry.currPvpEntry.rank >=
                                             characterEntry.prevPvpEntry.rank
-                                              ? "text-green-300"
-                                              : "text-red-300"
+                                              ? "text-red-300"
+                                              : "text-green-300"
                                           }
                                         >
                                           {characterEntry.currPvpEntry.rank >
@@ -672,7 +653,6 @@ function Activity() {
   //setting bracket we want to show on rankings page
   async function LadderData() {
     const DragonblightClient = new Dragonblight.ActivityClient();
-    const DragonblightLeaderboardClient = new Dragonblight.PvpLeaderboardClient();
     setLadderData([]);
     if (bracket == "3v3") {
       setLadderData(
@@ -715,7 +695,6 @@ function Activity() {
       );
     }
     setLoading(false);
-    setRewards(await DragonblightLeaderboardClient.getPvPRewards(region))
   }
 }
 

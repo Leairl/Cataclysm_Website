@@ -563,7 +563,7 @@ export class PvpLeaderboardClient {
         return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 
-    getPvPRewards(region: string | undefined): Promise<PvpRewardsIndex> {
+    getPvPRewards(region: string | undefined): Promise<PvpSeasonRewardWithRank[]> {
         let url_ = this.baseUrl + "/api/PvpLeaderboard/GetPvPRewards?";
         if (region === null)
             throw new Error("The parameter 'region' cannot be null.");
@@ -583,13 +583,13 @@ export class PvpLeaderboardClient {
         });
     }
 
-    protected processGetPvPRewards(response: Response): Promise<PvpRewardsIndex> {
+    protected processGetPvPRewards(response: Response): Promise<PvpSeasonRewardWithRank[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpRewardsIndex;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpSeasonRewardWithRank[];
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -597,7 +597,52 @@ export class PvpLeaderboardClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PvpRewardsIndex>(null as any);
+        return Promise.resolve<PvpSeasonRewardWithRank[]>(null as any);
+    }
+
+    getRankFromCutoffs(cutoff: number | undefined, bracket: string | undefined, region: string | undefined): Promise<number> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetRankFromCutoffs?";
+        if (cutoff === null)
+            throw new Error("The parameter 'cutoff' cannot be null.");
+        else if (cutoff !== undefined)
+            url_ += "cutoff=" + encodeURIComponent("" + cutoff) + "&";
+        if (bracket === null)
+            throw new Error("The parameter 'bracket' cannot be null.");
+        else if (bracket !== undefined)
+            url_ += "bracket=" + encodeURIComponent("" + bracket) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetRankFromCutoffs(_response);
+        });
+    }
+
+    protected processGetRankFromCutoffs(response: Response): Promise<number> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as number;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<number>(null as any);
     }
 
     getLadderFiltered(skip: number | undefined, take: number | undefined, region: string | undefined, classes: string[], bracket: string | undefined): Promise<PvpCharacterSummary[]> {
@@ -1428,22 +1473,15 @@ export interface PvpCharacterSummary {
     charSummary: CharacterProfileSummary;
 }
 
-export interface PvpRewardsIndex {
-    _links?: Links | undefined;
-    season?: PvpSeasonReference | undefined;
-    rewards?: PvpSeasonReward[] | undefined;
-}
-
-export interface PvpSeasonReference {
-    key?: Self | undefined;
-    id: number;
-}
-
 export interface PvpSeasonReward {
     bracket?: Bracket | undefined;
     achievement?: AchievementReference | undefined;
     rating_cutoff: number;
     faction?: EnumType | undefined;
+}
+
+export interface PvpSeasonRewardWithRank extends PvpSeasonReward {
+    rank: number;
 }
 
 export interface Bracket {
@@ -1461,6 +1499,11 @@ export interface CharacterPvpBracketStatistics {
     tier?: PvpTierReferenceWithoutName | undefined;
     season_match_statistics?: PvpMatchStatistics | undefined;
     weekly_match_statistics?: PvpMatchStatistics | undefined;
+}
+
+export interface PvpSeasonReference {
+    key?: Self | undefined;
+    id: number;
 }
 
 export interface PvpMatchStatistics {

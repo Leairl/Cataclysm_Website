@@ -176,7 +176,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
                 return GetCharacter.Value;
             }
             return null;
-        }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
+        }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
         public async Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region)
     {
