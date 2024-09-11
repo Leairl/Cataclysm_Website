@@ -3,6 +3,7 @@ using ArgentPonyWarcraftClient.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using AspNetCore.Proxy;
 using AspNetCore.Proxy.Options;
+using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -13,6 +14,12 @@ var configuration = builder.Configuration;
 var redisConnectionString = configuration.GetSection("Redis")["ConnectionString"];
 var battlenetClient = configuration.GetSection("BattlenetApi")["clientId"];
 var battlenetSecret = configuration.GetSection("BattlenetApi")["clientSecret"];
+
+builder.Services.AddSerilog((services, lc) => lc
+    .ReadFrom.Configuration(configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+);
 
 builder.Services.AddProxies();
 builder.Services.AddControllers();
