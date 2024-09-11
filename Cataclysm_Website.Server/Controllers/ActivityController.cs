@@ -32,10 +32,10 @@ namespace Cataclysm_Website.Server.Controllers
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
-                var batches = currLadder?.Entries.Length / 50;
+                var batches = currLadder?.Entries.Length / 10;
                 for (int j = 0; j < batches; j++)
                 {
-                    var batch = currLadder?.Entries.Skip(j * 50).Take(50);
+                    var batch = currLadder?.Entries.Skip(j * 10).Take(10);
                     await Parallel.ForEachAsync(batch, async (player, _) =>
                     {
                         var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
@@ -77,10 +77,10 @@ namespace Cataclysm_Website.Server.Controllers
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
-                var batches = currLadder?.Entries.Length / 50;
+                var batches = currLadder?.Entries.Length / 10;
                 for (int j = 0; j < batches; j++)
                 {
-                    var batch = currLadder?.Entries.Skip(j * 50).Take(50);
+                    var batch = currLadder?.Entries.Skip(j * 10).Take(10);
                     await Parallel.ForEachAsync(batch, async (player, _) =>
                     {
                         var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
