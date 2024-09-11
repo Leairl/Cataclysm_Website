@@ -32,21 +32,24 @@ namespace Cataclysm_Website.Server.Controllers
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
-                foreach (
-                    var player in currLadder.Entries
-                )
+                var batches = currLadder?.Entries.Length / 50;
+                for (int j = 0; j < batches; j++)
                 {
-                    var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
+                    var batch = currLadder?.Entries.Skip(j * 50).Take(50);
+                    await Parallel.ForEachAsync(batch, async (player, _) =>
                     {
-                        result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = currLadder.Time.TimeAgo() });
-                        //current ladder break
-                        if (result.Count() >= skip + take)
+                        var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
+                        if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                         {
-                            break;
+                            result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = currLadder.Time.TimeAgo() });
                         }
-                    }
 
+                    });
+                    //ladder history break
+                    if (result.Count() >= skip + take)
+                    {
+                        break;
+                    }
                 }
                 //ladder history break
                 if (result.Count() >= skip + take)
@@ -56,13 +59,11 @@ namespace Cataclysm_Website.Server.Controllers
             }
             //getting character summary on page we are on, going through each character that rating has changed in the result list
             result = result.Skip(skip).Take(take).ToList();
-            foreach (
-                var activity in result
-            )
-            {
-                 activity.charSummary = await _warcraftCachedData.GetCharSummary(activity.currPvpEntry.Character.Realm.Slug, activity.currPvpEntry.Character.Name, region);
-            }
-            return Ok(result);
+            var asyncResult = result.Select(async activity => {
+                activity.charSummary = await _warcraftCachedData.GetCharSummary(activity.currPvpEntry.Character.Realm.Slug, activity.currPvpEntry.Character.Name, region);
+                return activity;
+            });
+            return Ok(await Task.WhenAll(asyncResult));
             
 
         }
@@ -76,29 +77,31 @@ namespace Cataclysm_Website.Server.Controllers
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
-                foreach (
-                    var player in currLadder.Entries
-                )
+                var batches = currLadder?.Entries.Length / 50;
+                for (int j = 0; j < batches; j++)
                 {
-                    var previousPlayer = previousLadder.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
+                    var batch = currLadder?.Entries.Skip(j * 50).Take(50);
+                    await Parallel.ForEachAsync(batch, async (player, _) =>
                     {
-                        var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
-                        if (charSummary != null && classes.Contains(charSummary.CharacterClass.Name)){
-                            result.Add(new ActivityCharacterSummary { 
-                                charSummary = charSummary,
-                                currPvpEntry = player, 
-                                prevPvpEntry = previousPlayer, 
-                                timeDifference = currLadder.Time.TimeAgo() 
-                            });
-                        }
-                        //current ladder break
-                        if (result.Count() >= skip + take)
+                        var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
+                        if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                         {
-                            break;
+                            var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
+                            if (charSummary != null && classes.Contains(charSummary.CharacterClass.Name)){
+                                result.Add(new ActivityCharacterSummary { 
+                                    charSummary = charSummary,
+                                    currPvpEntry = player, 
+                                    prevPvpEntry = previousPlayer, 
+                                    timeDifference = currLadder.Time.TimeAgo() 
+                                });
+                            }
                         }
+                    });
+                    //ladder history break
+                    if (result.Count() >= skip + take)
+                    {
+                        break;
                     }
-
                 }
                 //ladder history break
                 if (result.Count() >= skip + take)
