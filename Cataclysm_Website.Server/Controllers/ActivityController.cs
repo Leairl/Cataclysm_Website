@@ -28,7 +28,7 @@ namespace Cataclysm_Website.Server.Controllers
             var result = new List<ActivityCharacterSummary>();
             var LadderHistory = await _warcraftCachedData.GetLadderHistory(key, region);
             // Iterate through the list in reverse order and compare last element with the previous
-            for (int i = LadderHistory.Count() - 1; i > 0; i--)
+            for (int i = Math.Min(3, LadderHistory.Count()) - 1; i > 0; i--)
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
@@ -73,7 +73,7 @@ namespace Cataclysm_Website.Server.Controllers
             var result = new List<ActivityCharacterSummary>();
             var LadderHistory = await _warcraftCachedData.GetLadderHistory(key, region);
             // Iterate through the list in reverse order and compare last element with the previous
-            for (int i = LadderHistory.Count() - 1; i > 0; i--)
+            for (int i = Math.Min(3, LadderHistory.Count()) - 1; i > 0; i--)
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
