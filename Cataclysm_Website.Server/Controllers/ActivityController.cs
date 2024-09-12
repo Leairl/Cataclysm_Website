@@ -28,28 +28,25 @@ namespace Cataclysm_Website.Server.Controllers
             var result = new List<ActivityCharacterSummary>();
             var LadderHistory = await _warcraftCachedData.GetLadderHistory(key, region);
             // Iterate through the list in reverse order and compare last element with the previous
-            for (int i = Math.Min(3, LadderHistory.Count()) - 1; i > 0; i--)
+            for (int i = LadderHistory.Count() - 1; i > 0; i--)
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
-                var batches = currLadder?.Entries.Length / 10;
-                for (int j = 0; j < batches; j++)
+                foreach (
+                    var player in currLadder.Entries
+                )
                 {
-                    var batch = currLadder?.Entries.Skip(j * 10).Take(10);
-                    await Parallel.ForEachAsync(batch, async (player, _) =>
+                    var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
+                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                     {
-                        var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                        if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
+                        result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = currLadder.Time.TimeAgo() });
+                        //current ladder break
+                        if (result.Count() >= skip + take)
                         {
-                            result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = currLadder.Time.TimeAgo() });
+                            break;
                         }
-
-                    });
-                    //ladder history break
-                    if (result.Count() >= skip + take)
-                    {
-                        break;
                     }
+
                 }
                 //ladder history break
                 if (result.Count() >= skip + take)
@@ -57,7 +54,7 @@ namespace Cataclysm_Website.Server.Controllers
                     break;
                 }
             }
-            //getting character summary on page we are on, going through each character that rating has changed in the result list
+             //getting character summary on page we are on, going through each character that rating has changed in the result list
             result = result.Skip(skip).Take(take).ToList();
             var asyncResult = result.Select(async activity => {
                 activity.charSummary = await _warcraftCachedData.GetCharSummary(activity.currPvpEntry.Character.Realm.Slug, activity.currPvpEntry.Character.Name, region);
@@ -73,35 +70,33 @@ namespace Cataclysm_Website.Server.Controllers
             var result = new List<ActivityCharacterSummary>();
             var LadderHistory = await _warcraftCachedData.GetLadderHistory(key, region);
             // Iterate through the list in reverse order and compare last element with the previous
-            for (int i = Math.Min(3, LadderHistory.Count()) - 1; i > 0; i--)
+            for (int i = LadderHistory.Count() - 1; i > 0; i--)
             {
                 var currLadder = LadderHistory.ElementAt(i);
                 var previousLadder = LadderHistory.ElementAt(i - 1);
-                var batches = currLadder?.Entries.Length / 10;
-                for (int j = 0; j < batches; j++)
+                foreach (
+                    var player in currLadder.Entries
+                )
                 {
-                    var batch = currLadder?.Entries.Skip(j * 10).Take(10);
-                    await Parallel.ForEachAsync(batch, async (player, _) =>
+                    var previousPlayer = previousLadder.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
+                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
                     {
-                        var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                        if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
-                        {
-                            var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
-                            if (charSummary != null && classes.Contains(charSummary.CharacterClass.Name)){
-                                result.Add(new ActivityCharacterSummary { 
-                                    charSummary = charSummary,
-                                    currPvpEntry = player, 
-                                    prevPvpEntry = previousPlayer, 
-                                    timeDifference = currLadder.Time.TimeAgo() 
-                                });
-                            }
+                        var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
+                        if (charSummary != null && classes.Contains(charSummary.CharacterClass.Name)){
+                            result.Add(new ActivityCharacterSummary { 
+                                charSummary = charSummary,
+                                currPvpEntry = player, 
+                                prevPvpEntry = previousPlayer, 
+                                timeDifference = currLadder.Time.TimeAgo() 
+                            });
                         }
-                    });
-                    //ladder history break
-                    if (result.Count() >= skip + take)
-                    {
-                        break;
+                        //current ladder break
+                        if (result.Count() >= skip + take)
+                        {
+                            break;
+                        }
                     }
+
                 }
                 //ladder history break
                 if (result.Count() >= skip + take)
