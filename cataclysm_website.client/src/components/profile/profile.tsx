@@ -68,8 +68,11 @@ const Profile: FC<ProfileProps> = () => {
 
 
     function ChangeTab(newTab: string) {
+      if (currTab == undefined) {
+        return setCurrTab(newTab)
+      }
       if (currTab != newTab) {
-        window.history.pushState(null, "", `/profile/${region}/${server}/${characterName}/${newTab}`);
+        window.history.replaceState(null, "", `/profile/${region}/${server}/${characterName}/${newTab}`);
         setCurrTab(newTab);
       }
     }

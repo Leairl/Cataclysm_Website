@@ -54,13 +54,13 @@ function Rankings() {
   //changes bracket from segmented control
   function BracketClick(bracketName: string) {
     if (bracket != bracketName) {
-      window.history.pushState(null, "", `/rankings/${region}/${bracketName}`);
+      window.history.replaceState(null, "", `/rankings/${region}/${bracketName}`);
       setBracket(bracketName);
     }
   }
   function RegionClick(regionName: string) {
     if (region != regionName) {
-      window.history.pushState(null, "", `/rankings/${regionName}/${bracket}`);
+      window.history.replaceState(null, "", `/rankings/${regionName}/${bracket}`);
       setRegion(regionName);
     }
   }

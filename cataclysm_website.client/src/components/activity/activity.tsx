@@ -60,13 +60,13 @@ function Activity() {
   //changes bracket from segmented control
   function BracketClick(bracketName: string) {
     if (bracket != bracketName) {
-      window.history.pushState(null, "", `/activity/${region}/${bracketName}`);
+      window.history.replaceState(null, "", `/activity/${region}/${bracketName}`);
       setBracket(bracketName);
     }
   }
   function RegionClick(regionName: string) {
     if (region != regionName) {
-      window.history.pushState(null, "", `/activity/${regionName}/${bracket}`);
+      window.history.replaceState(null, "", `/activity/${regionName}/${bracket}`);
       setRegion(regionName);
     }
   }
@@ -641,7 +641,7 @@ function Activity() {
     setLadderData([]);
     setLadderData(
       await DragonblightClient.getLadderHistoryFiltered(
-        bracket + "LadderHistory",
+        bracket,
         region,
         selectedClasses,
         page * 50,
@@ -654,46 +654,14 @@ function Activity() {
   async function LadderData() {
     const DragonblightClient = new Dragonblight.ActivityClient();
     setLadderData([]);
-    if (bracket == "3v3") {
       setLadderData(
         await DragonblightClient.getLadderHistory(
-          "3v3LadderHistory",
+          bracket,
           region,
           page * 50,
           50
         )
       );
-    }
-    if (bracket == "2v2") {
-      setLadderData(
-        await DragonblightClient.getLadderHistory(
-          "2v2LadderHistory",
-          region,
-          page * 50,
-          50
-        )
-      );
-    }
-    if (bracket == "5v5") {
-      setLadderData(
-        await DragonblightClient.getLadderHistory(
-          "5v5LadderHistory",
-          region,
-          page * 50,
-          50
-        )
-      );
-    }
-    if (bracket == "rbg") {
-      setLadderData(
-        await DragonblightClient.getLadderHistory(
-          "rbgLadderHistory",
-          region,
-          page * 50,
-          50
-        )
-      );
-    }
     setLoading(false);
   }
 }

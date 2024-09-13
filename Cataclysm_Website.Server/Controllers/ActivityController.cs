@@ -23,92 +23,56 @@ namespace Cataclysm_Website.Server.Controllers
         "dynamic-classic-us" is static name for region in us, need to find other static region names in developer.battle.net
         */
         [HttpGet("LadderHistory")]
-        public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistory(string key, string region, int skip, int take)
+        public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistory(string bracket, string region, int skip, int take)
         {
-            var result = new List<ActivityCharacterSummary>();
-            var LadderHistory = await _warcraftCachedData.GetLadderHistory(key, region);
-            // Iterate through the list in reverse order and compare last element with the previous
-            for (int i = LadderHistory.Count() - 1; i > 0; i--)
+            var fullLeaderboard = await _warcraftCachedData.GetBracketActivityPage(bracket, region);
+            var firstHundredPlayers = fullLeaderboard.Skip(skip).Take(take);
+            var LeaderboardEntry = firstHundredPlayers.Select(async p =>
             {
-                var currLadder = LadderHistory.ElementAt(i);
-                var previousLadder = LadderHistory.ElementAt(i - 1);
-                foreach (
-                    var player in currLadder.Entries
-                )
+                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
+                return new ActivityCharacterSummary
                 {
-                    var previousPlayer = previousLadder?.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
-                    {
-                        result.Add(new ActivityCharacterSummary { currPvpEntry = player, prevPvpEntry = previousPlayer, timeDifference = currLadder.Time.TimeAgo() });
-                        //current ladder break
-                        if (result.Count() >= skip + take)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                //ladder history break
-                if (result.Count() >= skip + take)
-                {
-                    break;
-                }
-            }
-            //getting character summary on page we are on, going through each character that rating has changed in the result list
-            result = result.Skip(skip).Take(take).ToList();
-            foreach (
-                var activity in result
-            )
-            {
-                 activity.charSummary = await _warcraftCachedData.GetCharSummary(activity.currPvpEntry.Character.Realm.Slug, activity.currPvpEntry.Character.Name, region);
-            }
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    prevPvpEntry = p.OldPlayer,
+                    currPvpEntry = p.NewPlayer,
+                    timeDifference = p.NewPlayer.Time.TimeAgo(),
+                    charSummary = ProfileSummaryEntry
+                };
+            });
+            var result = await Task.WhenAll(LeaderboardEntry);
             return Ok(result);
-            
 
         }
         [HttpPost("LadderHistoryFiltered")]
-        public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistoryFiltered(string key, string region, List<string> classes, int skip, int take)
+        public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistoryFiltered(string bracket, string region, List<string> classes, int skip, int take)
         {
-            var result = new List<ActivityCharacterSummary>();
-            var LadderHistory = await _warcraftCachedData.GetLadderHistory(key, region);
-            // Iterate through the list in reverse order and compare last element with the previous
-            for (int i = LadderHistory.Count() - 1; i > 0; i--)
+            List<ActivityCharacterSummary> result = [];
+            List<PlayerActivity?> filteredLadder = [];
+            foreach (
+                var charClass in classes
+            )
             {
-                var currLadder = LadderHistory.ElementAt(i);
-                var previousLadder = LadderHistory.ElementAt(i - 1);
-                foreach (
-                    var player in currLadder.Entries
-                )
-                {
-                    var previousPlayer = previousLadder.Entries.FirstOrDefault(prevPlayer => prevPlayer.Character.Id == player.Character.Id);
-                    if (previousPlayer != null && player.SeasonMatchStatistics.Played != previousPlayer?.SeasonMatchStatistics.Played)
-                    {
-                        var charSummary = await _warcraftCachedData.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
-                        if (charSummary != null && classes.Contains(charSummary.CharacterClass.Name)){
-                            result.Add(new ActivityCharacterSummary { 
-                                charSummary = charSummary,
-                                currPvpEntry = player, 
-                                prevPvpEntry = previousPlayer, 
-                                timeDifference = currLadder.Time.TimeAgo() 
-                            });
-                        }
-                        //current ladder break
-                        if (result.Count() >= skip + take)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                //ladder history break
-                if (result.Count() >= skip + take)
-                {
-                    break;
-                }
+                var fullLeaderboard = await _warcraftCachedData.GetBracketClassFilteredActivityPage(bracket, region, charClass);
+                filteredLadder.AddRange(fullLeaderboard);
             }
-            //getting character summary on page we are on, going through each character that rating has changed in the result list
-            result = result.Skip(skip).Take(take).ToList();
+            filteredLadder = filteredLadder.Where(p => p.NewPlayer != null).OrderBy(r => r?.NewPlayer?.Rank).Skip(skip).Take(take).ToList();
+            //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
+            var LadderLeaderboardEntries = filteredLadder.Select(async ladderEntry =>
+            {
+                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
+                return new ActivityCharacterSummary
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    prevPvpEntry = ladderEntry.OldPlayer,
+                    currPvpEntry = ladderEntry.NewPlayer,
+                    timeDifference = ladderEntry.NewPlayer.Time.TimeAgo(),
+                    charSummary = ProfileSummaryEntry
+                };  
+            });
+            result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
+            //displays correct ranking and returns all selected classes we want to filter
             return Ok(result);
+
         }
         public class ActivityCharacterSummary
         {
@@ -116,10 +80,10 @@ namespace Cataclysm_Website.Server.Controllers
             public string timeDifference { get; init; }
 
             [JsonPropertyName("currPvpEntry")]
-            public PvpLeaderboardEntry currPvpEntry { get; init; }
+            public PvpLeaderboardEntryandTime currPvpEntry { get; init; }
 
             [JsonPropertyName("prevPvpEntry")]
-            public PvpLeaderboardEntry prevPvpEntry { get; init; }
+            public PvpLeaderboardEntryandTime prevPvpEntry { get; init; }
 
             [JsonPropertyName("charSummary")]
             public CharacterProfileSummary charSummary { get; set; }

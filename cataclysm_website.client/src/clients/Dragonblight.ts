@@ -124,12 +124,12 @@ export class ActivityClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getLadderHistory(key: string | undefined, region: string | undefined, skip: number | undefined, take: number | undefined): Promise<ActivityCharacterSummary[]> {
+    getLadderHistory(bracket: string | undefined, region: string | undefined, skip: number | undefined, take: number | undefined): Promise<ActivityCharacterSummary[]> {
         let url_ = this.baseUrl + "/api/Activity/LadderHistory?";
-        if (key === null)
-            throw new Error("The parameter 'key' cannot be null.");
-        else if (key !== undefined)
-            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        if (bracket === null)
+            throw new Error("The parameter 'bracket' cannot be null.");
+        else if (bracket !== undefined)
+            url_ += "bracket=" + encodeURIComponent("" + bracket) + "&";
         if (region === null)
             throw new Error("The parameter 'region' cannot be null.");
         else if (region !== undefined)
@@ -173,12 +173,12 @@ export class ActivityClient {
         return Promise.resolve<ActivityCharacterSummary[]>(null as any);
     }
 
-    getLadderHistoryFiltered(key: string | undefined, region: string | undefined, classes: string[], skip: number | undefined, take: number | undefined): Promise<ActivityCharacterSummary[]> {
+    getLadderHistoryFiltered(bracket: string | undefined, region: string | undefined, classes: string[], skip: number | undefined, take: number | undefined): Promise<ActivityCharacterSummary[]> {
         let url_ = this.baseUrl + "/api/Activity/LadderHistoryFiltered?";
-        if (key === null)
-            throw new Error("The parameter 'key' cannot be null.");
-        else if (key !== undefined)
-            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        if (bracket === null)
+            throw new Error("The parameter 'bracket' cannot be null.");
+        else if (bracket !== undefined)
+            url_ += "bracket=" + encodeURIComponent("" + bracket) + "&";
         if (region === null)
             throw new Error("The parameter 'region' cannot be null.");
         else if (region !== undefined)
@@ -1038,16 +1038,17 @@ export interface RealmReference {
 
 export interface ActivityCharacterSummary {
     time: string;
-    currPvpEntry: PvpLeaderboardEntry;
-    prevPvpEntry: PvpLeaderboardEntry;
+    currPvpEntry: PvpLeaderboardEntryandTime;
+    prevPvpEntry: PvpLeaderboardEntryandTime;
     charSummary: CharacterProfileSummary;
 }
 
-export interface PvpLeaderboardEntry {
+export interface PvpLeaderboardEntryandTime {
     character?: Profile | undefined;
     faction?: EnumTypeWithoutName | undefined;
     rank: number;
     rating: number;
+    time: Date;
     season_match_statistics?: SeasonMatchStatistics | undefined;
     tier?: PvpTierReferenceWithoutName | undefined;
 }
@@ -1471,6 +1472,15 @@ export interface Damage {
 export interface PvpCharacterSummary {
     pvpEntry: PvpLeaderboardEntry;
     charSummary: CharacterProfileSummary;
+}
+
+export interface PvpLeaderboardEntry {
+    character?: Profile | undefined;
+    faction?: EnumTypeWithoutName | undefined;
+    rank: number;
+    rating: number;
+    season_match_statistics?: SeasonMatchStatistics | undefined;
+    tier?: PvpTierReferenceWithoutName | undefined;
 }
 
 export interface PvpSeasonReward {

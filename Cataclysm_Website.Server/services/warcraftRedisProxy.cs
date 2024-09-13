@@ -51,9 +51,8 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("get2v2Leaderboard" + region, async () =>
         {
             var curr2v2Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "2v2", region, GetRegion(region), GetLocale(region));
-            await AddToLadderHistory("2v2LadderHistory", region, curr2v2Leaderboard.Value);
             return curr2v2Leaderboard.Value;
-        }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
+        }, TimeSpan.FromHours(3)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
 
     public async Task<PvpLeaderboard> Get3v3Leaderboard(string region)
@@ -62,9 +61,8 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("get3v3Leaderboard" + region, async () =>
         {
             var curr3v3Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "3v3", region, GetRegion(region), GetLocale(region));
-            await AddToLadderHistory("3v3LadderHistory", region, curr3v3Leaderboard.Value);
             return curr3v3Leaderboard.Value;
-        }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
+        }, TimeSpan.FromHours(3)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
 
 
@@ -74,9 +72,8 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("get5v5Leaderboard" + region, async () =>
         {
             var curr5v5Leaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "5v5", region, GetRegion(region), GetLocale(region));
-            await AddToLadderHistory("5v5LadderHistory", region, curr5v5Leaderboard.Value);
             return curr5v5Leaderboard.Value;
-        }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
+        }, TimeSpan.FromHours(3)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
 
     public async Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region)
@@ -95,13 +92,12 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         return await GetBlizzardDataCached<PvpLeaderboard>("currRbgLadder" + region, async () =>
         {
             var currRbgLadder = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region), "rbg", region, GetRegion(region), GetLocale(region));
-            await AddToLadderHistory("rbgLadderHistory", region, currRbgLadder.Value);
             return currRbgLadder.Value;
-        }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
+        }, TimeSpan.FromHours(3)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
-        public async Task<PvpRewardsIndex> GetPvPRewards(string region)
+    public async Task<PvpRewardsIndex> GetPvPRewards(string region)
     {
-        
+
         region = GetDynamicRegion(region);
         int season = await GetSeason(region);
         return await GetBlizzardDataCached<PvpRewardsIndex>("GetPvPRewards" + season + region, async () =>
@@ -110,24 +106,125 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             return ActivePvpRewards.Value;
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
-        public async Task AddToLadderHistory(string key, string region, PvpLeaderboard currLadder) //get rbgLeaderboard in redis
-{
-            var currLadderAndTime = new PvpLeaderboardAndTime 
+    public async Task AddToLadderHistory(string key, string region, PvpLeaderboard currLadder) //get rbgLeaderboard in redis
+    {
+        var currLadderAndTime = new PvpLeaderboardAndTime
+        {
+            Entries = currLadder.Entries,
+            Links = currLadder.Links,
+            Name = currLadder.Name,
+            Season = currLadder.Season,
+            Time = DateTime.Now
+        };
+        var db = redis.GetDatabase();
+        await db.ListRightPushAsync(key + region, JsonSerializer.Serialize(currLadderAndTime));
+    }
+    public async Task InsertToPlayerPageActivity(string bracket, string region, PvpLeaderboardEntry player)
+    {
+        var PvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
+        {
+            Character = player.Character,
+            Faction = player.Faction,
+            Rank = player.Rank,
+            Rating = player.Rating,
+            SeasonMatchStatistics = player.SeasonMatchStatistics,
+            Tier = player.Tier,
+            Time = DateTime.Now
+        };
+        var db = redis.GetDatabase();
+        await db.ListRightPushAsync("actvity" + bracket + region + player.Character.Id, JsonSerializer.Serialize(PvpLeaderboardEntryandTime));
+    }
+    public async Task<IEnumerable<PvpLeaderboardEntryandTime?>> GetPlayerPageActivity(string bracket, string region, string characterId)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        string keyAndRegion = "actvity" + bracket + region + characterId;
+        var ladder = await db.ListRangeAsync(keyAndRegion);
+        //convert player to pvpleaderboardentry (for our filtered list of strings)
+        return ladder.Select(player =>
+        {
+            //deserialized out of json to become an object.
+            return JsonSerializer.Deserialize<PvpLeaderboardEntryandTime>(player);
+        }).ToList();
+    }
+    public async Task InsertToBracketActivityPage(string bracket, string region, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer)
+    {
+        var OldPvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
+        {
+            Character = oldPlayer.Character,
+            Faction = oldPlayer.Faction,
+            Rank = oldPlayer.Rank,
+            Rating = oldPlayer.Rating,
+            SeasonMatchStatistics = oldPlayer.SeasonMatchStatistics,
+            Tier = oldPlayer.Tier,
+            Time = DateTime.Now.Subtract(TimeSpan.FromHours(3))
+        };
+        var NewPvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
+        {
+            Character = newPlayer.Character,
+            Faction = newPlayer.Faction,
+            Rank = newPlayer.Rank,
+            Rating = newPlayer.Rating,
+            SeasonMatchStatistics = newPlayer.SeasonMatchStatistics,
+            Tier = newPlayer.Tier,
+            Time = DateTime.Now
+        };
+        var newPlayerActivity = new PlayerActivity
+        {
+            OldPlayer = OldPvpLeaderboardEntryandTime,
+            NewPlayer = NewPvpLeaderboardEntryandTime
+        };
+        var db = redis.GetDatabase();
+        await db.ListRightPushAsync("actvity" + bracket + region, JsonSerializer.Serialize(newPlayerActivity));
+    }
+    public async Task BracketPlayerExpiration(string bracket, string region)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        string keyAndRegion = "actvity" + bracket + region;
+        var expiredPlayers = await GetBracketActivityPage(bracket, region);
+        int c = 0;
+        foreach (var expiredPlayer in expiredPlayers)
+        {
+            if(expiredPlayer.NewPlayer == null || expiredPlayer.OldPlayer == null){
+                c++;
+            }
+            if (expiredPlayer.NewPlayer.Time - expiredPlayer.OldPlayer.Time > TimeSpan.FromHours(12))
             {
-                Entries = currLadder.Entries,
-                Links = currLadder.Links,
-                Name = currLadder.Name,
-                Season = currLadder.Season,
-                Time = DateTime.Now
-            };
-            var db = redis.GetDatabase();
-            await db.ListRightPushAsync(key + region, JsonSerializer.Serialize(currLadderAndTime));
-}
-public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region)
-{
+                c++;
+            }
+        }
+        if (c > 0){
+        await db.ListTrimAsync(keyAndRegion, 0, c);
+        }
+    }
+    public async Task<IEnumerable<PlayerActivity?>> GetBracketActivityPage(string bracket, string region)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        string keyAndRegion = "actvity" + bracket + region;
+        var ladder = await db.ListRangeAsync(keyAndRegion);
+        //convert player to pvpleaderboardentry (for our filtered list of strings)
+        return ladder.Select(player =>
+        {
+            //deserialized out of json to become an object.
+            return JsonSerializer.Deserialize<PlayerActivity>(player);
+        }).ToList();
+    }
+        public async Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        string keyAndRegion = "activity" + bracket + "_" + characterClass + "_" + region;
+        var ladder = await db.ListRangeAsync(keyAndRegion);
+        //convert player to pvpleaderboardentry (for our filtered list of strings)
+        return ladder.Select(player =>
+        {
+            //deserialized out of json to become an object.
+            return JsonSerializer.Deserialize<PlayerActivity>(player);
+        }).ToList();
+    }
+    public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region)
+    {
         region = GetDynamicRegion(region);
         var db = redis.GetDatabase(); //var to redis database
-        string keyAndRegion = key + region ;
+        string keyAndRegion = key + region;
 
         var ladder = await db.ListRangeAsync(keyAndRegion);
         //convert player to pvpleaderboardentry (for our filtered list of strings)
@@ -136,7 +233,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
             //deserialized out of json to become an object.
             return JsonSerializer.Deserialize<PvpLeaderboardAndTime>(player);
         }).ToList();
-}
+    }
     public Region GetRegion(string region)
     {
         if (region == "us" || region.Contains("-us"))
@@ -178,7 +275,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
             return null;
         }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
-        public async Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region)
+    public async Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region)
     {
         //creates unique character key from their server, character name, and region (this will prevent any duplicates)
         region = GetProfileRegion(region);
@@ -214,7 +311,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
             return null;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
-    
+
     // get character summary in redis for character appearance
     public async Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region)
     {
@@ -232,7 +329,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
             return null;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
-        // get character summary in redis for character appearance
+    // get character summary in redis for character appearance
     public async Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region)
     {
         region = GetProfileRegion(region);
@@ -291,7 +388,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
     {
         var db = redis.GetDatabase(); //var to redis database
         //connect strings from InsertCacheClassCharacter to key in CachedClassCharacters
-        string key = bracket + "_" + characterClass + "_" + region ;
+        string key = bracket + "_" + characterClass + "_" + region;
 
         //views filtered list from the key (changes from bracket or characterClass from InsertCacheClassCharacter)
         var characterList = await db.ListRangeAsync(key);
@@ -310,10 +407,11 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
         foreach (var wowClass in wowClasses)
         {
             await db.KeyDeleteAsync(bracket + "_" + wowClass + "_" + region);
+            await BracketClassPlayerExpiration(bracket, region, wowClass);
         }
     }
     public async Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary characterClass, string region)
-        //these all return a string, allowing us to connected to cachedclasscharacters function
+    //these all return a string, allowing us to connected to cachedclasscharacters function
     {
         if (region == null) { return; }
         if (bracket == null) { return; }
@@ -326,6 +424,63 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
         await db.ListRemoveAsync(key, serializedPlayer);
         await db.ListRightPushAsync(key, serializedPlayer);
     }
+        public async Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region)
+    //these all return a string, allowing us to connected to cachedclasscharacters function
+    {
+        var OldPvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
+        {
+            Character = oldPlayer.Character,
+            Faction = oldPlayer.Faction,
+            Rank = oldPlayer.Rank,
+            Rating = oldPlayer.Rating,
+            SeasonMatchStatistics = oldPlayer.SeasonMatchStatistics,
+            Tier = oldPlayer.Tier,
+            Time = DateTime.Now.Subtract(TimeSpan.FromHours(3))
+        };
+        var NewPvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
+        {
+            Character = newPlayer.Character,
+            Faction = newPlayer.Faction,
+            Rank = newPlayer.Rank,
+            Rating = newPlayer.Rating,
+            SeasonMatchStatistics = newPlayer.SeasonMatchStatistics,
+            Tier = newPlayer.Tier,
+            Time = DateTime.Now
+        };
+        var newPlayerActivity = new PlayerActivity
+        {
+            OldPlayer = OldPvpLeaderboardEntryandTime,
+            NewPlayer = NewPvpLeaderboardEntryandTime
+        };
+        if (oldPlayer == null) {return; }
+        if (newPlayer == null) {return; }
+        if (region == null) { return; }
+        if (bracket == null) { return; }
+        if (characterClass == null) { return; }
+        if (characterClass.CharacterClass == null) { return; }
+        string key = "activity" + bracket + "_" + characterClass.CharacterClass.Name + "_" + region;
+        var db = redis.GetDatabase(); //var to redis database
+        //looks at a player, finds the correct data and puts it inside the key values, then goes inside of sectioned list of data
+        var serializedPlayer = JsonSerializer.Serialize(newPlayerActivity);
+        await db.ListRemoveAsync(key, serializedPlayer);
+        await db.ListRightPushAsync(key, serializedPlayer);
+    }
+        public async Task BracketClassPlayerExpiration(string bracket, string region, string characterClass)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        string keyAndRegion = "activity" + bracket + "_" + characterClass + "_" + region;
+        var expiredPlayers = await GetBracketClassFilteredActivityPage(bracket, region, characterClass);
+        int c = 0;
+        foreach (var expiredPlayer in expiredPlayers)
+        {
+            if (expiredPlayer.NewPlayer.Time - expiredPlayer.OldPlayer.Time > TimeSpan.FromHours(12))
+            {
+                c++;
+            }
+        }
+        await db.ListTrimAsync(keyAndRegion, 0, c);
+
+    }
     public string GetProfileRegion(string region)
     {
         return "profile-classic-" + region;
@@ -335,7 +490,7 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
     {
         return "dynamic-classic-" + region;
     }
-        public async Task<ItemMedia> GetItemIcon(int itemId)
+    public async Task<ItemMedia> GetItemIcon(int itemId)
     {
         return await GetBlizzardDataCached<ItemMedia>("ItemIcon" + itemId, async () =>
         {
@@ -350,6 +505,28 @@ public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string k
             return null;
         }, TimeSpan.FromDays(30)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
-
+    public async Task ClearLeaderboard(string bracket, string region)
+    {
+        region = GetDynamicRegion(region);
+        string key = "";
+        if (bracket == "rbg")
+        {
+            key = "currRbgLadder" + region;
+        }
+        if (bracket == "2v2")
+        {
+            key = "get2v2Leaderboard" + region;
+        }
+        if (bracket == "3v3")
+        {
+            key = "get3v3Leaderboard" + region;
+        }
+        if (bracket == "5v5")
+        {
+            key = "get5v5Leaderboard" + region;
+        }
+        var db = redis.GetDatabase();
+        await db.KeyDeleteAsync(key);
+    }
 
 }
