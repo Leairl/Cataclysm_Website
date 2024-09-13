@@ -7,7 +7,7 @@ using ArgentPonyWarcraftClient;
 using Namotion.Reflection;
 using StackExchange.Redis;
 
-class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer redis) : IWarcraftRedisProxy
+class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer redis, ILogger<warcraftRedisProxy> logger) : IWarcraftRedisProxy
 {
     public async Task<T?> GetRedisData<T>(string key)
     {  //async call to return data (of generic type), second type is to define the type.
@@ -294,7 +294,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
 
     public async Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region)
     {
-        Console.WriteLine("getting char summary for" + " " + characterName + " " + server);
+        logger.LogInformation("Getting char summary for" + " " + characterName + " " + server);
         //creates unique character key from their server, character name, and region (this will prevent any duplicates)
         region = GetProfileRegion(region);
         return await GetBlizzardDataCached<CharacterProfileSummary>("GetCharacter" + server + characterName + region, async () =>
