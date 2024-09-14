@@ -26,7 +26,7 @@ namespace Cataclysm_Website.Server.Controllers
         public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistory(string bracket, string region, int skip, int take)
         {
             var fullLeaderboard = await _warcraftCachedData.GetBracketActivityPage(bracket, region);
-            var firstHundredPlayers = fullLeaderboard.Skip(skip).Take(take);
+            var firstHundredPlayers = fullLeaderboard.OrderBy(d => DateTime.Now.Subtract(d.NewPlayer.Time).Hours).ThenBy(r => r.NewPlayer.Rank).Skip(skip).Take(take);
             var LeaderboardEntry = firstHundredPlayers.Select(async p =>
             {
                 var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);

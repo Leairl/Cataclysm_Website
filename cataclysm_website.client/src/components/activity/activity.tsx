@@ -76,8 +76,10 @@ function Activity() {
    <Cutoffs region={region} bracket={bracket}></Cutoffs>
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
+          <div className="hidden">
           <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
-          <div className="left50"></div>
+          </div>
+          <div className=" hidden left50"></div>
           <div className={loading ? "div-disabled" : ""}>
             <SegmentedControl.Root
               className=" w-[250px] flex-grow-0"

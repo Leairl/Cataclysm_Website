@@ -58,7 +58,7 @@ function NavBar() {
             </Link>
           </NavigationMenu.Item>
           <NavigationMenu.Item >
-            <Link to="https://discord.gg/WKv3d2Rw" target="_blank" rel="noopener noreferrer">
+            <Link to="https://discord.gg/ydesbvpcNS" target="_blank" rel="noopener noreferrer">
               <NavigationMenu.Trigger className="group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
                   <img
@@ -183,7 +183,7 @@ function NavBar() {
           </NavigationMenu.Item>
           <NavigationMenu.Item>
             <div className="px-3 py-2 w-full">
-            <a onClick={() => { window.location.href = "https://discord.gg/WKv3d2Rw" }}>
+            <a onClick={() => { window.location.href = "https://discord.gg/ydesbvpcNS" }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-teal-500 rounded">
