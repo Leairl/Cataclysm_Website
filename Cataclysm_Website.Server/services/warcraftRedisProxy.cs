@@ -184,16 +184,14 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         int c = 0;
         foreach (var expiredPlayer in expiredPlayers)
         {
-            if(expiredPlayer.NewPlayer == null || expiredPlayer.OldPlayer == null){
-                c++;
-            }
-            if (expiredPlayer.NewPlayer.Time - expiredPlayer.OldPlayer.Time > TimeSpan.FromHours(12))
+            if ((DateTime.Now - expiredPlayer.NewPlayer.Time) > TimeSpan.FromHours(12))
             {
                 c++;
             }
         }
-        if (c > 0){
-        await db.ListTrimAsync(keyAndRegion, 0, c);
+        if (c > 0)
+        {
+            await db.ListTrimAsync(keyAndRegion, c, -1);
         }
     }
     public async Task<IEnumerable<PlayerActivity?>> GetBracketActivityPage(string bracket, string region)
@@ -206,9 +204,9 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         {
             //deserialized out of json to become an object.
             return JsonSerializer.Deserialize<PlayerActivity>(player);
-        }).ToList();
+        }).Where(p => p != null && p.NewPlayer != null && p.OldPlayer != null).ToList();
     }
-        public async Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass)
+    public async Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass)
     {
         var db = redis.GetDatabase(); //var to redis database
         string keyAndRegion = "activity" + bracket + "_" + characterClass + "_" + region;
@@ -218,7 +216,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         {
             //deserialized out of json to become an object.
             return JsonSerializer.Deserialize<PlayerActivity>(player);
-        }).ToList();
+        }).Where(p => p != null && p.NewPlayer != null && p.OldPlayer != null).ToList();
     }
     public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region)
     {
@@ -424,7 +422,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         await db.ListRemoveAsync(key, serializedPlayer);
         await db.ListRightPushAsync(key, serializedPlayer);
     }
-        public async Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region)
+    public async Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region)
     //these all return a string, allowing us to connected to cachedclasscharacters function
     {
         var OldPvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
@@ -452,8 +450,8 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             OldPlayer = OldPvpLeaderboardEntryandTime,
             NewPlayer = NewPvpLeaderboardEntryandTime
         };
-        if (oldPlayer == null) {return; }
-        if (newPlayer == null) {return; }
+        if (oldPlayer == null) { return; }
+        if (newPlayer == null) { return; }
         if (region == null) { return; }
         if (bracket == null) { return; }
         if (characterClass == null) { return; }
@@ -465,7 +463,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         await db.ListRemoveAsync(key, serializedPlayer);
         await db.ListRightPushAsync(key, serializedPlayer);
     }
-        public async Task BracketClassPlayerExpiration(string bracket, string region, string characterClass)
+    public async Task BracketClassPlayerExpiration(string bracket, string region, string characterClass)
     {
         var db = redis.GetDatabase(); //var to redis database
         string keyAndRegion = "activity" + bracket + "_" + characterClass + "_" + region;
@@ -473,13 +471,15 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         int c = 0;
         foreach (var expiredPlayer in expiredPlayers)
         {
-            if (expiredPlayer.NewPlayer.Time - expiredPlayer.OldPlayer.Time > TimeSpan.FromHours(12))
+            if ((DateTime.Now - expiredPlayer.NewPlayer.Time) > TimeSpan.FromHours(12))
             {
                 c++;
             }
         }
-        await db.ListTrimAsync(keyAndRegion, 0, c);
-
+        if (c > 0)
+        {
+            await db.ListTrimAsync(keyAndRegion, c, -1);
+        }
     }
     public string GetProfileRegion(string region)
     {
