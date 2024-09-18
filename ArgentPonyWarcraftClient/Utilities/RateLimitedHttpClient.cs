@@ -39,7 +39,7 @@ public class RateLimitedHttpClient : IDisposable
             return new HttpResponseMessage(exception.StatusCode.HasValue ? exception.StatusCode.Value : System.Net.HttpStatusCode.InternalServerError);
             // ignore exceptions for now
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
         }

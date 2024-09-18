@@ -22,9 +22,16 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("GetCharacterAchievements")]
         public async Task<ActionResult<CharacterAchievementsSummary>> GetCharacterAchievements(string server, string characterName, string region)
         {
-            var  result = await _warcraftCachedData.GetCharacterAchievements(server.ToLower(), characterName.ToLower(), region);
-            return Ok(result);
-
+            try
+            {
+                var result = await _warcraftCachedData.GetCharacterAchievements(server.ToLower(), characterName.ToLower(), region);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching character achievements.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
     }
 }

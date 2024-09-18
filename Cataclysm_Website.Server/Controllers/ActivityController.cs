@@ -1,8 +1,6 @@
-using System.Net.WebSockets;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
-using StackExchange.Redis;
 
 namespace Cataclysm_Website.Server.Controllers
 {
@@ -25,68 +23,82 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("LadderHistory")]
         public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistory(string bracket, string region, int skip, int take)
         {
-            var fullLeaderboard = await _warcraftCachedData.GetBracketActivityPage(bracket, region);
-            var firstHundredPlayers = fullLeaderboard.OrderBy(d => DateTime.Now.Subtract(d.NewPlayer.Time).Hours).ThenBy(r => r.NewPlayer.Rank).Skip(skip).Take(take);
-            var LeaderboardEntry = firstHundredPlayers.Select(async p =>
+            try
             {
-                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
-                return new ActivityCharacterSummary
+                var fullLeaderboard = await _warcraftCachedData.GetBracketActivityPage(bracket, region);
+                var firstHundredPlayers = fullLeaderboard.Where(l => l != null).Select(l => l!).OrderBy(d => DateTime.Now.Subtract(d.NewPlayer.Time).Hours).ThenBy(r => r.NewPlayer.Rank).Skip(skip).Take(take);
+                var LeaderboardEntry = firstHundredPlayers.Select(async p =>
                 {
-                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
-                    prevPvpEntry = p.OldPlayer,
-                    currPvpEntry = p.NewPlayer,
-                    timeDifference = p.NewPlayer.Time.TimeAgo(),
-                    charSummary = ProfileSummaryEntry
-                };
-            });
-            var result = await Task.WhenAll(LeaderboardEntry);
-            return Ok(result);
+                    var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
+                    return new ActivityCharacterSummary
+                    {
+                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                        PrevPvpEntry = p.OldPlayer,
+                        CurrPvpEntry = p.NewPlayer,
+                        TimeDifference = p.NewPlayer.Time.TimeAgo(),
+                        CharSummary = ProfileSummaryEntry
+                    };
+                });
+                var result = await Task.WhenAll(LeaderboardEntry);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching ladder history.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
 
         }
         [HttpPost("LadderHistoryFiltered")]
         public async Task<ActionResult<List<ActivityCharacterSummary>>> GetLadderHistoryFiltered(string bracket, string region, List<string> classes, int skip, int take)
         {
-            List<ActivityCharacterSummary> result = [];
-            List<PlayerActivity?> filteredLadder = [];
-            foreach (
-                var charClass in classes
-            )
+            try
             {
-                var fullLeaderboard = await _warcraftCachedData.GetBracketClassFilteredActivityPage(bracket, region, charClass);
-                filteredLadder.AddRange(fullLeaderboard);
-            }
-            filteredLadder = filteredLadder.Where(p => p.NewPlayer != null).OrderBy(r => r?.NewPlayer?.Rank).Skip(skip).Take(take).ToList();
-            //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
-            var LadderLeaderboardEntries = filteredLadder.Select(async ladderEntry =>
-            {
-                var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
-                return new ActivityCharacterSummary
+                List<ActivityCharacterSummary> result = [];
+                List<PlayerActivity?> filteredLadder = [];
+                foreach (var charClass in classes)
                 {
-                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
-                    prevPvpEntry = ladderEntry.OldPlayer,
-                    currPvpEntry = ladderEntry.NewPlayer,
-                    timeDifference = ladderEntry.NewPlayer.Time.TimeAgo(),
-                    charSummary = ProfileSummaryEntry
-                };  
-            });
-            result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
-            //displays correct ranking and returns all selected classes we want to filter
-            return Ok(result);
+                    var fullLeaderboard = await _warcraftCachedData.GetBracketClassFilteredActivityPage(bracket, region, charClass);
+                    filteredLadder.AddRange(fullLeaderboard);
+                }
+                filteredLadder = filteredLadder.Where(p => p?.NewPlayer != null).OrderBy(r => r?.NewPlayer?.Rank).Skip(skip).Take(take).ToList();
+                //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
+                var LadderLeaderboardEntries = filteredLadder.Where(l => l != null).Select(l => l!).Select(async ladderEntry =>
+                {
+                    var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
+                    return new ActivityCharacterSummary
+                    {
+                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                        PrevPvpEntry = ladderEntry.OldPlayer,
+                        CurrPvpEntry = ladderEntry.NewPlayer,
+                        TimeDifference = ladderEntry.NewPlayer.Time.TimeAgo(),
+                        CharSummary = ProfileSummaryEntry
+                    };
+                });
+                result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
+                //displays correct ranking and returns all selected classes we want to filter
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching filtered ladder history.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
 
         }
         public class ActivityCharacterSummary
         {
             [JsonPropertyName("time")]
-            public string timeDifference { get; init; }
+            public required string TimeDifference { get; init; }
 
             [JsonPropertyName("currPvpEntry")]
-            public PvpLeaderboardEntryandTime currPvpEntry { get; init; }
+            public required PvpLeaderboardEntryandTime CurrPvpEntry { get; init; }
 
             [JsonPropertyName("prevPvpEntry")]
-            public PvpLeaderboardEntryandTime prevPvpEntry { get; init; }
+            public required PvpLeaderboardEntryandTime PrevPvpEntry { get; init; }
 
             [JsonPropertyName("charSummary")]
-            public CharacterProfileSummary charSummary { get; set; }
+            public required CharacterProfileSummary CharSummary { get; set; }
         }
     }
 }

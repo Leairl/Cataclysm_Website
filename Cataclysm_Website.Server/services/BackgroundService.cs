@@ -8,10 +8,12 @@ public class BgService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private Timer? _timer;
+    private ILogger<BgService> _logger;
 
-    public BgService(IServiceProvider serviceProvider)
+    public BgService(IServiceProvider serviceProvider, ILogger<BgService> logger)
     {
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,12 +24,17 @@ public class BgService : BackgroundService
 
     private async void DoWork(object? nullState)
     {
-        using (var scope = _serviceProvider.CreateScope())
+        try 
         {
+            using var scope = _serviceProvider.CreateScope();
             var services = scope.ServiceProvider;
             var charService = services.GetRequiredService<CharacterCacheService>();
             await charService.CacheAllLadders("us");
             await charService.CacheAllLadders("eu");
+        } 
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex, "Error in BgService");
         }
     }
 

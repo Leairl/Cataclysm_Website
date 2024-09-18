@@ -1,13 +1,8 @@
-using System.Data.Common;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
-using Namotion.Reflection;
 using StackExchange.Redis;
 
-class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer redis, ILogger<warcraftRedisProxy> logger) : IWarcraftRedisProxy
+class WarcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer redis, ILogger<WarcraftRedisProxy> logger) : IWarcraftRedisProxy
 {
     public async Task<T?> GetRedisData<T>(string key)
     {  //async call to return data (of generic type), second type is to define the type.
@@ -17,7 +12,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         {
             return default(T);
         }
-        var result = JsonSerializer.Deserialize<T>(StringRedis); //deserialize jsonstring redis to obj of key
+        var result = JsonSerializer.Deserialize<T>(StringRedis!); //deserialize jsonstring redis to obj of key
         return result;
     }
 
@@ -140,10 +135,10 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         string keyAndRegion = "actvity" + bracket + region + characterId;
         var ladder = await db.ListRangeAsync(keyAndRegion);
         //convert player to pvpleaderboardentry (for our filtered list of strings)
-        return ladder.Select(player =>
+        return ladder.Where(p => p.HasValue).Select(player =>
         {
             //deserialized out of json to become an object.
-            return JsonSerializer.Deserialize<PvpLeaderboardEntryandTime>(player);
+            return JsonSerializer.Deserialize<PvpLeaderboardEntryandTime>(player!);
         }).ToList();
     }
     public async Task InsertToBracketActivityPage(string bracket, string region, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer)
@@ -184,7 +179,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         int c = 0;
         foreach (var expiredPlayer in expiredPlayers)
         {
-            if ((DateTime.Now - expiredPlayer.NewPlayer.Time) > TimeSpan.FromHours(12))
+            if (expiredPlayer == null || (DateTime.Now - expiredPlayer!.NewPlayer.Time) > TimeSpan.FromHours(12))
             {
                 c++;
             }
@@ -200,10 +195,10 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         string keyAndRegion = "actvity" + bracket + region;
         var ladder = await db.ListRangeAsync(keyAndRegion);
         //convert player to pvpleaderboardentry (for our filtered list of strings)
-        return ladder.Select(player =>
+        return ladder.Where(p => p.HasValue).Select(player =>
         {
             //deserialized out of json to become an object.
-            return JsonSerializer.Deserialize<PlayerActivity>(player);
+            return JsonSerializer.Deserialize<PlayerActivity>(player!);
         }).Where(p => p != null && p.NewPlayer != null && p.OldPlayer != null).ToList();
     }
     public async Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass)
@@ -212,10 +207,10 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         string keyAndRegion = "activity" + bracket + "_" + characterClass + "_" + region;
         var ladder = await db.ListRangeAsync(keyAndRegion);
         //convert player to pvpleaderboardentry (for our filtered list of strings)
-        return ladder.Select(player =>
+        return ladder.Where(p => p.HasValue).Select(player =>
         {
             //deserialized out of json to become an object.
-            return JsonSerializer.Deserialize<PlayerActivity>(player);
+            return JsonSerializer.Deserialize<PlayerActivity>(player!);
         }).Where(p => p != null && p.NewPlayer != null && p.OldPlayer != null).ToList();
     }
     public async Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region)
@@ -226,10 +221,10 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
 
         var ladder = await db.ListRangeAsync(keyAndRegion);
         //convert player to pvpleaderboardentry (for our filtered list of strings)
-        return ladder.Select(player =>
+        return ladder.Where(p => p.HasValue).Select(player =>
         {
             //deserialized out of json to become an object.
-            return JsonSerializer.Deserialize<PvpLeaderboardAndTime>(player);
+            return JsonSerializer.Deserialize<PvpLeaderboardAndTime>(player!);
         }).ToList();
     }
     public Region GetRegion(string region)
@@ -270,7 +265,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             {
                 return GetCharacter.Value;
             }
-            return null;
+            return new CharacterPvpBracketStatistics();
         }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
     public async Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region)
@@ -286,7 +281,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
             {
                 return GetCharacterStats.Value;
             }
-            return null;
+            return new CharacterStatisticsSummary();
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
 
@@ -306,7 +301,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
                 await InsertCacheCharacter(characterName, server, region);
                 return GetCharacter.Value;
             }
-            return null;
+            return new CharacterProfileSummary();
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
 
@@ -324,7 +319,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
                 //call method to insert char name in cache
                 return GetCharacter.Value;
             }
-            return null;
+            return new CharacterAppearanceSummary();
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
     // get character summary in redis for character appearance
@@ -341,7 +336,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
                 //call method to insert char name in cache
                 return GetCharacter.Value;
             }
-            return null;
+            return new CharacterAchievementsSummary();
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
     // get character summary in redis for character equipment
@@ -358,7 +353,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
                 //call method to insert char name in cache
                 return GetCharacter.Value;
             }
-            return null;
+            return new CharacterEquipmentSummary();
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
     //for this method, we are retrieving a list of characters for CachedCharacters
@@ -391,10 +386,10 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         //views filtered list from the key (changes from bracket or characterClass from InsertCacheClassCharacter)
         var characterList = await db.ListRangeAsync(key);
         //convert player to pvpleaderboardentry (for our filtered list of strings)
-        return characterList.Select(player =>
+        return characterList.Where(p => p.HasValue).Select(player =>
         {
             //deserialized out of json to become an object.
-            return JsonSerializer.Deserialize<PvpLeaderboardEntry>(player);
+            return JsonSerializer.Deserialize<PvpLeaderboardEntry>(player!);
         }).ToList();
     }
     public async Task ClearAllCachedClassCharacters(string bracket, string region)
@@ -471,7 +466,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         int c = 0;
         foreach (var expiredPlayer in expiredPlayers)
         {
-            if ((DateTime.Now - expiredPlayer.NewPlayer.Time) > TimeSpan.FromHours(12))
+            if (expiredPlayer == null || (DateTime.Now - expiredPlayer!.NewPlayer.Time) > TimeSpan.FromHours(12))
             {
                 c++;
             }
@@ -502,7 +497,7 @@ class warcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
                 //call method to insert char name in cache
                 return getItemIcon.Value;
             }
-            return null;
+            return new ItemMedia();
         }, TimeSpan.FromDays(30)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
     }
     public async Task ClearLeaderboard(string bracket, string region)

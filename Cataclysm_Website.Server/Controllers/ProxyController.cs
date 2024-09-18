@@ -11,29 +11,56 @@ namespace CORSProxy
     {
         private readonly IConfiguration Configuration;
         private readonly HttpProxyOptions proxyOptions;
+        private readonly ILogger<ProxyController> _logger;
 
-        public ProxyController(IConfiguration configuration, IHttpProxyOptionsBuilder proxyOptions)
+        public ProxyController(IConfiguration configuration, IHttpProxyOptionsBuilder proxyOptions, ILogger<ProxyController> logger)
         {
             Configuration = configuration;
             this.proxyOptions = proxyOptions.Build();
+            _logger = logger;
         }
 
         [Route("data/news")]
         public Task news()
         {
-            return this.ProxyAsync("https://www.wowhead.com/cata/blue-tracker?rss", null, httpProxyOptions: proxyOptions);
+            try
+            {
+                return this.ProxyAsync("https://www.wowhead.com/cata/blue-tracker?rss", null, httpProxyOptions: proxyOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the news request.");
+                throw new Exception("An error occurred while processing the news request.");
+            }
         }
 
         [Route("data/modelviewer/cata/background-classic-181818.png")]
-        public FileContentResult image() {
-            return File(System.IO.File.ReadAllBytes("background.png"), "image/png", System.IO.Path.GetFileName("background.png")); 
+        public FileContentResult image()
+        {
+            try
+            {
+                return File(System.IO.File.ReadAllBytes("background.png"), "image/png", System.IO.Path.GetFileName("background.png")); 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the image request.");
+                throw new Exception("An error occurred while processing the data forwarding request.");
+            }
         }
 
         //data forwarding to wowhead
         [Route("data/{*args}")]
         public Task Index()
         {
-            return this.ProxyAsync("https://wow.zamimg.com/" + Request.Path.Value?.Replace("/data", "", StringComparison.InvariantCultureIgnoreCase) + Request.QueryString, null, httpProxyOptions: proxyOptions);
+            try
+            {
+                return this.ProxyAsync("https://wow.zamimg.com/" + Request.Path.Value?.Replace("/data", "", StringComparison.InvariantCultureIgnoreCase) + Request.QueryString, null, httpProxyOptions: proxyOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the data forwarding request.");
+                throw new Exception("An error occurred while processing the data forwarding request.");
+            }
         }
     }
 }

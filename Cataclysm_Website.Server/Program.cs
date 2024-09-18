@@ -26,10 +26,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddWarcraftClients(battlenetClient, battlenetSecret);
-builder.Services.AddScoped<IWarcraftRedisProxy, warcraftRedisProxy>();
+builder.Services.AddScoped<IWarcraftRedisProxy, WarcraftRedisProxy>();
 builder.Services.AddScoped<CharacterCacheService>();
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "NSWAG")
 {
+    if (string.IsNullOrEmpty(redisConnectionString))
+    {
+        throw new ArgumentNullException(nameof(redisConnectionString));
+    }
     builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
     builder.Services.AddHostedService<BgService>();
 }

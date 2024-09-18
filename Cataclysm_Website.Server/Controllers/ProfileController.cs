@@ -25,23 +25,46 @@ namespace Cataclysm_Website.Server.Controllers
         //Iactionresult used when you have action results incoming (200/401/404)
         public async Task<ActionResult<CharacterProfileSummary>> GetProfile(string server, string characterName, string region)
         {
-            var  result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region);
-            return Ok(result);
-
+            try
+            {
+                var result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting character profile.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
+
         [HttpGet("GetAppearance")]
         public async Task<ActionResult<CharacterAppearanceSummary>> GetAppearance(string server, string characterName, string region)
         {
-            var  result = await _warcraftCachedData.GetCharAppearance(server.ToLower(), characterName.ToLower(), region);
-            return Ok(result);
-
+            try
+            {
+                var result = await _warcraftCachedData.GetCharAppearance(server.ToLower(), characterName.ToLower(), region);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting character appearance.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
+
         [HttpGet("GetEquipment")]
         public async Task<ActionResult<CharacterEquipmentSummary>> GetEquipment(string server, string characterName, string region)
         {
-            var  result = await _warcraftCachedData.GetCharEquipment(server.ToLower(), characterName.ToLower(), region);
-            return Ok(result);
-
+            try
+            {
+                var result = await _warcraftCachedData.GetCharEquipment(server.ToLower(), characterName.ToLower(), region);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting character equipment.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
     }
 }

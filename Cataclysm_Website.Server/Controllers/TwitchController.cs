@@ -11,11 +11,10 @@ namespace Cataclysm_Website.Server.Controllers
     public class TwitchController : ControllerBase
     {
         private readonly ILogger<TwitchController> _logger;
-        private readonly IWarcraftRedisProxy _warcraftCachedData; //underscore is syntax to global variable
         private readonly IConfiguration _config;
 
 
-        public TwitchController(ILogger<TwitchController> logger, IWarcraftRedisProxy warcraftCachedData, IConfiguration config)
+        public TwitchController(ILogger<TwitchController> logger, IConfiguration config)
         {
             _logger = logger;
             _config = config;
@@ -41,24 +40,32 @@ namespace Cataclysm_Website.Server.Controllers
             HttpResponseMessage responseMessage = await Client.PostAsync($"{host}/oauth2/token", requestBody);
             responseMessage.EnsureSuccessStatusCode();
             string response = await responseMessage.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<OAuthAccessToken>(response);
+            return JsonSerializer.Deserialize<OAuthAccessToken>(response) ?? throw new Exception("Failed to get OAuth token from Twitch API.");
         }
 
         [HttpGet("GetWowTwitchStreams")]
         public async Task<ActionResult<IEnumerable<TwitchLib.Api.Helix.Models.Streams.GetStreams.Stream>>> GetWowTwitchStreams()
         {
-            var clientId = _config["TwitchApi:clientId"];
-            var clientSecret = _config["TwitchApi:clientSecret"];
-            if (clientId == null || clientSecret == null)
+            try
             {
-                return BadRequest("Twitch API credentials not found.");
-            }
-            var api = new TwitchAPI();
-            api.Settings.ClientId = clientId;
-            api.Settings.AccessToken = (await GetOAuthTokenAsync(clientId, clientSecret))?.AccessToken;
+                var clientId = _config["TwitchApi:clientId"];
+                var clientSecret = _config["TwitchApi:clientSecret"];
+                if (clientId == null || clientSecret == null)
+                {
+                    return BadRequest("Twitch API credentials not found.");
+                }
+                var api = new TwitchAPI();
+                api.Settings.ClientId = clientId;
+                api.Settings.AccessToken = (await GetOAuthTokenAsync(clientId, clientSecret))?.AccessToken;
 
-            var result = await api.Helix.Streams.GetStreamsAsync(gameIds: ["18122"], first: 10);
-            return Ok(result.Streams);
+                var result = await api.Helix.Streams.GetStreamsAsync(gameIds: new List<string> { "18122" }, first: 10);
+                return Ok(result.Streams);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching Twitch streams.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
 
         }
     }

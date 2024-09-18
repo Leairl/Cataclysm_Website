@@ -22,8 +22,16 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("GetCharacterTalents")]
         public async Task<ActionResult<CharacterSpecializationsSummary>> GetCharacterTalents(string server, string characterName, string region)
         {
-            var  result = await _warcraftCachedData.GetPlayerTalents(server.ToLower(), characterName.ToLower(), region);
-            return Ok(result);
+            try
+            {
+                var result = await _warcraftCachedData.GetPlayerTalents(server.ToLower(), characterName.ToLower(), region);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while getting character talents.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
 
         }
     }

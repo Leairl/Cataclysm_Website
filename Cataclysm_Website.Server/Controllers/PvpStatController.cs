@@ -22,13 +22,21 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("GetPvPCurrentRating")]
         public async Task<ActionResult<List<CharacterPvpBracketStatistics>>> GetPvPCurrentRating(string server, string characterName, string region)
         {
-            List<string> Brackets = ["2v2", "3v3", "5v5", "rbg"];
-            List<CharacterPvpBracketStatistics> results = new List<CharacterPvpBracketStatistics>();
-            foreach (var PvPBracket in Brackets)
+            try
             {
-                results.Add(await _warcraftCachedData.GetPvpBracketRating(server.ToLower(), characterName.ToLower(), PvPBracket, region));
+                List<string> Brackets = new List<string> { "2v2", "3v3", "5v5", "rbg" };
+                List<CharacterPvpBracketStatistics> results = new List<CharacterPvpBracketStatistics>();
+                foreach (var PvPBracket in Brackets)
+                {
+                    results.Add(await _warcraftCachedData.GetPvpBracketRating(server.ToLower(), characterName.ToLower(), PvPBracket, region));
+                }
+                return Ok(results);
             }
-            return Ok(results);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching PvP ratings.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
     }
 }

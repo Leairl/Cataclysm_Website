@@ -22,8 +22,16 @@ namespace Cataclysm_Website.Server.Controllers
         [HttpGet("GetCharacterStats")]
         public async Task<ActionResult<CharacterStatisticsSummary>> GetCharacterStats(string server, string characterName, string region)
         {
-            var  result = await _warcraftCachedData.GetCharacterStats(server.ToLower(), characterName.ToLower(), region);
-            return Ok(result);
+            try
+            {
+                var result = await _warcraftCachedData.GetCharacterStats(server.ToLower(), characterName.ToLower(), region);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching character stats.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
 
         }
     }
