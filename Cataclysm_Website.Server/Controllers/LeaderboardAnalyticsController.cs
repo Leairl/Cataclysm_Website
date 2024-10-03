@@ -23,7 +23,9 @@ namespace Cataclysm_Website.Server.Controllers
 [HttpPost("ClassStatisticsForLeaderboard")]
         public async Task<ActionResult<IEnumerable<ClassAnalytics>>> GetLeaderboardAnalytics( string region, string bracket)
         // foreach allows us to select multiple classes on our leaderboard
+        
         {
+            try{
             List<string> classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid"];
             List<ClassAnalytics?> result = [];
             await Parallel.ForEachAsync (
@@ -36,6 +38,13 @@ namespace Cataclysm_Website.Server.Controllers
                 }
             );
             return Ok(result);
+        }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting class stats.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+
         }
         public class ClassAnalytics
         {

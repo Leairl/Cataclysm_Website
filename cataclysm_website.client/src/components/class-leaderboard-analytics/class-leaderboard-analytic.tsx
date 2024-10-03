@@ -19,7 +19,7 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [bracket, setBracket] = useState<string>(URLbracket ?? "3v3");
-  const [rating, setRating] = useState<number>(1500);
+  const [rating, setRating] = useState<number>(2000);
   const [classAnalyticsList, setClassAnalyticsList] = useState<Dragonblight.ClassAnalytics[]>([]);
 
   useEffect(() => {
