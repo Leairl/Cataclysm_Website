@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { SegmentedControl } from "@radix-ui/themes";
+import { Card, SegmentedControl } from "@radix-ui/themes";
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 import "./class-leaderboard-analytic.css"
 import { Dragonblight } from "../../clients/Dragonblight";
 import { useParams } from "react-router-dom";
@@ -46,64 +48,73 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
     }
   }
 
-  function RatingChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    setRating(parseInt(event.target.value));
-  }
-
   const filteredClassAnalyticsList = classAnalyticsList.map(c => ({
     ...c,
     PvpEntries: c.PvpEntries.filter(entry => entry.rating >= rating)
   }));
 
-  const colors = filteredClassAnalyticsList.map(c => ClassColor.get(c.className));
-
-  const sortedClassAnalyticsList = filteredClassAnalyticsList.sort((a, b) => a.className.localeCompare(b.className));
+  const sortedClassAnalyticsList = filteredClassAnalyticsList.sort((a, b) => b.PvpEntries.length - a.PvpEntries.length);
+  const colors = sortedClassAnalyticsList.map(c => ClassColor.get(c.className));
 
   const data = {
     labels: sortedClassAnalyticsList.map(c => c.className),
     datasets: [
       {
+        label: 'Total Players',
         data: sortedClassAnalyticsList.map(c => c.PvpEntries.length),
         backgroundColor: colors,
-        borderColor: colors,
+        borderColor: 'rgba(0, 0, 0, 1)',
         borderWidth: 1,
       },
     ],
   };
 
   const options = {
+    indexAxis: "y" as const,
+    maintainAspectRatio: false,
     responsive: true,
     plugins: {
+      
+      title: {
+        text: (bracket == 'rbg' ? bracket.toUpperCase() : bracket) + ' Class Stats',
+        color: 'white',
+        display: true,
+      },
       legend: {
         display: false,
-        position: 'right' as const,
-      },
-      title: {
-        text: 'Class Analytics',
-        display: true
+        position: 'right' as const
       },
     },
     scales: {
       x: {
-        grid: {
+        title: {
           display: false,
+          color: 'white',
+          
+          text: 'Total Players',
+        },
+        grid: {
+          offset: true,
+          display: false,
+        },
+        ticks: {
+          color: 'white', // Set x-axis labels to white
         },
       },
       y: {
         grid: {
+          offset: true,
           display: false,
         },
-        title: {
-          display: true,
-          text: 'Number of players',
-          rotation: 0, // Rotate the title to be horizontal
+        ticks: {
+          color: 'white', // Set y-axis labels to white
         },
       },
     },
   };
 
   return (
-    <div>
+    <div className="mobileOnlyFull w-[60vw] h-[90vh]">
       <div className="flex-col">
         <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
           <div className={loading ? "div-disabled" : ""}>
@@ -141,16 +152,30 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
           </div>
           <div className="grow"></div>
           <div className={loading ? "div-disabled" : ""}>
-            <select onChange={RatingChange} value={rating} className="w-[100px]">
-              <option value={2000}>2000</option>
-              <option value={2400}>2400</option>
-              <option value={2700}>2700</option>
-            </select>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button className="CustomButton">
+                  {rating} Minimum Rating
+                  <ChevronDownIcon className="DropdownArrow" />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content className="DropdownMenuContent" sideOffset={5}>
+                {[2000, 2200, 2400, 2700].map(value => (
+                  <DropdownMenu.Item
+                    key={value}
+                    className="RatingDropdownMenuItem"
+                    onSelect={() => setRating(value)}
+                  >
+                    <div className="ClassItem"><span>{value} Minimum Rating</span></div>
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
         </div>
-        <div className="w-[500px]">
-          <Bar className="w-[500px]" data={data} options={options} />
-        </div>
+        <Card className="w-[100%] h-[40vh]">
+          <Bar className="w-full h-full" data={data} options={options} />
+        </Card>
       </div>
     </div>
   );

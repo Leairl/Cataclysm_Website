@@ -62,7 +62,7 @@ function NavBar() {
               <NavigationMenu.Trigger className="group flex select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="flex flex-col blue-bottom-border w-20 items-center cls-1">
                   <img
-                    src={`/Nav/activity.svg`}
+                    src={`/Nav/stats.svg`}
                     height="35px"
                     width="35px"
                   ></img>
