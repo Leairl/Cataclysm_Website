@@ -165,7 +165,7 @@ function NavBar() {
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
-                <span className="mt-1 text-xl font-semibold  font-segoeFont"> Home </span>
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-white"> Home </span>
                 </div>
               </NavigationMenu.Trigger>
             </a>
@@ -176,8 +176,8 @@ function NavBar() {
             <a onClick={() => { window.location.href = "/rankings" }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
-                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-blue-600 rounded">
-                <span className="mt-1 text-xl font-semibold  font-segoeFont text-blue-500"> Rankings </span>
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-white"> Rankings </span>
                 </div>
               </NavigationMenu.Trigger>
             </a>
@@ -188,8 +188,20 @@ function NavBar() {
             <a onClick={() => { window.location.href = "/activity" }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
-                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-yellow-600 rounded">
-                <span className="mt-1 text-xl font-semibold  font-segoeFont text-yellow-500"> Activity </span>
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-white"> Activity </span>
+                </div>
+              </NavigationMenu.Trigger>
+            </a>
+            </div>
+          </NavigationMenu.Item>
+          <NavigationMenu.Item>
+            <div className="px-3 py-2 w-full">
+            <a onClick={() => { window.location.href = "/class-stats" }}>
+            {/* acts as a button */}
+              <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-white"> Class Stats </span>
                 </div>
               </NavigationMenu.Trigger>
             </a>
@@ -200,8 +212,8 @@ function NavBar() {
             <a onClick={() => { window.location.href = "https://discord.gg/ydesbvpcNS" }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
-                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-teal-500 rounded">
-                <span className="mt-1 text-xl font-semibold  font-segoeFont text-teal-500"> Discord </span>
+                <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
+                <span className="mt-1 text-xl font-semibold  font-segoeFont text-white"> Discord </span>
                 </div>
               </NavigationMenu.Trigger>
             </a>
