@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import {SegmentedControl, } from "@radix-ui/themes";
+import { SegmentedControl } from "@radix-ui/themes";
 import "./class-leaderboard-analytic.css"
 import { Dragonblight } from "../../clients/Dragonblight";
 import { useParams } from "react-router-dom";
-
-
-
+import { ClassColor } from '../../helpers/classColorHelper';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
 interface ClassAnalyticsProps {
 }
-
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -20,6 +17,7 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [bracket, setBracket] = useState<string>(URLbracket ?? "3v3");
+  const [rating, setRating] = useState<number>(1500);
   const [classAnalyticsList, setClassAnalyticsList] = useState<Dragonblight.ClassAnalytics[]>([]);
 
   useEffect(() => {
@@ -48,14 +46,26 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
     }
   }
 
+  function RatingChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    setRating(parseInt(event.target.value));
+  }
+
+  const filteredClassAnalyticsList = classAnalyticsList.map(c => ({
+    ...c,
+    PvpEntries: c.PvpEntries.filter(entry => entry.rating >= rating)
+  }));
+
+  const colors = filteredClassAnalyticsList.map(c => ClassColor.get(c.className));
+
+  const sortedClassAnalyticsList = filteredClassAnalyticsList.sort((a, b) => a.className.localeCompare(b.className));
+
   const data = {
-    labels: classAnalyticsList.map(c => c.className),
+    labels: sortedClassAnalyticsList.map(c => c.className),
     datasets: [
       {
-        label: 'Pvp Entries',
-        data: classAnalyticsList.map(c => c.PvpEntries.length),
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
+        data: sortedClassAnalyticsList.map(c => c.PvpEntries.length),
+        backgroundColor: colors,
+        borderColor: colors,
         borderWidth: 1,
       },
     ],
@@ -65,11 +75,29 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        display: false,
+        position: 'right' as const,
       },
       title: {
-        display: true,
         text: 'Class Analytics',
+        display: true
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        grid: {
+          display: false,
+        },
+        title: {
+          display: true,
+          text: 'Number of players',
+          rotation: 0, // Rotate the title to be horizontal
+        },
       },
     },
   };
@@ -111,12 +139,21 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
               </SegmentedControl.Item>
             </SegmentedControl.Root>
           </div>
+          <div className="grow"></div>
+          <div className={loading ? "div-disabled" : ""}>
+            <select onChange={RatingChange} value={rating} className="w-[100px]">
+              <option value={2000}>2000</option>
+              <option value={2400}>2400</option>
+              <option value={2700}>2700</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <Bar data={data} options={options} />
+        <div className="w-[500px]">
+          <Bar className="w-[500px]" data={data} options={options} />
         </div>
       </div>
     </div>
   );
 };
-export default ClassAnalytics
+
+export default ClassAnalytics;
