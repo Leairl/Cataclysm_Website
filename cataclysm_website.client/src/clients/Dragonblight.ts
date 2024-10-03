@@ -227,6 +227,58 @@ export class ActivityClient {
     }
 }
 
+export class LeaderboardAnalyticsClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getLeaderboardAnalytics(region: string | undefined, bracket: string | undefined): Promise<ClassAnalytics[]> {
+        let url_ = this.baseUrl + "/api/LeaderboardAnalytics/ClassStatisticsForLeaderboard?";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        if (bracket === null)
+            throw new Error("The parameter 'bracket' cannot be null.");
+        else if (bracket !== undefined)
+            url_ += "bracket=" + encodeURIComponent("" + bracket) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetLeaderboardAnalytics(_response);
+        });
+    }
+
+    protected processGetLeaderboardAnalytics(response: Response): Promise<ClassAnalytics[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ClassAnalytics[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ClassAnalytics[]>(null as any);
+    }
+}
+
 export class ProfileClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
@@ -1166,6 +1218,20 @@ export interface CovenantReference {
     id: number;
 }
 
+export interface ClassAnalytics {
+    PvpEntries: PvpLeaderboardEntry[];
+    className: string;
+}
+
+export interface PvpLeaderboardEntry {
+    character?: Profile | undefined;
+    faction?: EnumTypeWithoutName | undefined;
+    rank: number;
+    rating: number;
+    season_match_statistics?: SeasonMatchStatistics | undefined;
+    tier?: PvpTierReferenceWithoutName | undefined;
+}
+
 export interface CharacterAppearanceSummary {
     _links?: Links | undefined;
     character?: CharacterReference | undefined;
@@ -1472,15 +1538,6 @@ export interface Damage {
 export interface PvpCharacterSummary {
     pvpEntry: PvpLeaderboardEntry;
     charSummary: CharacterProfileSummary;
-}
-
-export interface PvpLeaderboardEntry {
-    character?: Profile | undefined;
-    faction?: EnumTypeWithoutName | undefined;
-    rank: number;
-    rating: number;
-    season_match_statistics?: SeasonMatchStatistics | undefined;
-    tier?: PvpTierReferenceWithoutName | undefined;
 }
 
 export interface PvpSeasonReward {

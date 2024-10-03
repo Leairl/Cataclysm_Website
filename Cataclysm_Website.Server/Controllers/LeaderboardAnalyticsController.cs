@@ -1,0 +1,49 @@
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Serialization;
+using ArgentPonyWarcraftClient;
+using Microsoft.AspNetCore.Mvc;
+using TwitchLib.Api.Helix.Models.ChannelPoints;
+
+namespace Cataclysm_Website.Server.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class LeaderboardAnalyticsController : ControllerBase
+    {
+        private readonly ILogger<LeaderboardAnalyticsController> _logger;
+        private readonly IWarcraftRedisProxy _warcraftCachedData; //underscore is syntax to global variable
+
+
+        public LeaderboardAnalyticsController(ILogger<LeaderboardAnalyticsController> logger, IWarcraftRedisProxy warcraftCachedData)
+        {
+            _logger = logger;
+            _warcraftCachedData = warcraftCachedData; //dependency injection to IWarcraftRedisProxy cs file
+        }
+
+[HttpPost("ClassStatisticsForLeaderboard")]
+        public async Task<ActionResult<IEnumerable<ClassAnalytics>>> GetLeaderboardAnalytics( string region, string bracket)
+        // foreach allows us to select multiple classes on our leaderboard
+        {
+            List<string> classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid"];
+            List<ClassAnalytics?> result = [];
+            await Parallel.ForEachAsync (
+                classes, async (charClass, ct) => {
+                    var classLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
+                    result.Add(new ClassAnalytics {
+                        className = charClass,
+                        PvpEntries = classLeaderboard.ToArray()
+                    });   
+                }
+            );
+            return Ok(result);
+        }
+        public class ClassAnalytics
+        {
+            [JsonPropertyName("PvpEntries")]
+            public PvpLeaderboardEntry?[] PvpEntries { get; init; }
+
+            [JsonPropertyName("className")]
+            public string className { get; init; }
+        }
+    }
+}

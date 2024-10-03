@@ -16,6 +16,7 @@ import RankingsPage from './components/rankings/rankings.tsx';
 import LoginPage from './components/login/login.tsx';
 import ActivityPage from "./components/activity/activity.tsx";
 import News from "./components/news/news.tsx";
+import ClassAnalytics from './components/class-leaderboard-analytics/class-leaderboard-analytic.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -26,6 +27,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route index element={<News/>} />
           <Route path="profile/:region/:server/:characterName/:urlTab?" Component={ProfilePage} />
           <Route path="rankings/:URLregion/:URLbracket" element={<RankingsPage/>} />
+          <Route path="class-stats/:URLregion/:URLbracket" element={<ClassAnalytics/>} />
+          <Route path="class-stats" element={<ClassAnalytics/>} />
           <Route path="rankings" element={<RankingsPage/>} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage/>} />
