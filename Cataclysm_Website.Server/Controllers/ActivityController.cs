@@ -30,13 +30,14 @@ namespace Cataclysm_Website.Server.Controllers
                 var LeaderboardEntry = firstHundredPlayers.Select(async p =>
                 {
                     var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
+                    var specName = await _warcraftCachedData.GetCharacterSpecName(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
                     return new ActivityCharacterSummary
                     {
-                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
                         PrevPvpEntry = p.OldPlayer,
                         CurrPvpEntry = p.NewPlayer,
                         TimeDifference = p.NewPlayer.Time.TimeAgo(),
-                        CharSummary = ProfileSummaryEntry
+                        CharSummary = ProfileSummaryEntry,
+                        spec = specName
                     };
                 });
                 var result = await Task.WhenAll(LeaderboardEntry);
@@ -66,13 +67,15 @@ namespace Cataclysm_Website.Server.Controllers
                 var LadderLeaderboardEntries = filteredLadder.Where(l => l != null).Select(l => l!).Select(async ladderEntry =>
                 {
                     var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
+                    var specName = await _warcraftCachedData.GetCharacterSpecName(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
                     return new ActivityCharacterSummary
                     {
                         // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
                         PrevPvpEntry = ladderEntry.OldPlayer,
                         CurrPvpEntry = ladderEntry.NewPlayer,
                         TimeDifference = ladderEntry.NewPlayer.Time.TimeAgo(),
-                        CharSummary = ProfileSummaryEntry
+                        CharSummary = ProfileSummaryEntry,
+                        spec = specName
                     };
                 });
                 result = result.Concat(await Task.WhenAll(LadderLeaderboardEntries)).ToList();
@@ -99,6 +102,9 @@ namespace Cataclysm_Website.Server.Controllers
 
             [JsonPropertyName("charSummary")]
             public required CharacterProfileSummary CharSummary { get; set; }
+            
+            [JsonPropertyName("spec")]
+            public required string spec { get; set; }
         }
     }
 }

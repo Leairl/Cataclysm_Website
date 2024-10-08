@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,12 +24,18 @@ namespace Cataclysm_Website.Server.Controllers
         */
         [HttpGet("GetProfile")]
         //Iactionresult used when you have action results incoming (200/401/404)
-        public async Task<ActionResult<CharacterProfileSummary>> GetProfile(string server, string characterName, string region)
+        public async Task<ActionResult<CharacterProfileSummaryAndSpec>> GetProfile(string server, string characterName, string region)
         {
             try
             {
                 var result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region);
-                return Ok(result);
+                var specName = await _warcraftCachedData.GetCharacterSpecName(server.ToLower(), characterName.ToLower(), region);
+                 return Ok(new CharacterProfileSummaryAndSpec
+                    {
+                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                        charSummary = result,
+                        spec = specName
+                    });
             }
             catch (Exception ex)
             {
@@ -65,6 +72,14 @@ namespace Cataclysm_Website.Server.Controllers
                 _logger.LogError(ex, "Error occurred while getting character equipment.");
                 return StatusCode(500, "An error occurred while processing your request.");
             }
+        }
+        public class CharacterProfileSummaryAndSpec
+        {
+            [JsonPropertyName("charSummary")]
+            public required CharacterProfileSummary charSummary { get; init; }
+            
+            [JsonPropertyName("spec")]
+            public required string spec { get; init; }
         }
     }
 }

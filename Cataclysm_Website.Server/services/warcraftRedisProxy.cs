@@ -2,8 +2,15 @@ using System.Text.Json;
 using ArgentPonyWarcraftClient;
 using StackExchange.Redis;
 
-class WarcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer redis, ILogger<WarcraftRedisProxy> logger) : IWarcraftRedisProxy
+class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer redis, ILogger<WarcraftRedisProxy> logger) : IWarcraftRedisProxy
 {
+    public WarcraftClient? overrideClient{get; set;}
+    private WarcraftClient warcraftClient{get {
+        if (overrideClient != null){
+            return overrideClient;
+        }
+        return _warcraftClient;
+    }}
     public async Task<T?> GetRedisData<T>(string key)
     {  //async call to return data (of generic type), second type is to define the type.
         var db = redis.GetDatabase(); //var to redis database
@@ -78,6 +85,17 @@ class WarcraftRedisProxy(WarcraftClient warcraftClient, IConnectionMultiplexer r
         {
             var charSpecSummary = await warcraftClient.GetCharacterSpecializationsSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
             return charSpecSummary.Value;
+        }, TimeSpan.FromHours(6));
+    }
+
+        public async Task<string> GetCharacterSpecName(string server, string characterName, string region)
+    {
+        return await GetBlizzardDataCached<string>("characterSpecName" + characterName + server + region, async () =>
+        {
+            var talents = await GetPlayerTalents(server, characterName, region);
+            var activeSpecialization = talents?.SpecializationGroups.Where(s => s.IsActive).FirstOrDefault();
+            var specName = activeSpecialization?.Specializations?.OrderByDescending(spec => spec.SpentPoints)?.FirstOrDefault()?.SpecializationName;
+            return specName ?? "";
         }, TimeSpan.FromHours(6));
     }
 

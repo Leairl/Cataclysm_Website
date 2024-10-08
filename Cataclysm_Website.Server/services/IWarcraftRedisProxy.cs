@@ -27,13 +27,11 @@ public interface IWarcraftRedisProxy
     Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region);
     Task ClearLeaderboard(string bracket, string region);
     Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass);
-
+    Task<string> GetCharacterSpecName(string server, string characterName, string region);
+    WarcraftClient? overrideClient{get; set;}
     Task<ItemMedia> GetItemIcon(int itemId);
     Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region);
     Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region);
-
     Task BracketClassPlayerExpiration(string bracket, string region, string characterClass);
-
-
     Task<int> GetSeason(string region);
 }

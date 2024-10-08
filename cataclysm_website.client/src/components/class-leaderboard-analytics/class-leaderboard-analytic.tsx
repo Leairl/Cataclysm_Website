@@ -19,7 +19,7 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [bracket, setBracket] = useState<string>(URLbracket ?? "3v3");
-  const [rating, setRating] = useState<number>(2000);
+  const [rating, setRating] = useState<number>(1500);
   const [classAnalyticsList, setClassAnalyticsList] = useState<Dragonblight.ClassAnalytics[]>([]);
 
   useEffect(() => {
@@ -160,7 +160,7 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content className="DropdownMenuContent" sideOffset={5}>
-                {[2000, 2200, 2400, 2700].map(value => (
+                {[1500, 1800, 2000, 2200, 2400, 2700].map(value => (
                   <DropdownMenu.Item
                     key={value}
                     className="RatingDropdownMenuItem"

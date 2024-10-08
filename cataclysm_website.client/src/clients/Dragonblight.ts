@@ -289,7 +289,7 @@ export class ProfileClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getProfile(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterProfileSummary> {
+    getProfile(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterProfileSummaryAndSpec> {
         let url_ = this.baseUrl + "/api/Profile/GetProfile?";
         if (server === null)
             throw new Error("The parameter 'server' cannot be null.");
@@ -317,13 +317,13 @@ export class ProfileClient {
         });
     }
 
-    protected processGetProfile(response: Response): Promise<CharacterProfileSummary> {
+    protected processGetProfile(response: Response): Promise<CharacterProfileSummaryAndSpec> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CharacterProfileSummary;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CharacterProfileSummaryAndSpec;
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -331,7 +331,7 @@ export class ProfileClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<CharacterProfileSummary>(null as any);
+        return Promise.resolve<CharacterProfileSummaryAndSpec>(null as any);
     }
 
     getAppearance(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterAppearanceSummary> {
@@ -1093,6 +1093,7 @@ export interface ActivityCharacterSummary {
     currPvpEntry: PvpLeaderboardEntryandTime;
     prevPvpEntry: PvpLeaderboardEntryandTime;
     charSummary: CharacterProfileSummary;
+    spec: string;
 }
 
 export interface PvpLeaderboardEntryandTime {
@@ -1230,6 +1231,11 @@ export interface PvpLeaderboardEntry {
     rating: number;
     season_match_statistics?: SeasonMatchStatistics | undefined;
     tier?: PvpTierReferenceWithoutName | undefined;
+}
+
+export interface CharacterProfileSummaryAndSpec {
+    charSummary: CharacterProfileSummary;
+    spec: string;
 }
 
 export interface CharacterAppearanceSummary {
@@ -1538,6 +1544,7 @@ export interface Damage {
 export interface PvpCharacterSummary {
     pvpEntry: PvpLeaderboardEntry;
     charSummary: CharacterProfileSummary;
+    spec: string;
 }
 
 export interface PvpSeasonReward {

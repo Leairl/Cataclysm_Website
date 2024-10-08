@@ -13,6 +13,7 @@ interface ProfileProps {}
 
 const Profile: FC<ProfileProps> = () => {
     const [characterSummary, setcharacterSummary] = useState<Dragonblight.CharacterProfileSummary>();
+    const [specName, setSpecName] = useState<string>();
     const [characterEquipmentSummary, setCharacterEquipmentSummary] = useState<Dragonblight.CharacterEquipmentSummary>();
     const [achievementsSummary, setAchievementsSummary] = useState<Dragonblight.CharacterAchievementsSummary>();
 
@@ -46,7 +47,8 @@ const Profile: FC<ProfileProps> = () => {
             setLoading(false);
             return;
           }
-            setcharacterSummary(data);
+            setcharacterSummary(data.charSummary);
+            setSpecName(data.spec);
             CharacterClient.getEquipment(slug, characterName, region).then((dataEquip) => {
                 setCharacterEquipmentSummary(dataEquip);
                 CharacterAchievementClient.getCharacterAchievements(slug, characterName, region).then((data) => {
@@ -159,6 +161,7 @@ const Profile: FC<ProfileProps> = () => {
     characterProfileSummary={characterSummary} 
     characterEquipmentSummary={characterEquipmentSummary} 
     characterAchievementsSummary={achievementsSummary} 
+    specName={specName}
     showModelViewer={showModelViewer}
     loading={loading} 
     ></ProfileEquipment> 

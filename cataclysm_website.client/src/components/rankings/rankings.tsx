@@ -242,6 +242,17 @@ function Rankings() {
                           />
                           <Avatar.Fallback />
                         </Avatar.Root>
+                          <Avatar.Root className="h-[23px] w-[23px] mr-1">
+                          <Avatar.Image
+                            src={(() => {
+                              if (characterEntry.spec == null || characterEntry.spec == "") {
+                                return `/unknown.png`;
+                              }
+                              return `/Specs/${characterEntry.spec?.toLowerCase()}_${characterEntry.charSummary?.character_class?.name?.toLowerCase()}.png`;
+                            })()}
+                          />
+                          <Avatar.Fallback />
+                        </Avatar.Root>
                         <span
                           style={{
                             color: `${ClassColor.get(

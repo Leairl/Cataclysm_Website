@@ -116,7 +116,9 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
           <Card className='min-w-[300px] my-2 p-2 flex flex-row items-center'>
             <div className='w-[44px] h-[44px] mr-3'>
             <a className="block w-[40px] h-[40px] talentIcon"
-                                                        href={`https://www.wowhead.com/cata/spell=${getActiveGlyphIcon(i, glyphType)}`}
+                                                        href={getActiveGlyphIcon(i, glyphType) == 0 
+                                                          ? `https://www.wowhead.com/cata/item=206953/charred-glyph`
+                                                          :`https://www.wowhead.com/cata/spell=${getActiveGlyphIcon(i, glyphType)}`}
                                                         >
                                                         </a>
             </div>
@@ -132,7 +134,10 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
         if (ActiveGlyphName) {
           return(ActiveGlyphName.filter(glyph => {
             return RetrieveGlyphs(glyph.id)?.Glyph_Type == glyphType
-          })[i]?.name);
+          })[i]?.name) ?? "Empty Glyph Slot";
+        }
+        else {
+          return "Empty Glyph Slot";
         }
     }
 
@@ -145,7 +150,10 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
               const GlyphData = (ActiveGlyphIcon.filter(glyph => {
                 return RetrieveGlyphs(glyph?.id)?.Glyph_Type == glyphType
               })[i]);
-              return RetrieveGlyphs(GlyphData?.id)?.SpellID
+              return RetrieveGlyphs(GlyphData?.id)?.SpellID ?? 0
+            }
+            else {
+              return 0;
             }
         }
     function RetrieveGlyphs(id: number) {

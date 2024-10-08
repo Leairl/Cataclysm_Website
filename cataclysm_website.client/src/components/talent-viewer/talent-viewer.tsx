@@ -63,7 +63,7 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
       else {
         return (   
             <div className="justify-center" style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {TalentTabs.filter((tab) => tab.BackgroundFile.toLowerCase().startsWith(props.charClass.toLowerCase()) 
+            {TalentTabs.filter((tab) => tab.BackgroundFile.toLowerCase().startsWith(props.charClass.toLowerCase().replace(" ","")) 
             && (!tab.BackgroundFile.toLowerCase().includes('pet') || props.pet) && tab.OrderIndex >= 0).map((tab) => {
                 return (
                     <div className='grid min-w-[280px] max-w-[280px]' key={tab.ID} style={{ flex: '1' }}>
@@ -136,6 +136,7 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
             });
             return spellId;
         }
+        return talent.SpellRank_0
     }
 
     function GetPointsForTalent(tree_name: string, talent: Talent | undefined)
@@ -155,6 +156,7 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
             }
             return points;
         }
+        return 0;
     }
 };
 function getNumPoints(talent: Talent) {

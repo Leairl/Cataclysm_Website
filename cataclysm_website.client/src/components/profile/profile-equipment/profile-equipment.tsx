@@ -19,6 +19,7 @@ interface profileEquipmentProps {
   characterProfileSummary: Dragonblight.CharacterProfileSummary | undefined;
   characterEquipmentSummary: Dragonblight.CharacterEquipmentSummary | undefined;
   currTab: string | undefined;
+  specName: string | undefined;
   characterAchievementsSummary:
     | Dragonblight.CharacterAchievementsSummary
     | undefined;
@@ -399,7 +400,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             <TalentViewer
               pet={true}
               charClass={
-                'hunterpet' ?? ""
+                'hunterpet' 
               }
               region={region ?? ""}
               charName={characterName ?? ""}
@@ -489,9 +490,17 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
           width="34px"
           style={{ maxHeight: "34px", maxWidth: "34px" }}
         ></img>
-
         <img
           className="my-1"
+          src={props.specName == "" || props.specName == undefined ? `/unknown.png` :`/Specs/${props.specName
+            ?.toLowerCase()}_${props.characterProfileSummary?.character_class?.name
+            ?.toLowerCase()}.png`  }
+          height="34px"
+          width="34px"
+          style={{ maxHeight: "34px", maxWidth: "34px" }}
+        ></img>
+        <img
+          className="my-1 ml-1"
           src={`/RaceIcons/${props.characterProfileSummary?.race?.name
             ?.toLowerCase()
             .replace(" ", "")}${
@@ -843,7 +852,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   function getSkeleton(i: number) {
     return (
       <Skeleton key={"SkeletonRating" + i}>
-        <Card className={i == 1 ? "w-[34px] h-[34px] my-1" : "w-[34px] h-[34px] m-1"}></Card>
+        <Card className={ "w-[34px] h-[34px] m-1"}></Card>
       </Skeleton>
     );
   }
@@ -882,7 +891,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
 
   function getSkeletonIconCards() {
     const SkeletonIconCards = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       SkeletonIconCards.push(getSkeleton(i));
     }
     return <div className="flex flex-row">{SkeletonIconCards}</div>;

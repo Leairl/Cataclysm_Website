@@ -1,10 +1,16 @@
 using ArgentPonyWarcraftClient;
 
-class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger)
+class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger, IConfiguration Config)
 {
     //uses PvpLeaderboardEntry in generic method in order to locate character slug / name in warcraft client
     public async Task BatchCacheCharSummary(string bracket, string region, PvpLeaderboardEntry[] oldarray, PvpLeaderboardEntry[] newarray, int batchSize = 5)
     {
+        using var HttpClient = new HttpClient();
+        using var RateLimitedHttpClient = new RateLimitedHttpClient(HttpClient);
+        var clientId = Config[region.ToLower() + bracket.ToLower() + "bracket-battlenetApi:clientId"];
+        var clientSecret = Config[region.ToLower() + bracket.ToLower() + "bracket-battlenetApi:clientSecret"];
+        var warcraftClient = new WarcraftClient(clientId, clientSecret, Region.US, Locale.en_US, RateLimitedHttpClient);
+        redisProxy.overrideClient = warcraftClient;
         await redisProxy.ClearAllCachedClassCharacters(bracket, region);
         var batchAmount = newarray.Length/batchSize;
         for(int i = 0; i<batchAmount; i++)
@@ -33,6 +39,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             });
         };
         await redisProxy.BracketPlayerExpiration(bracket, region);
+        redisProxy.overrideClient = null;
     }
     //get rbgLeaderboard in redis (defined method with a defined type to execute x function)
     public async Task CacheRBGLadder(string region)
@@ -43,7 +50,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             var oldRbgLeaderboard = await redisProxy.GetRBGLeaderboard(region);
             await redisProxy.ClearLeaderboard("rbg", region);
             var newRbgLeaderboard = await redisProxy.GetRBGLeaderboard(region);
-            await BatchCacheCharSummary("rbg", region, oldRbgLeaderboard.Entries.Take(2500).ToArray(), newRbgLeaderboard.Entries.Take(2500).ToArray());
+            await BatchCacheCharSummary("rbg", region, oldRbgLeaderboard.Entries.ToArray(), newRbgLeaderboard.Entries.ToArray());
         }
         catch (Exception ex) 
         {
@@ -59,7 +66,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             var oldleaderboard2v2 = await redisProxy.Get2v2Leaderboard(region);
             await redisProxy.ClearLeaderboard("2v2", region);
             var new2v2Leaderboard = await redisProxy.Get2v2Leaderboard(region);
-            await BatchCacheCharSummary("2v2", region, oldleaderboard2v2.Entries.Take(2500).ToArray(), new2v2Leaderboard.Entries.Take(2500).ToArray());
+            await BatchCacheCharSummary("2v2", region, oldleaderboard2v2.Entries.ToArray(), new2v2Leaderboard.Entries.ToArray());
         }
         catch (Exception ex)
         {
@@ -76,7 +83,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             await redisProxy.ClearLeaderboard("3v3", region);
             //only compares because the backgroundservice shorter than ladderupdate, updates new leaderboard after deleting the old one and is able to be compared because of this
             var newleaderboard3v3 = await redisProxy.Get3v3Leaderboard(region);
-            await BatchCacheCharSummary("3v3", region, oldleaderboard3v3.Entries.Take(2500).ToArray(), newleaderboard3v3.Entries.Take(2500).ToArray());
+            await BatchCacheCharSummary("3v3", region, oldleaderboard3v3.Entries.ToArray(), newleaderboard3v3.Entries.ToArray());
         }
         catch (Exception ex)
         {
@@ -92,7 +99,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             var oldleaderboard5v5 = await redisProxy.Get5v5Leaderboard(region);
             await redisProxy.ClearLeaderboard("5v5", region);
             var newleaderboard5v5 = await redisProxy.Get5v5Leaderboard(region);
-            await BatchCacheCharSummary("5v5", region, oldleaderboard5v5.Entries.Take(2500).ToArray(), newleaderboard5v5.Entries.Take(2500).ToArray());
+            await BatchCacheCharSummary("5v5", region, oldleaderboard5v5.Entries.ToArray(), newleaderboard5v5.Entries.ToArray());
         }
         catch (Exception ex)
         {
