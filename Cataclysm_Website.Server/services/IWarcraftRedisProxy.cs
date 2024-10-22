@@ -34,4 +34,7 @@ public interface IWarcraftRedisProxy
     Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region);
     Task BracketClassPlayerExpiration(string bracket, string region, string characterClass);
     Task<int> GetSeason(string region);
+    Task SavePvpCharacterSummary(PvpCharacterSummary newPvpCharacterSummary, string bracket, string region);
+    Task<List<PvpCharacterSummary?>> GetPvpLeaderSummaries(string bracket, string region);
+    Task ClearPvpCharacterSummary(string bracket, string region);
 }

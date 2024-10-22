@@ -421,6 +421,33 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
             await BracketClassPlayerExpiration(bracket, region, wowClass);
         }
     }
+    public async Task SavePvpCharacterSummary(PvpCharacterSummary newPvpCharacterSummary, string bracket, string region)
+    {
+        //add spec and class of character from pvpleaderboardentries to dbleaderboardentries 
+        var db = redis.GetDatabase();
+        string key = bracket + "_" + region + "_LADDER_COMBINED";
+        
+        var serializedPvPCharSummary = JsonSerializer.Serialize(newPvpCharacterSummary);
+        await db.ListRemoveAsync(key, serializedPvPCharSummary);
+        await db.ListRightPushAsync(key, serializedPvPCharSummary);
+
+    }
+        public async Task ClearPvpCharacterSummary(string bracket, string region)
+    {
+        var db = redis.GetDatabase();
+        await db.KeyDeleteAsync(bracket + "_" + region + "_LADDER_COMBINED");
+
+    }
+    public async Task<List<PvpCharacterSummary?>> GetPvpLeaderSummaries(string bracket, string region)
+    {
+        var db = redis.GetDatabase(); //var to redis database
+        var characterList = await db.ListRangeAsync(bracket + "_" + region + "_LADDER_COMBINED");
+        return characterList.Where(p => p.HasValue).Select(player =>
+        {
+            //deserialized out of json to become an object.
+            return JsonSerializer.Deserialize<PvpCharacterSummary>(player!);
+        }).ToList();
+    }
     public async Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary characterClass, string region)
     //these all return a string, allowing us to connected to cachedclasscharacters function
     {
@@ -436,7 +463,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         await db.ListRightPushAsync(key, serializedPlayer);
     }
     public async Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region)
-    //these all return a string, allowing us to connected to cachedclasscharacters function
+    //these all return a string, allowing us to connect ed to cachedclasscharacters function
     {
         var OldPvpLeaderboardEntryandTime = new PvpLeaderboardEntryandTime
         {
