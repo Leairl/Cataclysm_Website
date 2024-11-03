@@ -12,6 +12,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
         var warcraftClient = new WarcraftClient(clientId, clientSecret, Region.US, Locale.en_US, RateLimitedHttpClient);
         redisProxy.overrideClient = warcraftClient;
         await redisProxy.ClearAllCachedClassCharacters(bracket, region);
+        await redisProxy.ClearPvpCharacterSummary(bracket, region);
         var batchAmount = newarray.Length/batchSize;
         for(int i = 0; i<batchAmount; i++)
         {
@@ -25,6 +26,14 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                         return p.Character.Id == player.Character.Id;
                     });
                     var summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
+                    var talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
+                            var newPvpCharSummary = new PvpCharacterSummary
+                                {
+                                PvpEntry = player,
+                                charSummary = summary,
+                                spec = talents
+                                };
+                            await redisProxy.SavePvpCharacterSummary(newPvpCharSummary, bracket, region);
                     if (oldPlayer != null && oldPlayer.SeasonMatchStatistics.Played != player.SeasonMatchStatistics.Played) {
                         await redisProxy.InsertToBracketActivityPage(bracket, region, oldPlayer, player);
                         await redisProxy.InsertActivityCacheClassCharacter(bracket, oldPlayer, player, summary, region);
