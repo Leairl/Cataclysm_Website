@@ -28,6 +28,7 @@ jobs:
         BattlenetApiClientSecret: ${{ secrets.BattlenetApiClientSecret }}
         TwitchApiClientId: ${{ secrets.TwitchApiClientId }}
         TwitchApiClientSecret: ${{ secrets.TwitchApiClientSecret }}
+        BattlenetApiClients: ${{ secrets.BattlenetApiClients }}
 
     - name: Restore dependencies
       run: dotnet restore -r linux-x64
