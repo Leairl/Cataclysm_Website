@@ -28,6 +28,7 @@ namespace Cataclysm_Website.Server.Controllers
             try
             {
                 var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("3v3", region); 
+                ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
             }
             catch (Exception ex)
@@ -43,6 +44,7 @@ namespace Cataclysm_Website.Server.Controllers
             try
             {
                 var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("2v2", region); 
+                ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
             }
             catch (Exception ex)
@@ -58,6 +60,7 @@ namespace Cataclysm_Website.Server.Controllers
             try
             {
                 var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("5v5", region); 
+                ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
             }
             catch (Exception ex)
@@ -73,6 +76,7 @@ namespace Cataclysm_Website.Server.Controllers
             try
             {
                 var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("rbg", region); 
+                ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
                 //needs to create a seperate instance of pvpseasonreward to implement our rank property
             }
@@ -88,19 +92,24 @@ namespace Cataclysm_Website.Server.Controllers
         {
             try
             {
-                var pvpSeasonRewardWithRank = (await _warcraftCachedData.GetPvPRewards(region)).Rewards.Select(async r =>
+                var pvpRewards = await _warcraftCachedData.GetPvPRewards(region);
+                if (pvpRewards != null && pvpRewards.Rewards.Any())
                 {
-                    return new PvpSeasonRewardWithRank
+                    var pvpSeasonRewardWithRank = pvpRewards.Rewards.Select(async r =>
                     {
+                        return new PvpSeasonRewardWithRank
+                        {
                         Bracket = r.Bracket,
                         Achievement = r.Achievement,
                         RatingCutoff = r.RatingCutoff,
                         Faction = r.Faction,
                         rank = await GetRankFromCutoffs(r.RatingCutoff, r.Bracket.Type, region)
-                    };
-                });
-                var result = await Task.WhenAll(pvpSeasonRewardWithRank);
-                return Ok(result);
+                        };
+                    });
+                    var result = await Task.WhenAll(pvpSeasonRewardWithRank);
+                    return Ok(result);
+                }
+                return Ok(new List<PvpSeasonRewardWithRank>());
             }
             catch (Exception ex)
             {
