@@ -137,6 +137,65 @@ function Rankings() {
           </div>
         </div>
       </div>
+      <div>
+          <Pagination
+          currentPage={page}
+          totalPages={100}
+          edgePageCount={1}
+          middlePagesSiblingCount={1}
+          setCurrentPage={handlePageChange}
+          className=" pb-3"
+          truncableText="&nbsp;...&nbsp;"
+          truncableClassName=""
+          
+        >
+          <nav className="flex justify-end flex-grow-0">
+          <span className="font-bold flex float-left flex-grow text-sm items-center">
+          Showing {page * 50 + 1} - {(page + 1) * 50} Characters
+      </span>
+            <ul className="flex items-center">
+              <Pagination.PrevButton className="bg-[#292c31] mx-1 h-[28px] w-[28px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-xs first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 ">
+                <svg
+                  className="shrink-0 size-3.5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m15 18-6-6 6-6"></path>
+                </svg>
+              </Pagination.PrevButton>
+              <Pagination.PageButton
+                inactiveClassName="bg-transparent h-[28px] w-[28px] flex justify-center items-center text-center first:rounded-s-md last:rounded-e-md text-gray-800 hover:bg-gray-100 py-3 px-4 text-xs focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 dark:focus:bg-white/10"
+                activeClassName="h-[28px] w-[28px] flex justify-center items-center text-center bg-gray-200 first:rounded-s-md last:rounded-e-md text-gray-800  py-3 px-4 text-xs focus:outline-none focus:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-600 dark:border-neutral-700 dark:text-white dark:focus:bg-neutral-500"
+                className="mx-[1px]"
+              />
+
+              <Pagination.NextButton className="bg-[#292c31] mx-1 h-[28px] w-[28px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-xs first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 hover:bg-gray-100  disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 ">
+                <svg
+                  className="shrink-0 size-3.5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </Pagination.NextButton>
+            </ul>
+          </nav>
+        </Pagination>
+        </div>
       <Container className="desktopWidth flex justify-center">
         <Flex direction="column" gap="5" maxWidth="950px">
           <Card className="p-0">
@@ -194,7 +253,7 @@ function Rankings() {
                   <Table.Row className="h-[23px] align-middle hover:bg-blue-300/30 cursor-pointer" key={"rankingsRow"+i}>
                     <Table.Cell
                       onClick={() => {
-                        if (characterEntry.charSummary == null) {
+                        if (characterEntry.charSummary?.name == null) {
                           return;
                         }
                         navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
@@ -203,10 +262,10 @@ function Rankings() {
                       {characterEntry.pvpEntry.rank}
                     </Table.Cell>
                     <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
+                    onClick={() => {
+                      if (characterEntry.charSummary?.name == null) {
+                        return;
+                      }
                         navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
                       }}
                     >
@@ -214,7 +273,7 @@ function Rankings() {
                         <Avatar.Root className="h-[23px] w-[23px] mr-1">
                           <Avatar.Image
                             src={(() => {
-                              if (characterEntry.charSummary == null) {
+                              if (characterEntry.charSummary?.name == null) {
                                 return `/unknown.png`;
                               }
                               return `/RaceIcons/${characterEntry.charSummary?.race?.name
@@ -232,7 +291,7 @@ function Rankings() {
                         <Avatar.Root className="h-[23px] w-[23px] mr-1">
                           <Avatar.Image
                             src={(() => {
-                              if (characterEntry.charSummary == null) {
+                              if (characterEntry.charSummary?.name == null) {
                                 return `/unknown.png`;
                               }
                               return `/ProfileClassIcons/${characterEntry.charSummary?.character_class?.name
@@ -245,7 +304,7 @@ function Rankings() {
                           <Avatar.Root className="h-[23px] w-[23px] mr-1">
                           <Avatar.Image
                             src={(() => {
-                              if (characterEntry.spec == null || characterEntry.spec == "") {
+                              if (characterEntry.spec == null || characterEntry.spec == "" || characterEntry.charSummary?.name == null) {
                                 return `/unknown.png`;
                               }
                               return `/Specs/${characterEntry.spec?.toLowerCase()}_${characterEntry.charSummary?.character_class?.name?.toLowerCase()}.png`;
@@ -266,10 +325,10 @@ function Rankings() {
                       </Flex>
                     </Table.Cell>
                     <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
+                    onClick={() => {
+                      if (characterEntry.charSummary?.name == null) {
+                        return;
+                      }
                         navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
                       }}
                       className="desktopOnly"
@@ -282,10 +341,10 @@ function Rankings() {
                         ) ?? "")}
                     </Table.Cell>
                     <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
+                    onClick={() => {
+                      if (characterEntry.charSummary?.name == null) {
+                        return;
+                      }
                         navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
                       }}
                       className="desktopOnly"
@@ -293,10 +352,10 @@ function Rankings() {
                       {characterEntry.pvpEntry.rating}
                     </Table.Cell>
                     <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
+                    onClick={() => {
+                      if (characterEntry.charSummary?.name == null) {
+                        return;
+                      }
                         navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
                       }}
                       className="text-green-300 desktopOnly"
@@ -304,10 +363,10 @@ function Rankings() {
                       {characterEntry.pvpEntry.season_match_statistics?.won}
                     </Table.Cell>
                     <Table.Cell
-                      onClick={() => {
-                        if (characterEntry.charSummary == null) {
-                          return;
-                        }
+                    onClick={() => {
+                      if (characterEntry.charSummary?.name == null) {
+                        return;
+                      }
                         navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
                       }}
                       className="text-red-300 desktopOnly"
@@ -455,13 +514,13 @@ function Rankings() {
           edgePageCount={1}
           middlePagesSiblingCount={1}
           setCurrentPage={handlePageChange}
-          className="pt-2 pb-10"
-          truncableText="&nbsp;-&nbsp;"
+          className="pt-1 pb-10"
+          truncableText="&nbsp;...&nbsp;"
           truncableClassName=""
         >
-          <nav className="flex justify-center flex-grow">
+          <nav className="flex justify-end flex-grow">
             <ul className="flex items-center">
-              <Pagination.PrevButton className="bg-[#292c31] mx-2 min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 ">
+              <Pagination.PrevButton className="bg-[#292c31] mx-1 h-[28px] w-[28px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-xs first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 ">
                 <svg
                   className="shrink-0 size-3.5"
                   xmlns="http://www.w3.org/2000/svg"
@@ -477,14 +536,13 @@ function Rankings() {
                   <path d="m15 18-6-6 6-6"></path>
                 </svg>
               </Pagination.PrevButton>
-
               <Pagination.PageButton
-                inactiveClassName="bg-[#292c31] min-h-[38px] min-w-[38px] flex justify-center items-center border border-gray-200 text-gray-800 hover:bg-gray-100 py-2 px-3 text-sm first:rounded-s-lg last:rounded-e-lg focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 dark:focus:bg-white/10"
-                activeClassName=" min-h-[38px] min-w-[38px] flex justify-center items-center bg-gray-200 text-gray-800 border border-gray-200 py-2 px-3 text-sm first:rounded-s-lg last:rounded-e-lg focus:outline-none focus:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-600 dark:border-neutral-700 dark:text-white dark:focus:bg-neutral-500"
-                className="mx-1"
+                inactiveClassName="bg-transparent h-[28px] w-[28px] flex justify-center items-center text-center first:rounded-s-md last:rounded-e-md text-gray-800 hover:bg-gray-100 py-3 px-4 text-xs focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 dark:focus:bg-white/10"
+                activeClassName="h-[28px] w-[28px] flex justify-center items-center text-center bg-gray-200 first:rounded-s-md last:rounded-e-md text-gray-800  py-3 px-4 text-xs focus:outline-none focus:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-600 dark:border-neutral-700 dark:text-white dark:focus:bg-neutral-500"
+                className="mx-[1px]"
               />
 
-              <Pagination.NextButton className="bg-[#292c31] mx-2 min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 hover:bg-gray-100  disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 ">
+              <Pagination.NextButton className="bg-[#292c31] mx-1 h-[28px] w-[28px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-xs first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 hover:bg-gray-100  disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-white/10 ">
                 <svg
                   className="shrink-0 size-3.5"
                   xmlns="http://www.w3.org/2000/svg"

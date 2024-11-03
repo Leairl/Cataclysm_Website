@@ -68,6 +68,7 @@
     background-color: #292c31; /* Transparent gray */
     cursor: pointer;
     display: flex;
+    margin-left: 0px !important;
     align-items: center;
     justify-content: space-between; /* Ensure space between text and arrow */
     outline: none; /* Remove focus outline */
