@@ -28,15 +28,13 @@ namespace Cataclysm_Website.Server.Controllers
             try{
             List<string> classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid"];
             List<ClassAnalytics?> result = [];
-            await Parallel.ForEachAsync (
-                classes, async (charClass, ct) => {
-                    var classLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
-                    result.Add(new ClassAnalytics {
-                        className = charClass,
-                        PvpEntries = classLeaderboard.ToArray()
-                    });   
-                }
-            );
+            foreach (var charClass in classes) {
+                var classLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
+                result.Add(new ClassAnalytics {
+                    className = charClass,
+                    PvpEntries = classLeaderboard.ToArray()
+                });   
+            }
             return Ok(result);
         }
             catch (Exception ex)

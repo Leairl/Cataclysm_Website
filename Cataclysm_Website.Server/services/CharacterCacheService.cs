@@ -19,7 +19,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
 
             var slice = newarray.Skip(i*batchSize).Take(batchSize);
             //obtains character realm, character name, and region.
-            await Parallel.ForEachAsync(slice, async (player, auth) => {
+            foreach(var player in slice) {
                 try 
                 {
                     var oldPlayer = oldarray.FirstOrDefault(p => {
@@ -45,7 +45,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                 {
                     logger.LogError(ex, "Error in BatchCacheCharSummary");
                 }
-            });
+            }
         };
         await redisProxy.BracketPlayerExpiration(bracket, region);
         redisProxy.overrideClient = null;
