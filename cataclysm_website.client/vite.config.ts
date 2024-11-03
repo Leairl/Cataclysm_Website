@@ -4,12 +4,8 @@ import plugin from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
 import child_process from 'child_process';
-import { env } from 'process';
 
-const baseFolder =
-    env.APPDATA !== undefined && env.APPDATA !== ''
-        ? `${env.APPDATA}/ASP.NET/https`
-        : `${env.HOME}/.aspnet/https`;
+const baseFolder = "";
 
 const certificateName = "cataclysm_website.client";
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
@@ -25,7 +21,7 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
         'Pem',
         '--no-password',
     ], { stdio: 'inherit', }).status) {
-        //throw new Error("Could not create certificate.");
+        throw new Error("Could not create certificate.");
     }
 }
 
