@@ -93,7 +93,7 @@ namespace Cataclysm_Website.Server.Controllers
             try
             {
                 var pvpRewards = await _warcraftCachedData.GetPvPRewards(region);
-                if (pvpRewards != null && pvpRewards.Rewards.Any())
+                if (pvpRewards != null && pvpRewards.Rewards != null && pvpRewards.Rewards.Any())
                 {
                     var pvpSeasonRewardWithRank = pvpRewards.Rewards.Select(async r =>
                     {
