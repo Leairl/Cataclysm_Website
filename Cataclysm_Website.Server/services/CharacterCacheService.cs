@@ -26,14 +26,24 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                         return p.Character.Id == player.Character.Id;
                     });
                     var summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
+                    if (summary == new CharacterProfileSummary())
+                    {
+                        Thread.Sleep(5000);
+                        summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
+                    }
                     var talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
-                            var newPvpCharSummary = new PvpCharacterSummary
-                                {
-                                PvpEntry = player,
-                                charSummary = summary,
-                                spec = talents
-                                };
-                            await redisProxy.SavePvpCharacterSummary(newPvpCharSummary, bracket, region);
+                    if (talents == "")
+                    {
+                        Thread.Sleep(5000);
+                        talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
+                    }
+                    var newPvpCharSummary = new PvpCharacterSummary
+                        {
+                        PvpEntry = player,
+                        charSummary = summary,
+                        spec = talents
+                        };
+                    await redisProxy.SavePvpCharacterSummary(newPvpCharSummary, bracket, region);
                     if (oldPlayer != null && oldPlayer.SeasonMatchStatistics.Played != player.SeasonMatchStatistics.Played) {
                         await redisProxy.InsertToBracketActivityPage(bracket, region, oldPlayer, player);
                         await redisProxy.InsertActivityCacheClassCharacter(bracket, oldPlayer, player, summary, region);
