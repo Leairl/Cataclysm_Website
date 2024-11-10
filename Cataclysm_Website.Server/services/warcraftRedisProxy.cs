@@ -287,6 +287,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterPvpBracketStatistics())
         {
+            redis.GetDatabase().KeyDelete("GetCharacterRating" + server + characterName + pvpBracket + region);
             result = await GetBlizzardDataCached<CharacterPvpBracketStatistics>("GetCharacterRating" + server + characterName + pvpBracket + region, async () =>
             {
                 //gets character data from wow api
@@ -318,6 +319,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterStatisticsSummary())
         {
+            redis.GetDatabase().KeyDelete("GetCharacterStats" + server + characterName + region);
             result = await GetBlizzardDataCached<CharacterStatisticsSummary>("GetCharacterStats" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -353,7 +355,8 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterProfileSummary())
         {
-            result = await GetBlizzardDataCached<CharacterProfileSummary>("GetCharacterAchievements" + server + characterName + region, async () =>
+            redis.GetDatabase().KeyDelete("GetCharacter" + server + characterName + region);
+            result = await GetBlizzardDataCached<CharacterProfileSummary>("GetCharacter" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
                 //storing into GetCharacter and pulls data with server, characterName, and region
@@ -387,7 +390,8 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterAppearanceSummary())
         {
-            result = await GetBlizzardDataCached<CharacterAppearanceSummary>("GetCharacterAchievements" + server + characterName + region, async () =>
+            redis.GetDatabase().KeyDelete("GetCharacterAppearance" + server + characterName + region);
+            result = await GetBlizzardDataCached<CharacterAppearanceSummary>("GetCharacterAppearance" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
                 //storing into GetCharacter and pulls data with server, characterName, and region
@@ -420,6 +424,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterAchievementsSummary())
         {
+            redis.GetDatabase().KeyDelete("GetCharacterAchievements" + server + characterName + region);
             result = await GetBlizzardDataCached<CharacterAchievementsSummary>("GetCharacterAchievements" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -453,6 +458,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterEquipmentSummary())
         {
+            redis.GetDatabase().KeyDelete("GetCharacterEquipment" + server + characterName + region);
             result = await GetBlizzardDataCached<CharacterEquipmentSummary>("GetCharacterEquipment" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
