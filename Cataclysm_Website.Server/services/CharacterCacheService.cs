@@ -1,6 +1,7 @@
 using ArgentPonyWarcraftClient;
+using StackExchange.Redis;
 
-class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger, IConfiguration Config)
+class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger, IConfiguration Config, IConnectionMultiplexer redis)
 {
     //uses PvpLeaderboardEntry in generic method in order to locate character slug / name in warcraft client
     public async Task BatchCacheCharSummary(string bracket, string region, PvpLeaderboardEntry[] oldarray, PvpLeaderboardEntry[] newarray, int batchSize = 5)
@@ -28,12 +29,15 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                     var summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
                     if (summary == new CharacterProfileSummary())
                     {
+                        redis.GetDatabase().KeyDelete("GetCharacter" + player.Character.Realm.Slug + player.Character.Name + region);
                         Thread.Sleep(5000);
                         summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
                     }
                     var talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
                     if (talents == "")
                     {
+                        redis.GetDatabase().KeyDelete("characterSpecSummary" + player.Character.Name + player.Character.Realm.Slug + region);
+                        redis.GetDatabase().KeyDelete("characterSpecName" + player.Character.Name + player.Character.Realm.Slug + region);
                         Thread.Sleep(5000);
                         talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
                     }
