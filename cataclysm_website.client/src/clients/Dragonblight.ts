@@ -435,6 +435,47 @@ export class PvpLeaderboardClient {
         this.baseUrl = baseUrl ?? "";
     }
 
+    getSyncStatus(region: string | undefined, bracket: string | undefined): Promise<number> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetSyncStatus?";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        if (bracket === null)
+            throw new Error("The parameter 'bracket' cannot be null.");
+        else if (bracket !== undefined)
+            url_ += "bracket=" + encodeURIComponent("" + bracket) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetSyncStatus(_response);
+        });
+    }
+
+    protected processGetSyncStatus(response: Response): Promise<number> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as number;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<number>(null as any);
+    }
+
     get3v3Ladder(skip: number | undefined, take: number | undefined, region: string | undefined): Promise<PvpCharacterSummary[]> {
         let url_ = this.baseUrl + "/api/PvpLeaderboard/Get3v3Ladder?";
         if (skip === null)

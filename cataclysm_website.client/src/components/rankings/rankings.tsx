@@ -12,6 +12,8 @@ import {
   DataList,
   SegmentedControl,
   Skeleton,
+  Progress,
+  Tooltip,
 } from "@radix-ui/themes";
 import { Dragonblight } from "../../clients/Dragonblight";
 import "./rankings.css";
@@ -35,6 +37,7 @@ function Rankings() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedClasses, setSelectedClasses] = useState<string[]>(["All Classes"]);
+  const [syncStatus, setSyncStatus] = useState<number>(0);
   //getting values that are changeable
   useEffect(() => {
     setLoading(true);
@@ -44,8 +47,21 @@ function Rankings() {
     else {
       FilteredLadderData(selectedClasses, bracket);
     }
-  }, [bracket, region, page, selectedClasses]);
+    GetSyncStatus();
+    if (syncStatus < 1) {  
+      let interval: NodeJS.Timeout;
+      const updateInterval = () => {
+        clearInterval(interval);
+        interval = setInterval(() => {
+          GetSyncStatus();
+        }, 5000);
+      };
 
+      updateInterval();
+
+      return () => clearInterval(interval);
+    }
+  }, [bracket, region, page, selectedClasses]);
   //when page changes, call useeffect and update the skip amount
   const handlePageChange = (page: number) => {
     setPage(page);
@@ -112,6 +128,16 @@ function Rankings() {
             </SegmentedControl.Root>
           </div>
           <div className="grow"></div>
+            <Tooltip className="flex items-center" content="Percentage synced with Blizzard">
+              <span className="flex items-center">
+              <span>{Number(syncStatus.toFixed(2)) * 100}%</span>
+              <Progress
+                value={syncStatus}
+                max={1}
+                className="flex-grow-0 w-[100px] h-[10px] mx-2"
+              />
+             </span>
+            </Tooltip>
           <div className={loading ? "div-disabled" : ""}>
             <SegmentedControl.Root
               className="w-[100px] flex-grow-0"
@@ -597,6 +623,11 @@ function Rankings() {
     }
 
     setLoading(false);
+  }
+
+  async function GetSyncStatus() {
+    const DragonblightClient = new Dragonblight.PvpLeaderboardClient();
+    setSyncStatus(await DragonblightClient.getSyncStatus(region, bracket));
   }
   
 }

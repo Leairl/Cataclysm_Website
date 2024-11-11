@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace Cataclysm_Website.Server.Controllers
 {
@@ -19,6 +20,21 @@ namespace Cataclysm_Website.Server.Controllers
             _logger = logger;
             _warcraftCachedData = warcraftCachedData; //dependency injection to IWarcraftRedisProxy cs file
         }
+        private async Task UpdateBracketSummary(string bracket, string region, string characterName, string server, CharacterProfileSummary result, string specName)
+        {
+            var ladder = await _warcraftCachedData.GetPvpLeaderSummaries(bracket, region);
+            var playerSummary = ladder.FirstOrDefault(x => x?.charSummary.Name.ToLower() == characterName.ToLower() 
+                                                    && x.charSummary.Realm.Slug.ToLower() == server.ToLower());
+            if (playerSummary != null && playerSummary.PvpEntry != null) 
+            {
+                await _warcraftCachedData.SavePvpCharacterSummary(new PvpCharacterSummary
+                {
+                    charSummary = result,
+                    spec = specName,
+                    PvpEntry = playerSummary.PvpEntry
+                }, bracket, region);
+            }
+        }
         /* 
         Allows a user to load up character profiles from blizzard API.
         */
@@ -30,12 +46,19 @@ namespace Cataclysm_Website.Server.Controllers
             {
                 var result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region);
                 var specName = await _warcraftCachedData.GetCharacterSpecName(server.ToLower(), characterName.ToLower(), region);
-                 return Ok(new CharacterProfileSummaryAndSpec
-                    {
-                        // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
-                        charSummary = result,
-                        spec = specName
-                    });
+                // spin off a background thread to update the 2v2,3v3,5v5,rbg char summary and spec name
+                _ = Task.Run(async () => {
+                    await UpdateBracketSummary("2v2", region, characterName, server, result, specName);
+                    await UpdateBracketSummary("3v3", region, characterName, server, result, specName);
+                    await UpdateBracketSummary("5v5", region, characterName, server, result, specName);
+                    await UpdateBracketSummary("rbg", region, characterName, server, result, specName);
+                });
+                return Ok(new CharacterProfileSummaryAndSpec
+                {
+                    // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)
+                    charSummary = result,
+                    spec = specName
+                });
             }
             catch (Exception ex)
             {

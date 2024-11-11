@@ -1,5 +1,6 @@
 using ArgentPonyWarcraftClient;
 using StackExchange.Redis;
+using TwitchLib.Api.Helix.Models.Entitlements;
 
 class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger, IConfiguration Config, IConnectionMultiplexer redis)
 {
@@ -15,9 +16,10 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
         await redisProxy.ClearAllCachedClassCharacters(bracket, region);
         await redisProxy.ClearPvpCharacterSummary(bracket, region);
         var batchAmount = newarray.Length/batchSize;
+        decimal percent = 0;
+        await redis.GetDatabase().StringSetAsync(bracket + region + "SyncStatus", percent.ToString());
         for(int i = 0; i<batchAmount; i++)
         {
-
             var slice = newarray.Skip(i*batchSize).Take(batchSize);
             //obtains character realm, character name, and region.
             foreach(var player in slice) {
@@ -60,6 +62,8 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                     logger.LogError(ex, "Error in BatchCacheCharSummary");
                 }
             }
+            percent = (decimal)(i+1)/batchAmount;
+            await redis.GetDatabase().StringSetAsync(bracket + region + "SyncStatus", percent.ToString());
         };
         await redisProxy.BracketPlayerExpiration(bracket, region);
         redisProxy.overrideClient = null;

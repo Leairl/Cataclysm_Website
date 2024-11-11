@@ -2,6 +2,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using TwitchLib.Api.Helix.Models.ChannelPoints;
 
 namespace Cataclysm_Website.Server.Controllers
@@ -12,13 +13,34 @@ namespace Cataclysm_Website.Server.Controllers
     {
         private readonly ILogger<PvpLeaderboardController> _logger;
         private readonly IWarcraftRedisProxy _warcraftCachedData; //underscore is syntax to global variable
+        private readonly IConnectionMultiplexer _redis;
 
 
-        public PvpLeaderboardController(ILogger<PvpLeaderboardController> logger, IWarcraftRedisProxy warcraftCachedData)
+        public PvpLeaderboardController(ILogger<PvpLeaderboardController> logger, IWarcraftRedisProxy warcraftCachedData, IConnectionMultiplexer redis)
         {
             _logger = logger;
             _warcraftCachedData = warcraftCachedData; //dependency injection to IWarcraftRedisProxy cs file
+            _redis = redis;
         }
+        [HttpGet("GetSyncStatus")]
+        public async Task<ActionResult<decimal>> GetSyncStatus(string region, string bracket)
+        {
+            try
+            {
+                var syncStatus = await _redis.GetDatabase().StringGetAsync(bracket + region + "SyncStatus");
+                if (syncStatus.IsNullOrEmpty)
+                {
+                    return Ok(0);
+                }
+                return Ok(decimal.Parse(syncStatus.ToString()));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching the sync status.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
         /* 
         "dynamic-classic-us" is static name for region in us, need to find other static region names in developer.battle.net
         */
