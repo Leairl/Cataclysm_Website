@@ -7,7 +7,7 @@ import { ClassColor } from '../../helpers/classColorHelper';
 import './class-filter.css';
 
 // Define World of Warcraft classes including 'All Classes'
-const wowClasses = ['All Classes', 'Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest', 'Death Knight', 'Shaman', 'Mage', 'Warlock', 'Druid'];
+const wowClasses = ['All Classes', 'Warrior', 'Paladin', 'Hunter', 'Rogue', 'Priest', 'Death Knight', 'Shaman', 'Mage', 'Warlock', 'Druid', 'Monk'];
 
 // Import class icons
 const classIcons = wowClasses.reduce((icons, className) => {

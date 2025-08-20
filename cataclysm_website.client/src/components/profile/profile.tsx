@@ -48,7 +48,7 @@ const Profile: FC<ProfileProps> = () => {
             return;
           }
             setcharacterSummary(data.charSummary);
-            setSpecName(data.spec);
+            setSpecName(data.charSummary.active_spec?.name);
             CharacterClient.getEquipment(slug, characterName, region).then((dataEquip) => {
                 setCharacterEquipmentSummary(dataEquip);
                 CharacterAchievementClient.getCharacterAchievements(slug, characterName, region).then((data) => {

@@ -9,7 +9,7 @@ function NavBar() {
     <Card className="flex w-full h-20">
       <Link
         to="/"
-        className="flex-none flex h-[50px] w-[240px]"
+        className="flex-none flex h-[60px] w-[240px]"
       >
           <img src={`/Nav/db_io.webp`}></img>
       </Link>

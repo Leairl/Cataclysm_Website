@@ -36,9 +36,9 @@ async function generateModels(aspect, containerSelector, model, env=`live`) {
     }
     if(env === `classic`) {
         modelOptions = {
-            dataEnv: `cata`,
-            env: `cata`,
-            gameDataEnv: `cata`,
+            dataEnv: `mop-classic`,
+            env: `mop-classic`,
+            gameDataEnv: `mop-classic`,
             hd: false,
             ...modelOptions
         }

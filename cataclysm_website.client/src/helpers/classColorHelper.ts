@@ -11,6 +11,7 @@ const ClassColor = new Map<string, string>([
     ["Shaman", "#0070DD"],
     ["Warlock", "#8788EE"],
     ["Warrior", "#C69B6D"],
+    ["Monk", "#00FF98"],
     ["", "#888b8c"],
 ]);
 export { ClassColor };

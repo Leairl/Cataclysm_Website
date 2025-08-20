@@ -32,6 +32,12 @@
       "sourceFileMap": {
         "/src/Cataclysm_Website.Server": "${workspaceFolder}/Cataclysm_Website.Server"
       }
+    },
+    {
+        "name": ".NET Core Attach",
+        "type": "coreclr",
+        "request": "attach",
+        "processId": "${command:pickProcess}"
     }
   ]
 }

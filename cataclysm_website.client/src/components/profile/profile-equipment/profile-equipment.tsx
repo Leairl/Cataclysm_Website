@@ -37,7 +37,6 @@ const slots: number[] = [
   19,
   9,
   16,
-  17,
   10,
   6,
   7,
@@ -46,7 +45,7 @@ const slots: number[] = [
   12,
   13,
   14,
-  18,
+  17,
 ];
 let wow_model_viewer: WowModelViewer;
 const default_icon_path: string = "/slot-icons/Ui-paperdoll-slot-";
@@ -367,9 +366,9 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                 }
               ></div>
               <div className="paperdoll pt-2">
-                <div className="paperdoll-column"> {getSlotIcons(0, 10)} </div>
+                <div className="paperdoll-column"> {getSlotIcons(0, 9)} </div>
                 <div id="model3d" className="model3dx"></div>
-                <div className="paperdoll-column"> {getSlotIcons(10, 19)} </div>
+                <div className="paperdoll-column"> {getSlotIcons(9, 19)} </div>
               </div>
             </div>
           )}
@@ -438,7 +437,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
       >
         <a
           className={
-            i + skip > 9
+            i + skip > 8
               ? "aligned-right slot-icon-background"
               : "slot-icon-background"
           }
@@ -458,7 +457,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         <div className="item-details ">
           <a
             className={
-              i + skip > 9 ? "align-right-name item-name" : "item-name"
+              i + skip > 8 ? "align-right-name item-name" : "item-name"
             }
           >
             <Skeleton width={"200px"} height={"15px"}></Skeleton>
@@ -466,7 +465,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
 
           <a
             className={
-              i + skip > 9
+              i + skip > 8
                 ? "align-right-name item-enchant float-end"
                 : "item-enchant"
             }
@@ -558,13 +557,13 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         (getItem(props.characterEquipmentSummary, s) == 0 && (
           <div
             className={
-              i + skip > 9 ? "right-itemslot-row itemSlotRow" : "itemSlotRow"
+              i + skip > 8 ? "right-itemslot-row itemSlotRow" : "itemSlotRow"
             }
             key={s}
           >
             <a
               className={
-                i + skip > 9
+                i + skip > 8
                   ? "aligned-right slot-icon-background"
                   : "slot-icon-background"
               }
@@ -578,18 +577,18 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
           //and pulls element 15 out, allowing the user to see the unique gear id of slot_id 15.
           <div
             className={
-              i + skip > 9 ? "right-itemslot-row itemSlotRow" : "itemSlotRow"
+              i + skip > 8 ? "right-itemslot-row itemSlotRow" : "itemSlotRow"
             }
             key={s}
           >
             <a
               className={
-                i + skip > 9
+                i + skip > 8
                   ? "aligned-right slot-icon-background"
                   : "slot-icon-background"
               }
               style={{ backgroundImage: `url(${getBackgroundIcon(s)})` }}
-              href={`https://www.wowhead.com/cata/item=${getItem(
+              href={`https://www.wowhead.com/mop-classic/item=${getItem(
                 props.characterEquipmentSummary,
                 s
               )}`}
@@ -606,9 +605,9 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             <div className="item-details ">
               <a
                 className={
-                  i + skip > 9 ? "align-right-name item-name" : "item-name"
+                  i + skip > 8 ? "align-right-name item-name" : "item-name"
                 }
-                href={`https://www.wowhead.com/cata/item=${getItem(
+                href={`https://www.wowhead.com/mop-classic/item=${getItem(
                   props.characterEquipmentSummary,
                   s
                 )}`}
@@ -625,11 +624,11 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               </a>
               <a
                 className={
-                  i + skip > 9
+                  i + skip > 8
                     ? "align-right-name item-enchant"
                     : "item-enchant"
                 }
-                href={`https://www.wowhead.com/cata/item=${
+                href={`https://www.wowhead.com/mop-classic/item=${
                   getEnchant(s)?.source_item?.id
                 }`}
               >

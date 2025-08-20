@@ -132,7 +132,7 @@ function Rankings() {
               <span className="flex items-center">
               <span>{Number(syncStatus.toFixed(2)) * 100}%</span>
               <Progress
-                value={syncStatus}
+                value={Number(syncStatus.toFixed(2))}
                 max={1}
                 className="flex-grow-0 w-[100px] h-[10px] mx-2"
               />
@@ -330,10 +330,10 @@ function Rankings() {
                           <Avatar.Root className="h-[23px] w-[23px] mr-1">
                           <Avatar.Image
                             src={(() => {
-                              if (characterEntry.spec == null || characterEntry.spec == "" || characterEntry.charSummary?.name == null) {
+                              if (characterEntry.charSummary?.active_spec?.name == null || characterEntry.charSummary?.active_spec?.name == "" || characterEntry.charSummary?.name == null) {
                                 return `/unknown.png`;
                               }
-                              return `/Specs/${characterEntry.spec?.toLowerCase()}_${characterEntry.charSummary?.character_class?.name?.toLowerCase()}.png`;
+                              return `/Specs/${characterEntry.charSummary?.active_spec?.name?.toLowerCase()}_${characterEntry.charSummary?.character_class?.name?.toLowerCase()}.png`;
                             })()}
                           />
                           <Avatar.Fallback />

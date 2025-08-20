@@ -32,7 +32,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                     if (summary == new CharacterProfileSummary())
                     {
                         redis.GetDatabase().KeyDelete("GetCharacter" + player.Character.Realm.Slug + player.Character.Name + region);
-                        Thread.Sleep(5000);
+                        await Task.Delay(500);
                         summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region);
                     }
                     var talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
@@ -40,7 +40,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                     {
                         redis.GetDatabase().KeyDelete("characterSpecSummary" + player.Character.Name + player.Character.Realm.Slug + region);
                         redis.GetDatabase().KeyDelete("characterSpecName" + player.Character.Name + player.Character.Realm.Slug + region);
-                        Thread.Sleep(5000);
+                        await Task.Delay(500);
                         talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region);
                     }
                     var newPvpCharSummary = new PvpCharacterSummary

@@ -71,7 +71,7 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
 
     function GlyphDisplay() {
       const glyphSections: JSX.Element[] = [];
-      const glyphName = ["Prime Glyphs", "Major Glyphs", "Minor Glyphs"];
+      const glyphName = ["Major Glyphs", "Minor Glyphs"];
       glyphName.map(g => {
         glyphSections.push(GetSection(g))
       })
@@ -81,18 +81,14 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
       const glyphs: JSX.Element[] = [];
       [0,1,2].map((i) => {
         let glyphType = 0;
-        if (g == 'Prime Glyphs') {
-          glyphType = 2;
-        }
-        else if (g == 'Minor Glyphs') {
+        if (g == 'Minor Glyphs') {
           glyphType = 1;
         }
         glyphs.push(loading ? GetSkeletonGlyph() : GetGlyph(i, glyphType))
       })
     return(
       <div className='grid'>
-        <Heading size="3" className={g == 'Prime Glyphs' ? 'mb-3 ml-2' : 'mt-3 mb-3 ml-2'
-        }>{g}</Heading>
+        <Heading size="3" className={'mt-3 mb-3 ml-2'}>{g}</Heading>
         <div className = 'flex-wrap justify-between m-2 flex flex-row'>
         {glyphs}
         </div>
@@ -117,8 +113,8 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
             <div className='w-[44px] h-[44px] mr-3'>
             <a className="block w-[40px] h-[40px] talentIcon"
                                                         href={getActiveGlyphIcon(i, glyphType) == 0 
-                                                          ? `https://www.wowhead.com/cata/item=206953/charred-glyph`
-                                                          :`https://www.wowhead.com/cata/spell=${getActiveGlyphIcon(i, glyphType)}`}
+                                                          ? `https://www.wowhead.com/mop-classic/item=206953/charred-glyph`
+                                                          :`https://www.wowhead.com/mop-classic/spell=${getActiveGlyphIcon(i, glyphType)}`}
                                                         >
                                                         </a>
             </div>
@@ -133,7 +129,7 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
         })?.glyphs
         if (ActiveGlyphName) {
           return(ActiveGlyphName.filter(glyph => {
-            return RetrieveGlyphs(glyph.id)?.Glyph_Type == glyphType
+            return RetrieveGlyphs(glyph.id)?.Field_3_4_0_43659_001 == glyphType
           })[i]?.name) ?? "Empty Glyph Slot";
         }
         else {
@@ -148,7 +144,7 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
             })?.glyphs
             if (ActiveGlyphIcon) {
               const GlyphData = (ActiveGlyphIcon.filter(glyph => {
-                return RetrieveGlyphs(glyph?.id)?.Glyph_Type == glyphType
+                return RetrieveGlyphs(glyph?.id)?.Field_3_4_0_43659_001 == glyphType
               })[i]);
               return RetrieveGlyphs(GlyphData?.id)?.SpellID ?? 0
             }
