@@ -81,6 +81,8 @@ const RankOneAchievements = [
   [3758, "r1-s7.png"],
   [4599, "r1-s8.png"],
   [6002, "r1-s9.png"],
+  [6124, "r1-s10.png"],
+  [6938, "r1-s11.png"],
 ];
 const GladiatorAchievements = [
   [886, "glad-s1.png"],
@@ -92,6 +94,8 @@ const GladiatorAchievements = [
   [3757, "glad-s7.png"],
   [4600, "glad-s8.png"],
   [6003, "glad-s9.png"],
+  [6321, "glad-s10.png"],
+  [6741, "glad-s11.png"],
 ];
 
 const RankOneTooltip = [
@@ -104,6 +108,8 @@ const RankOneTooltip = [
   [3758, "Achieved Relentless Gladiator"],
   [4599, "Achieved Wrathful Gladiator"],
   [6002, "Achieved Vicious Gladiator"],
+  [6124, "Achieved Ruthless Gladiator"],
+  [6938, "Achieved Cataclysmic Gladiator"],
 ];
 
 const GladiatorTooltip = [
@@ -116,6 +122,8 @@ const GladiatorTooltip = [
   [3757, "Achieved Gladiator Season 7"],
   [4600, "Achieved Gladiator Season 8"],
   [6003, "Achieved Gladiator Season 9"],
+  [6321, "Achieved Gladiator Season 10"],
+  [6741, "Achieved Gladiator Season 11"],
 ];
 
 const slotName: string[] = [
@@ -307,7 +315,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               </Flex>
               <div className="paperdoll pt-2">
                 <div className="paperdoll-column paperdoll-left">
-                  {getSlotSkeleton(0, 10)}
+                  {getSlotSkeleton(0, 9)}
                 </div>
                 <Skeleton width="0px"></Skeleton>
                 <Skeleton
@@ -317,7 +325,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                 ></Skeleton>
                 <div className="paperdoll-column paperdoll-right">
                   {" "}
-                  {getSlotSkeleton(10, 19)}
+                  {getSlotSkeleton(9, 19)}
                 </div>
               </div>
             </div>
@@ -380,6 +388,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               charClass={
                 props.characterProfileSummary?.character_class?.name ?? ""
               }
+              charClassId={props.characterProfileSummary?.character_class?.id ?? 0}
               region={region ?? ""}
               charName={characterName ?? ""}
               server={server ?? ""}
@@ -401,6 +410,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               charClass={
                 'hunterpet' 
               }
+              charClassId={0}
               region={region ?? ""}
               charName={characterName ?? ""}
               server={server ?? ""}

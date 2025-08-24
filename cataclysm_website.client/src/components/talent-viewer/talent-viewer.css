@@ -1,3 +1,4 @@
+
 .talentIcon > .iconlarge {
     width: 38px;
     height: 38px;
@@ -19,6 +20,16 @@
     top: 0;
     z-index: 10;
 }
+
+.talentIcon > span:not([class]) {
+    font-size: 0.8em;
+    display: flex;
+    margin-left: 14px;
+    margin-top: 13px;
+    color: #727272;
+}
+
+/* for the same span with no class inside the talentIcon I want to make the text red when data-talented="true" */
 
 .tree-talent-points-db {
     background-color: #000;
@@ -58,4 +69,11 @@
 
 .talentIconWrapper[data-talented="true"] {
     filter: grayscale(0%);
+    .talentIcon > span:not([class]) {
+        color:rgb(39, 150, 255);
+    }
+
+    .talentCard {
+        box-shadow: 0 0 8px 2px rgba(39, 150, 255, 0.7);
+    }
 }

@@ -25,7 +25,7 @@ namespace CORSProxy
         {
             try
             {
-                return this.ProxyAsync("https://www.wowhead.com/cata/blue-tracker?rss", null, httpProxyOptions: proxyOptions);
+                return this.ProxyAsync("https://www.wowhead.com/mop-classic/blue-tracker?rss", null, httpProxyOptions: proxyOptions);
             }
             catch (Exception ex)
             {

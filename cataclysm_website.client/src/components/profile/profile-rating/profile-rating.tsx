@@ -43,22 +43,22 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
     current_rating: number
   ): string | undefined {
     const title = getTitle(bracket, current_rating);
-    if (title == "Vicious Gladiator") {
+    if (title?.endsWith(" Gladiator")) {
       return "text-yellow-600";
     }
-    if (title == "Gladiator" || title == "Hero of the Faction") {
+    if (title?.startsWith("Gladiator") || title?.startsWith("Hero of the Faction")) {
       return "text-purple-500	";
     }
-    if (title == "Duelist") {
+    if (title?.startsWith("Duelist")) {
       return "text-blue-500";
     }
-    if (title == "Rival") {
+    if (title?.startsWith("Rival")) {
       return "text-green-500";
     }
-    if (title == "Challenger") {
+    if (title?.startsWith("Challenger")) {
       return "text-neutral-500";
     }
-    if (title == "") {
+    if (title?.startsWith("")) {
       return "text-stone-100";
     }
   }
@@ -83,8 +83,8 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
       if (current_rating >= bracketReward.rating_cutoff)
         title =
           bracketReward.achievement?.name
-            ?.replace(" - Season 9", "")
-            .replace(": Season 9", "")
+            ?.replace(/ - Season [0-9][0-9]/, "")
+            .replace(/: Season [0-9][0-9]/, "")
             .replace("[DNT] ", "") ?? "";
     }
     return title;
@@ -96,22 +96,22 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
   ): string | undefined {
     const title = getTitle(bracket, current_rating);
 
-    if (title == "Vicious Gladiator") {
+    if (title?.endsWith(" Gladiator")) {
       return "border-yellow-600 border-2";
     }
-    if (title == "Gladiator" || title == "Hero of the Faction") {
+    if (title?.startsWith("Gladiator") || title?.startsWith("Hero of the Faction")) {
       return "border-purple-500 border-2";
     }
-    if (title == "Duelist") {
+    if (title?.startsWith("Duelist")) {
       return "border-blue-500 border-2";
     }
-    if (title == "Rival") {
+    if (title?.startsWith("Rival")) {
       return "border-green-500 border-2";
     }
-    if (title == "Challenger") {
+    if (title?.startsWith("Challenger")) {
       return "border-neutral-500 border-2";
     }
-    if (title == "") {
+    if (title?.startsWith("")) {
       return "border-stone-100 border-2";
     }
   }

@@ -37,45 +37,46 @@ return r.bracket?.type?.includes(props.bracket) || (r.bracket?.type?.includes('B
   return p.rating_cutoff - c.rating_cutoff
 }).map((i) => {
     function getAchievementColor(AchievementName: string | undefined): string | undefined {
-        if (AchievementName == 'Vicious Gladiator') {
+        if (AchievementName?.endsWith(' Gladiator')) {
             return "text-yellow-600"
         }
-        if (AchievementName == 'Gladiator' || AchievementName == 'Hero of the Faction') {
+        if (AchievementName?.startsWith('Gladiator') || AchievementName?.startsWith('Hero of the Faction')) {
             return "text-purple-500	"
         }
-        if (AchievementName == 'Duelist') {
+        if (AchievementName?.startsWith('Duelist')) {
             return "text-blue-500"
         }
-        if (AchievementName == 'Rival') {
+        if (AchievementName?.startsWith('Rival')) {
             return "text-green-500"
         }
-        if (AchievementName == 'Challenger') {
+        if (AchievementName?.startsWith('Challenger')) {
             return "text-neutral-500"
         }
     }
 
     function getCardBorder(AchievementName: string | undefined) {
-        if (AchievementName == 'Vicious Gladiator') {
+        if (AchievementName?.endsWith(' Gladiator')) {
             return "border-yellow-600 border-2"
         }
-        if (AchievementName == 'Gladiator' || AchievementName == 'Hero of the Faction') {
+        if (AchievementName?.startsWith('Gladiator') || AchievementName?.startsWith('Hero of the Faction')) {
             return "border-purple-500 border-2"
         }
-        if (AchievementName == 'Duelist') {
+        if (AchievementName?.startsWith('Duelist')) {
             return "border-blue-500 border-2"
         }
-        if (AchievementName == 'Rival') {
+        if (AchievementName?.startsWith('Rival')) {
             return "border-green-500 border-2"
         }
-        if (AchievementName == 'Challenger') {
+        if (AchievementName?.startsWith('Challenger')) {
             return "border-neutral-500 border-2"
         }
     }
 
   return (
-    <Card className={getCardBorder(i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT] ', '')) + " hover:highlight- w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0"}>
-        <span className={getAchievementColor(i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT] ', ''))}>
-        <b>{i.achievement?.name?.replace(' - Season 9', '').replace(': Season 9', '').replace('[DNT] ', '')}</b></span> {" "}
+    
+    <Card className={getCardBorder(i.achievement?.name?.replace(/- Season [0-9][0-9]/, '').replace(/: Season [0-9][0-9]/, '').replace('[DNT] ', '')) + " hover:highlight- w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0"}>
+        <span className={getAchievementColor(i.achievement?.name?.replace(/- Season [0-9][0-9]/, '').replace(/: Season [0-9][0-9]/, '').replace('[DNT] ', ''))}>
+        <b>{i.achievement?.name?.replace(/- Season [0-9][0-9]/, '').replace(/: Season [0-9][0-9]/, '').replace('[DNT] ', '')}</b></span> {" "}
         <br></br>
         <span className="text-sm">Rating Cutoff:{" "}{i.rating_cutoff}</span>
         <br></br>

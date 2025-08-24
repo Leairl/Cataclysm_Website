@@ -336,10 +336,10 @@ function Activity() {
                           <Avatar.Root className="h-[23px] w-[23px] mr-1">
                           <Avatar.Image
                             src={(() => {
-                              if (characterEntry.charSummary.active_spec?.name == null || characterEntry.charSummary.active_spec?.name == "") {
+                              if (characterEntry.charSummary?.active_spec?.name == null || characterEntry.charSummary?.active_spec?.name == "") {
                                 return `/unknown.png`;
                               }
-                              return `/Specs/${characterEntry.charSummary.active_spec?.name?.toLowerCase()}_${characterEntry.charSummary?.character_class?.name?.toLowerCase()}.png`;
+                              return `/Specs/${characterEntry.charSummary?.active_spec?.name?.toLowerCase()}_${characterEntry.charSummary?.character_class?.name?.toLowerCase()}.png`;
                             })()}
                           />
                           <Avatar.Fallback />

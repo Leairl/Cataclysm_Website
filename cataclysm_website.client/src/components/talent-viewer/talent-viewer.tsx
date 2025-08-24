@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Talents, { Talent } from '../../data/talent';
-import TalentTabs from '../../data/talentTab';
-import { Card, Heading } from "@radix-ui/themes";
+import { Card } from "@radix-ui/themes";
 import './talent-viewer.css';
 import { Dragonblight } from "../../clients/Dragonblight";
 import { ClassColor } from '../../helpers/classColorHelper';
@@ -12,9 +11,9 @@ interface TalentViewerProps {
     server : string
     region : string
     charClass : string
+    charClassId : number
     pet: boolean
 }
-const ranks: string[] = ['SpellRank_0', 'SpellRank_1', 'SpellRank_2', 'SpellRank_3', 'SpellRank_4', 'SpellRank_5', 'SpellRank_6', 'SpellRank_7', 'SpellRank_8'];
 const TalentViewer: React.FC<TalentViewerProps> = (props) => {
     const [playerTalents, setPlayerTalents] = useState<Dragonblight.CharacterSpecializationsSummary>();
     const [loading, setLoading] = useState<boolean>(true);
@@ -62,31 +61,23 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
       }
       else {
         return (   
-            <div className="justify-center" style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {TalentTabs.filter((tab) => tab.BackgroundFile.toLowerCase().startsWith(props.charClass.toLowerCase().replace(" ","")) 
-            && (!tab.BackgroundFile.toLowerCase().includes('pet') || props.pet) && tab.OrderIndex >= 0).map((tab) => {
-                return (
-                    <div className='grid min-w-[280px] max-w-[280px]' key={tab.ID} style={{ flex: '1' }}>
-                        <Card className="justify-self-center max-w-60 m-2">
-                            <Heading size="3">{tab.Name_lang + " - " + GetPointsSpent(tab.Name_lang)}</Heading>
+            <div className="justify-center mb-4" style={{ display: 'flex', flexWrap: 'wrap' }}>
+                    <div className='grid min-w-[280px] max-w-[840px]' key={"tab1"} style={{ flex: '1' }}>
+                        <div className="m-2">
                             <div className="flex">
-                                {[0,1,2,3].map(c => 
-                                    { return (<div key={tab.ID + 'x' + c} className="flex-1 flex flex-col">
-                                        {[0,1,2,3,4,5,6].map(r => {
-                                            const talent = Talents.find((talent) => talent.TabID === tab.ID && talent.ColumnIndex == c && talent.TierID == r);
+                                {[0,1,2].map(c => 
+                                    { return (<div key={"tab1" + 'x' + c} className="flex-1 flex flex-col">
+                                        {[0,1,2,3,4,5].map(r => {
+                                            const talent = Talents.find((talent) => talent.ClassID === props.charClassId && talent.ColumnIndex == c && talent.TierID == r);
                                             return (
-                                                <div key={talent?.ID + '' + c + r} className="m-1.5 w-[40px] h-[40px] talentIconWrapper" data-talented={GetPointsForTalent(tab.Name_lang, talent) != 0}>
+                                                <div key={talent?.ID + '' + c + r} className="m-1.5 mb-4 w-[240px] h-[40px] talentIconWrapper" data-talented={IsTalented(talent) ? "true" : "false"}>
                                                     {talent != null && (
-                                                    <div>
-                                                        <a className="block w-[40px] h-[40px] talentIcon"
-                                                        href={`https://www.wowhead.com/cata/spell=${GetTalentedSpell(tab.Name_lang, talent)}`}
-                                                        data-points="0" data-max-points="3">
-                                                            
-                                                        <span className="tree-talent-points-db pointer-events-none" data-talented={GetPointsForTalent(tab.Name_lang, talent) != 0}>
-                                                            {GetPointsForTalent(tab.Name_lang, talent)}/{getNumPoints(talent)}
-                                                        </span>
+                                                    <Card className='talentCard min-w-[240px] my-2 p-2 flex flex-row items-center'>
+                                                        <a className="block w-[240px] h-[40px] talentIcon flex"
+                                                        href={`https://www.wowhead.com/mop-classic/spell=${talent.SpellID}`}
+                                                        data-points="0" data-max-points="3" data-wh-rename-link="true">
                                                         </a>
-                                                    </div>
+                                                    </Card>
                                                     )}
                                                 </div>
                                             );
@@ -94,10 +85,8 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
                                     })
                                 }
                             </div>
-                        </Card>
+                        </div>
                     </div>
-                );
-            })}
         </div>
         )
       }
@@ -112,62 +101,21 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
             setLoading(false);
         }, 300)
     }
-    
-    function GetPointsSpent(name: string) {
-        const activeSpec = playerTalents?.specialization_groups?.find(s => s.is_active);
-        if (activeSpec?.specializations != undefined)
-        {
-            const tree = activeSpec?.specializations.find(s => s.specialization_name == name);
-            return tree?.spent_points ?? 0;
-        }
-        return 0;
-    }
 
-    function GetTalentedSpell(tree_name: string, talent: Talent)
+    function IsTalented(talent: Talent | undefined)
     {
+        if (talent == undefined) { return false; }
         const activeSpec = playerTalents?.specialization_groups?.find(s => s.is_active);
-        if (activeSpec?.specializations != undefined)
+        if (activeSpec == undefined) { return false; }
+        const activeSpecIndex = playerTalents?.specialization_groups?.indexOf(activeSpec);
+        if (playerTalents?.specializations != undefined)
         {
-            const tree = activeSpec?.specializations.find(s => s.specialization_name == tree_name);
-            let spellId = talent.SpellRank_0;
-            ranks.forEach(rank => {
-                const r = tree?.talents?.find(t => (t.spell_tooltip?.spell?.id ?? 0) == talent[rank]);
-                if (r != undefined && r.spell_tooltip?.spell?.id) { spellId = r.spell_tooltip?.spell?.id; }
-            });
-            return spellId;
+            const tree = playerTalents?.specializations[activeSpecIndex ?? 0];
+            const talented = tree?.talents?.some(t => (t.spell_tooltip?.spell?.id ?? 0) == talent.SpellID);
+            return talented;
         }
-        return talent.SpellRank_0
-    }
-
-    function GetPointsForTalent(tree_name: string, talent: Talent | undefined)
-    {
-        if (talent == undefined) { return 0; }
-        const activeSpec = playerTalents?.specialization_groups?.find(s => s.is_active);
-        if (activeSpec?.specializations != undefined)
-        {
-            const tree = activeSpec?.specializations.find(s => s.specialization_name == tree_name);
-            let points = 0;
-            for (const rank of ranks) {
-                const r = tree?.talents?.find(t => (t.spell_tooltip?.spell?.id ?? 0) == talent[rank]);
-                const currSpell = talent[rank];
-                if (currSpell != 0) { points++; }
-                else { points = 0; }
-                if (r != undefined && r.spell_tooltip?.spell?.id) { break; }
-            }
-            return points;
-        }
-        return 0;
+        return false;
     }
 };
-function getNumPoints(talent: Talent) {
-    let result = 0;
-    ranks.forEach(rank => {
-        const r = talent[rank];
-        if (r != 0) {
-            result++;
-         }
-    });
-    return result;
-}    
 export default TalentViewer;
 
