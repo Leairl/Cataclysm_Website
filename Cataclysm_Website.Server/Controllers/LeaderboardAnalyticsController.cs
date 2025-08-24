@@ -26,7 +26,7 @@ namespace Cataclysm_Website.Server.Controllers
         
         {
             try{
-            List<string> classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid"];
+            List<string> classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid", "Monk"];
             List<ClassAnalytics?> result = [];
             foreach (var charClass in classes) {
                 var classLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
