@@ -512,7 +512,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
     }
     public async Task ClearAllCachedClassCharacters(string bracket, string region)
     {
-        List<string> wowClasses = ["All Classes", "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid"];
+        List<string> wowClasses = ["All Classes", "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid", "Monk"];
         var db = redis.GetDatabase(); //var to redis database
         //clears all cached class characters
         foreach (var wowClass in wowClasses)
