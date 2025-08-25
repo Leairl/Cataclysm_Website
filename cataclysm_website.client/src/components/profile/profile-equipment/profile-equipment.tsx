@@ -223,7 +223,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
           DisplayIdClient.getDisplayInfo(transmogItemId).then((displayInfo) => {
             const newSlot =
               slot == 16 || slot == 17 ? slot + 5 : displayInfo.inventoryType;
-            if (displayInfo.displayId > 0 && slot != 18) {
+            if (displayInfo.displayId > 0 && slot != 17 && slot != 18) {
               equipments.push([newSlot, displayInfo.displayId]);
             }
           })

@@ -62,7 +62,7 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
       else {
         return (   
             <div className="justify-center mb-4" style={{ display: 'flex', flexWrap: 'wrap' }}>
-                    <div className='grid min-w-[280px] max-w-[840px]' key={"tab1"} style={{ flex: '1' }}>
+                    <div className='grid min-w-[280px] max-w-[840px] overflow-x-scroll' key={"tab1"} style={{ flex: '1' }}>
                         <div className="m-2">
                             <div className="flex">
                                 {[0,1,2].map(c => 
