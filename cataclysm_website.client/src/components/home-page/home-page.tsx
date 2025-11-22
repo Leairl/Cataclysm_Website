@@ -139,7 +139,7 @@ function HomePage() {
             <Option
               value={`${characterSummary.name}-${characterSummary.realm?.name}`}
               key={`${characterSummary.name}-${
-                characterSummary.realm?.name
+                characterSummary.realm?.slug
               }-${GetRegion(characterSummary)}`}
             >
               <Link
