@@ -282,7 +282,7 @@ function Rankings() {
                         if (characterEntry.charSummary?.name == null) {
                           return;
                         }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`);
                       }}
                     >
                       {characterEntry.pvpEntry.rank}
@@ -292,7 +292,7 @@ function Rankings() {
                       if (characterEntry.charSummary?.name == null) {
                         return;
                       }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`);
                       }}
                     >
                       <Flex>
@@ -355,7 +355,7 @@ function Rankings() {
                       if (characterEntry.charSummary?.name == null) {
                         return;
                       }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`);
                       }}
                       className="desktopOnly"
                     >
@@ -371,7 +371,7 @@ function Rankings() {
                       if (characterEntry.charSummary?.name == null) {
                         return;
                       }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`);
                       }}
                       className="desktopOnly"
                     >
@@ -382,7 +382,7 @@ function Rankings() {
                       if (characterEntry.charSummary?.name == null) {
                         return;
                       }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`);
                       }}
                       className="text-green-300 desktopOnly"
                     >
@@ -393,7 +393,7 @@ function Rankings() {
                       if (characterEntry.charSummary?.name == null) {
                         return;
                       }
-                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`);
+                        navigate(`/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`);
                       }}
                       className="text-red-300 desktopOnly"
                     >
