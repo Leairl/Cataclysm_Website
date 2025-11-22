@@ -144,7 +144,7 @@ function HomePage() {
             >
               <Link
                 to={`/profile/${GetRegion(characterSummary)}/${
-                  characterSummary.realm?.name
+                  characterSummary.realm?.slug
                 }/${characterSummary.name}`}
               >
                 <div className="flex">
