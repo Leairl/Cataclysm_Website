@@ -270,7 +270,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                       >
@@ -297,7 +297,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                       >
@@ -362,7 +362,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                         className="desktopOnly"
@@ -380,7 +380,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                         className="desktopOnly"
@@ -408,7 +408,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                         className="text-green-300 desktopOnly"
@@ -424,7 +424,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                         className="text-red-300 desktopOnly"
@@ -440,7 +440,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?.realm?.name}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                         className="desktopOnly"
