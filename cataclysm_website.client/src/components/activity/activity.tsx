@@ -297,7 +297,7 @@ function Activity() {
                             return;
                           }
                           navigate(
-                            `/profile/${region}/${characterEntry.charSummary?}/${characterEntry.charSummary?.name}`
+                            `/profile/${region}/${characterEntry.charSummary?.realm?.slug}/${characterEntry.charSummary?.name}`
                           );
                         }}
                       >
