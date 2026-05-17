@@ -33,7 +33,7 @@ namespace Cataclysm_Website.Server.Controller
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while fetching display info for item ID {ItemId}", item_id);
-                return StatusCode(500, "An error occurred while processing your request.");
+                return Ok(new ItemDisplayInfo(item_id, 0, 0, 0)); // Return a default object with displayid set to 0
             }
         }
         

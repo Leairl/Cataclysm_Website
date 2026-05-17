@@ -972,6 +972,4 @@ cataclysm_website.client/dist/assets/index-CHzOAj2x.js
 cataclysm_website.client/dist/*
 cataclysm_website.client/cataclysm_website.client.pem
 cataclysm_website.client/cataclysm_website.client.key
-latest-data/Item.5.5.4.67440.csv
-latest-data/ItemAppearance.5.5.4.67440.csv
-latest-data/ItemModifiedAppearance.5.5.4.67440.csv
+latest-data/*
