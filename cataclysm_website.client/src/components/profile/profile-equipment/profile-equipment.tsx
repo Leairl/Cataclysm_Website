@@ -26,7 +26,21 @@ interface profileEquipmentProps {
   showModelViewer: boolean;
   loading: boolean;
 }
-
+const mogslots: number[] = [
+  1,
+  3,
+  15,
+  5,
+  4,
+  19,
+  9,
+  16,
+  10,
+  6,
+  7,
+  8,
+  17,
+];
 const slots: number[] = [
   1,
   2,
@@ -213,7 +227,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
     const DisplayIdClient = new Dragonblight.DisplayIdClient();
     const equipments: number[][] = [];
     const displayInfoPromises = [];
-    for (const slot of slots) {
+    for (const slot of mogslots) {
       const transmogItemId =
         getTransmog(props.characterEquipmentSummary, slot) ?? 0;
       if (transmogItemId > 0) {
