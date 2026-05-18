@@ -54,7 +54,7 @@ async function generateModels(aspect, containerSelector, model, env=`live`) {
         // eslint-disable-next-line no-undef
         container: jQuery(containerSelector),
         aspect: aspect,
-        cls: 6,
+        cls: 1,
         background: "background-classic-181818.png",
         ...modelOptions
     }
