@@ -621,29 +621,25 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
             await db.ListTrimAsync(keyAndRegion, c, -1);
         }
     }
-    public string GetProfileRegion(string region)
-    {
-        return "profile-classic-" + region;
-    }
+    public string GetProfileRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic)
+        => "profile-" + flavor.NamespaceSegment() + region;
+    public string GetDynamicRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic)
+        => "dynamic-" + flavor.NamespaceSegment() + region;
+    public string GetStaticRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic)
+        => "static-" + flavor.NamespaceSegment() + region;
 
-    public string GetDynamicRegion(string region)
+    //gets an item's icon media, scoped to the game flavor so retail and classic
+    //never share a cache entry for the same item id
+    public async Task<ItemMedia?> GetItemIcon(int itemId, string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
-        return "dynamic-classic-" + region;
-    }
-    public async Task<ItemMedia> GetItemIcon(int itemId)
-    {
-        return await GetBlizzardDataCached<ItemMedia>("ItemIcon" + itemId, async () =>
+        region = GetStaticRegion(region, flavor);
+        return await GetBlizzardDataCached<ItemMedia?>("ItemIcon" + itemId + region, async () =>
         {
-            //gets character data from wow api
-            //storing into GetCharacter and pulls data with server, characterName, and region
-            var getItemIcon = await warcraftClient.GetItemMediaAsync(itemId, "static-classic-us");
-            if (getItemIcon != null)
-            {
-                //call method to insert char name in cache
-                return getItemIcon.Value;
-            }
-            return new ItemMedia();
-        }, TimeSpan.FromDays(30)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
+            var getItemIcon = await warcraftClient.GetItemMediaAsync(itemId, region, GetRegion(region), GetLocale(region));
+            //a failed request still returns a result object, with Success false and a null Value.
+            //returning null keeps the failure out of the cache so the next call retries.
+            return getItemIcon.Success ? getItemIcon.Value : null;
+        }, TimeSpan.FromDays(30));
     }
     public async Task ClearLeaderboard(string bracket, string region)
     {

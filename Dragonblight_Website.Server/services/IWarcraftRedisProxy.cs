@@ -29,7 +29,7 @@ public interface IWarcraftRedisProxy
     Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass);
     Task<string> GetCharacterSpecName(string server, string characterName, string region);
     WarcraftClient? overrideClient{get; set;}
-    Task<ItemMedia> GetItemIcon(int itemId);
+    Task<ItemMedia?> GetItemIcon(int itemId, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region);
     Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region);
     Task BracketClassPlayerExpiration(string bracket, string region, string characterClass);
