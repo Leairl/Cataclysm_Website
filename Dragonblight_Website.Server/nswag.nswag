@@ -3,7 +3,7 @@
   "defaultVariables": "",
   "documentGenerator": {
     "aspNetCoreToOpenApi": {
-      "project": "Cataclysm_Website.Server.csproj",
+      "project": "Dragonblight_Website.Server.csproj",
       "documentName": "v1",
       "msBuildProjectExtensionsPath": null,
       "configuration": null,
@@ -76,7 +76,7 @@
       "templateDirectory": null,
       "serviceHost": null,
       "serviceSchemes": null,
-      "output": "../cataclysm_website.client/src/clients/Dragonblight.ts",
+      "output": "../dragonblight_website.client/src/clients/Dragonblight.ts",
       "newLineBehavior": "Auto"
     }
   }

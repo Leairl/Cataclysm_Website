@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 using TwitchLib.Api.Helix.Models.ChannelPoints;
 
-namespace Cataclysm_Website.Server.Controllers
+namespace Dragonblight_Website.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

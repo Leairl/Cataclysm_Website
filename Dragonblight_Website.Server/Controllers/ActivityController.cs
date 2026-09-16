@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Cataclysm_Website.Server.Controllers
+namespace Dragonblight_Website.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

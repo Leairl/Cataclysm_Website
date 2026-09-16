@@ -7,7 +7,7 @@ import child_process from 'child_process';
 
 const baseFolder = "";
 
-const certificateName = "cataclysm_website.client";
+const certificateName = "dragonblight_website.client";
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 

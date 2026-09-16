@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <SpaRoot>..\cataclysm_website.client</SpaRoot>
+    <SpaRoot>..\dragonblight_website.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
   </PropertyGroup>
@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ArgentPonyWarcraftClient\ArgentPonyWarcraftClient.csproj" />
-    <ProjectReference Include="..\cataclysm_website.client\cataclysm_website.client.esproj">
+    <ProjectReference Include="..\dragonblight_website.client\dragonblight_website.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
@@ -49,7 +49,7 @@
     </None>
   </ItemGroup>
     <!-- Generate openapi.json on build; -->
-  <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
+    <Target Name="OpenAPI" AfterTargets="Build" Condition="'$(Configuration)'=='Debug' AND ('$(OS)' == 'Windows_NT' OR '$(BuildingInsideVisualStudio)' == 'true')">
     <Message Text="$(NSwagExe_Net80) run nswag.nswag" Importance="high" />
     <Exec Command="$(NSwagExe_Net80) run nswag.nswag" />
   </Target>

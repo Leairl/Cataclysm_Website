@@ -11,7 +11,7 @@
       "pipeCwd": "${workspaceFolder}",
       "pipeProgram": "docker",
       //run command in container for debug
-      "pipeArgs": ["exec", "-i", "cataclysm_backend_container", "bash", "-c"],
+      "pipeArgs": ["exec", "-i", "dragonblight_backend_container", "bash", "-c"],
       "debuggerPath": "/vsdbg/vsdbg",
       "quoteArgs": true,
       
@@ -30,7 +30,7 @@
       "request": "attach",
       "platform": "netCore",
       "sourceFileMap": {
-        "/src/Cataclysm_Website.Server": "${workspaceFolder}/Cataclysm_Website.Server"
+        "/src/Dragonblight_Website.Server": "${workspaceFolder}/Dragonblight_Website.Server"
       }
     },
     {

@@ -4,8 +4,11 @@
     {
       "label": "Build Docker Container",
       "type": "shell",
-      //building image (named cataclysm_backend)
-      "command": "docker build -t cataclysm_backend --file 'Cataclysm_Website.Server/dockerfile'.",
+      //building image (named dragonblight_backend)
+      "command": "docker build -t dragonblight_backend -f ./Dragonblight_Website.Server/dockerfile .",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "dependsOn": "Remove Old Docker Container",
       "problemMatcher": []
     },
@@ -13,10 +16,7 @@
       "label": "Remove Old Docker Container",
       "type": "shell",
       //even if there is an error with the command, run anyways
-      "command": "Invoke-Expression -ErrorAction SilentlyContinue -Command 'docker rm -f cataclysm_backend_container'",
-      "options": {
-        "shell": { "executable": "powershell", "args": ["-Command"] }
-      },
+      "command": "docker rm -f dragonblight_backend_container || true",
       "dependsOn": "Stop Docker Container",
       "problemMatcher": []
     },
@@ -24,16 +24,16 @@
       "label": "Stop Docker Container",
       "type": "shell",
       //even if there is an error with the command, run anyways
-      "command": "Invoke-Expression -ErrorAction SilentlyContinue -Command 'docker stop cataclysm_backend_container'",
-      "options": {
-        "shell": { "executable": "powershell", "args": ["-Command"] }
-      },
+      "command": "docker stop dragonblight_backend_container || true",
       "problemMatcher": []
     },
     {
       "label": "Run Docker",
       "type": "shell",
-      "command": "docker run -d --name cataclysm_backend_container --network cata-network -p 8080:8080 -p 7054:7054 --env ASPNETCORE_ENVIRONMENT=Development --env DOTNET_USE_POLLING_FILE_WATCHER=1 cataclysm_backend",
+      "command": "docker network inspect dragonblight-network >/dev/null 2>&1 || docker network create dragonblight-network; docker rm -f dragonblight_backend_container dragonblight_redis_container || true; docker run -d --name dragonblight_redis_container --network dragonblight-network -p 6379:6379 redis:7-alpine; until docker exec dragonblight_redis_container redis-cli ping | grep -q PONG; do echo 'Waiting for Redis...'; sleep 2; done; docker run -d --name dragonblight_backend_container --network dragonblight-network -p 8080:8080 -p 7054:7054 --env ASPNETCORE_ENVIRONMENT=Development --env DOTNET_USE_POLLING_FILE_WATCHER=1 --env Redis__ConnectionString=redis:6379 dragonblight_backend",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "dependsOn": "Build Docker Container",
       "problemMatcher": []
     },
@@ -52,8 +52,8 @@
       "label": "npm run dev",
       "type": "npm",
       "script": "dev",
-      "path": "cataclysm_website.client",
-      "problemMatcher": "$vite",
+      "path": "dragonblight_website.client",
+      "problemMatcher": "$tsc",
       "isBackground": true
     }
   ]

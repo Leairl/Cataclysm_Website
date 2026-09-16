@@ -5,7 +5,7 @@ using ArgentPonyWarcraftClient;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 
-namespace Cataclysm_Website.Server.Controllers
+namespace Dragonblight_Website.Server.Controllers
 {
     //uses "api/ to seperate our backend controllers from our frontend
     [ApiController]

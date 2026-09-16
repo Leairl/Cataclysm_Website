@@ -11,7 +11,7 @@ builder.Configuration.AddJsonFile("appsettings.development", optional: true, rel
 
 // Add services to the container.
 var configuration = builder.Configuration;
-var redisConnectionString = configuration.GetSection("Redis")["ConnectionString"];
+var redisConnectionString = configuration.GetSection("Redis")["ConnectionString"] ?? "localhost:6379";
 var battlenetClient = configuration.GetSection("BattlenetApi")["clientId"];
 var battlenetSecret = configuration.GetSection("BattlenetApi")["clientSecret"];
 
@@ -30,11 +30,13 @@ builder.Services.AddScoped<IWarcraftRedisProxy, WarcraftRedisProxy>();
 builder.Services.AddScoped<CharacterCacheService>();
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "NSWAG")
 {
-    if (string.IsNullOrEmpty(redisConnectionString))
-    {
-        throw new ArgumentNullException(nameof(redisConnectionString));
-    }
-    builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+    var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
+    redisOptions.AbortOnConnectFail = false;
+    redisOptions.ConnectRetry = 10;
+    redisOptions.ConnectTimeout = 5000;
+    redisOptions.SyncTimeout = 5000;
+
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
     builder.Services.AddHostedService<BgService>();
 }
 
