@@ -29,7 +29,7 @@ namespace Dragonblight_Website.Server.Controllers
             List<string> classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "Druid", "Monk"];
             List<ClassAnalytics?> result = [];
             foreach (var charClass in classes) {
-                var classLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
+                var classLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket, HttpContext.GetGameFlavor());
                 result.Add(new ClassAnalytics {
                     className = charClass,
                     PvpEntries = classLeaderboard.ToArray()

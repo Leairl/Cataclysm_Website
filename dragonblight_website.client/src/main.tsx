@@ -12,11 +12,15 @@ import NavBar from './components/nav/nav-bar.tsx'
 import '@radix-ui/themes/styles.css'
 import { Theme } from '@radix-ui/themes'
 import './index.css'
+import { installFlavorHeader } from './helpers/game-flavor.ts'
 import RankingsPage from './components/rankings/rankings.tsx';
 import LoginPage from './components/login/login.tsx';
 import ActivityPage from "./components/activity/activity.tsx";
 import News from "./components/news/news.tsx";
 import ClassAnalytics from './components/class-leaderboard-analytics/class-leaderboard-analytic.tsx';
+
+// every /api/ call carries the current flavor
+installFlavorHeader()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -2,39 +2,43 @@ using ArgentPonyWarcraftClient;
 
 public interface IWarcraftRedisProxy
 {
-    Task<PvpLeaderboard> Get3v3Leaderboard(string region);
-    Task<PvpLeaderboard> Get2v2Leaderboard(string region);
-    Task<PvpLeaderboard> Get5v5Leaderboard(string region);
-    Task<PvpLeaderboard> GetRBGLeaderboard(string region);
+    Task<PvpLeaderboard> Get3v3Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<PvpLeaderboard> Get2v2Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<PvpLeaderboard> Get5v5Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<PvpLeaderboard> GetRBGLeaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);
 
-    Task InsertCacheCharacter(string characterName, string server, string region);
-    Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary summary, string region);
-    Task ClearAllCachedClassCharacters(string bracket, string region);
-    Task<List<string>> CachedCharacters();
-    Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket);
-    Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region);
-    Task InsertToPlayerPageActivity(string bracket, string region, PvpLeaderboardEntry player);
-    Task<IEnumerable<PvpLeaderboardEntryandTime?>> GetPlayerPageActivity(string bracket, string region, string characterId);
-    Task BracketPlayerExpiration(string bracket, string region);
-    Task InsertToBracketActivityPage(string bracket, string region, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer);
-    Task<IEnumerable<PlayerActivity?>> GetBracketActivityPage(string bracket, string region);
-    Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region);
-    Task<PvpRewardsIndex> GetPvPRewards(string region);
-    Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region);
-    Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region);
-    Task<CharacterPvpBracketStatistics> GetPvpBracketRating(string server, string characterName, string pvpBracket, string region);
-    Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region);
-    Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region);
-    Task ClearLeaderboard(string bracket, string region);
-    Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass);
-    Task<string> GetCharacterSpecName(string server, string characterName, string region);
+    Task InsertCacheCharacter(string characterName, string server, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task InsertCacheClassCharacter(string bracket, PvpLeaderboardEntry player, CharacterProfileSummary summary, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task ClearAllCachedClassCharacters(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<List<string>> CachedCharacters(GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<List<PvpLeaderboardEntry?>> CachedClassCharacters(string region, string characterClass, string bracket, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<IEnumerable<PvpLeaderboardAndTime?>> GetLadderHistory(string key, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task InsertToPlayerPageActivity(string bracket, string region, PvpLeaderboardEntry player, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<IEnumerable<PvpLeaderboardEntryandTime?>> GetPlayerPageActivity(string bracket, string region, string characterId, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task BracketPlayerExpiration(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task InsertToBracketActivityPage(string bracket, string region, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<IEnumerable<PlayerActivity?>> GetBracketActivityPage(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<CharacterProfileSummary> GetCharSummary(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<PvpRewardsIndex> GetPvPRewards(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<CharacterAppearanceSummary> GetCharAppearance(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<CharacterEquipmentSummary> GetCharEquipment(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<CharacterPvpBracketStatistics> GetPvpBracketRating(string server, string characterName, string pvpBracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<CharacterStatisticsSummary> GetCharacterStats(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task ClearLeaderboard(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<IEnumerable<PlayerActivity?>> GetBracketClassFilteredActivityPage(string bracket, string region, string characterClass, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<string> GetCharacterSpecName(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     WarcraftClient? overrideClient{get; set;}
+    //namespace builders, exposed so callers can reproduce a cached key exactly
+    string GetProfileRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    string GetDynamicRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    string GetStaticRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<ItemMedia?> GetItemIcon(int itemId, string region, GameFlavor flavor = GameFlavor.MistsClassic);
-    Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region);
-    Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region);
-    Task BracketClassPlayerExpiration(string bracket, string region, string characterClass);
-    Task<int> GetSeason(string region);
-    Task SavePvpCharacterSummary(PvpCharacterSummary newPvpCharacterSummary, string bracket, string region);
-    Task<List<PvpCharacterSummary?>> GetPvpLeaderSummaries(string bracket, string region);
-    Task ClearPvpCharacterSummary(string bracket, string region);
+    Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task BracketClassPlayerExpiration(string bracket, string region, string characterClass, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<int> GetSeason(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task SavePvpCharacterSummary(PvpCharacterSummary newPvpCharacterSummary, string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<List<PvpCharacterSummary?>> GetPvpLeaderSummaries(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task ClearPvpCharacterSummary(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
 }

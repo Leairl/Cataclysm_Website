@@ -22,7 +22,7 @@ namespace Dragonblight_Website.Server.Controllers
         }
         private async Task UpdateBracketSummary(string bracket, string region, string characterName, string server, CharacterProfileSummary result, string specName)
         {
-            var ladder = await _warcraftCachedData.GetPvpLeaderSummaries(bracket, region);
+            var ladder = await _warcraftCachedData.GetPvpLeaderSummaries(bracket, region, HttpContext.GetGameFlavor());
             var playerSummary = ladder.FirstOrDefault(x => x?.charSummary.Name.ToLower() == characterName.ToLower() 
                                                     && x.charSummary.Realm.Slug.ToLower() == server.ToLower());
             if (playerSummary != null && playerSummary.PvpEntry != null) 
@@ -32,7 +32,7 @@ namespace Dragonblight_Website.Server.Controllers
                     charSummary = result,
                     spec = specName,
                     PvpEntry = playerSummary.PvpEntry
-                }, bracket, region);
+                }, bracket, region, HttpContext.GetGameFlavor());
             }
         }
         /* 
@@ -44,8 +44,8 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region);
-                var specName = await _warcraftCachedData.GetCharacterSpecName(server.ToLower(), characterName.ToLower(), region);
+                var result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
+                var specName = await _warcraftCachedData.GetCharacterSpecName(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
                 // spin off a background thread to update the 2v2,3v3,5v5,rbg char summary and spec name
                 _ = Task.Run(async () => {
                     await UpdateBracketSummary("2v2", region, characterName, server, result, specName);
@@ -72,7 +72,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var result = await _warcraftCachedData.GetCharAppearance(server.ToLower(), characterName.ToLower(), region);
+                var result = await _warcraftCachedData.GetCharAppearance(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
                 return Ok(result);
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var result = await _warcraftCachedData.GetCharEquipment(server.ToLower(), characterName.ToLower(), region);
+                var result = await _warcraftCachedData.GetCharEquipment(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
                 return Ok(result);
             }
             catch (Exception ex)

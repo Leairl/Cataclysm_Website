@@ -4,6 +4,7 @@ import { Card } from "@radix-ui/themes";
 import './talent-viewer.css';
 import { Dragonblight } from "../../clients/Dragonblight";
 import { ClassColor } from '../../helpers/classColorHelper';
+import { wowheadUrl } from "../../helpers/game-flavor";
 declare const $WowheadPower: { refreshLinks: () => void };
 
 interface TalentViewerProps {
@@ -74,7 +75,7 @@ const TalentViewer: React.FC<TalentViewerProps> = (props) => {
                                                     {talent != null && (
                                                     <Card className='talentCard min-w-[240px] my-2 p-2 flex flex-row items-center'>
                                                         <a className="block w-[240px] h-[40px] talentIcon flex"
-                                                        href={`https://www.wowhead.com/mop-classic/spell=${talent.SpellID}`}
+                                                        href={wowheadUrl(`spell=${talent.SpellID}`)}
                                                         data-points="0" data-max-points="3" data-wh-rename-link="true">
                                                         </a>
                                                     </Card>

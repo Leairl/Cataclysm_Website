@@ -54,7 +54,7 @@ namespace Dragonblight_Website.Server.Controllers
                 //this will replace dash in our Search method with comma from redis data.
                 search = search.Replace('-', ',');
                 //return character name and character score with descending order of outscore, uses select for specific properties in a list.
-                var allCharacters = await _warcraftCachedData.CachedCharacters();
+                var allCharacters = await _warcraftCachedData.CachedCharacters(HttpContext.GetGameFlavor());
                 //takes top 10 closest typed characters in search bar.
                 // var SearchChars = Process.ExtractTop(search.ToLower(), allCharacters, s => s.ToLower(), ScorerCache.Get<PartialRatioScorer>(), limit: 10)
                 //     .Where(s => s.Score >= 80)
@@ -65,7 +65,7 @@ namespace Dragonblight_Website.Server.Controllers
                     //when pulled out of redis, rearrange back into original key
                     //GetCharSummary is using InsertCacheCharacter (we split and rearrange this data after pulling from redis)
                     var playerSplit = player.Split(',');
-                    return await _warcraftCachedData.GetCharSummary(playerSplit[1], playerSplit[0], RegionHelper.SimplifyRegion(playerSplit[2]));
+                    return await _warcraftCachedData.GetCharSummary(playerSplit[1], playerSplit[0], RegionHelper.SimplifyRegion(playerSplit[2]), HttpContext.GetGameFlavor());
                 });
                 var result = await Task.WhenAll(top10CharSummaries);
                 result = result.Where(r => r != null).ToArray();

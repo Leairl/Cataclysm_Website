@@ -28,7 +28,7 @@ namespace Dragonblight_Website.Server.Controllers
                 List<CharacterPvpBracketStatistics> results = new List<CharacterPvpBracketStatistics>();
                 foreach (var PvPBracket in Brackets)
                 {
-                    results.Add(await _warcraftCachedData.GetPvpBracketRating(server.ToLower(), characterName.ToLower(), PvPBracket, region));
+                    results.Add(await _warcraftCachedData.GetPvpBracketRating(server.ToLower(), characterName.ToLower(), PvPBracket, region, HttpContext.GetGameFlavor()));
                 }
                 return Ok(results);
             }

@@ -21,4 +21,16 @@ public static class GameFlavorExtensions
         GameFlavor.MistsClassic => "classic-",
         _ => throw new ArgumentOutOfRangeException(nameof(flavor))
     };
+
+    /// <summary>
+    /// Prefix this flavor contributes to Redis keys that are not derived from a
+    /// Blizzard namespace. Every flavor contributes a distinct prefix so two
+    /// flavors can never share a key.
+    /// </summary>
+    public static string KeyPrefix(this GameFlavor flavor) => flavor switch
+    {
+        GameFlavor.Retail       => "retail_",
+        GameFlavor.MistsClassic => "classic_",
+        _ => throw new ArgumentOutOfRangeException(nameof(flavor))
+    };
 }

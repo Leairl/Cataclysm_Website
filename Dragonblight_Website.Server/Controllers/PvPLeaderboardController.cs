@@ -49,7 +49,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("3v3", region); 
+                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("3v3", region, HttpContext.GetGameFlavor()); 
                 ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
             }
@@ -65,7 +65,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("2v2", region); 
+                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("2v2", region, HttpContext.GetGameFlavor()); 
                 ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
             }
@@ -81,7 +81,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("5v5", region); 
+                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("5v5", region, HttpContext.GetGameFlavor()); 
                 ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
             }
@@ -97,7 +97,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("rbg", region); 
+                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("rbg", region, HttpContext.GetGameFlavor()); 
                 ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
                 return Ok(ladder.Skip(skip).Take(take));
                 //needs to create a seperate instance of pvpseasonreward to implement our rank property
@@ -114,7 +114,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var pvpRewards = await _warcraftCachedData.GetPvPRewards(region);
+                var pvpRewards = await _warcraftCachedData.GetPvPRewards(region, HttpContext.GetGameFlavor());
                 if (pvpRewards != null && pvpRewards.Rewards != null && pvpRewards.Rewards.Any())
                 {
                     var pvpSeasonRewardWithRank = pvpRewards.Rewards.Select(async r =>
@@ -153,19 +153,19 @@ namespace Dragonblight_Website.Server.Controllers
             {
                 if (bracket == "ARENA_2v2")
                 {
-                    return (await _warcraftCachedData.Get2v2Leaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+                    return (await _warcraftCachedData.Get2v2Leaderboard(region, HttpContext.GetGameFlavor())).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
                 }
                 if (bracket == "ARENA_3v3")
                 {
-                    return (await _warcraftCachedData.Get3v3Leaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+                    return (await _warcraftCachedData.Get3v3Leaderboard(region, HttpContext.GetGameFlavor())).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
                 }
                 if (bracket == "ARENA_5v5")
                 {
-                    return (await _warcraftCachedData.Get5v5Leaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+                    return (await _warcraftCachedData.Get5v5Leaderboard(region, HttpContext.GetGameFlavor())).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
                 }
                 if (bracket == "BATTLEGROUNDS")
                 {
-                    return (await _warcraftCachedData.GetRBGLeaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+                    return (await _warcraftCachedData.GetRBGLeaderboard(region, HttpContext.GetGameFlavor())).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
                 }
                 return 0;
             }
@@ -186,15 +186,15 @@ namespace Dragonblight_Website.Server.Controllers
                 List<PvpLeaderboardEntry?> filteredLadder = [];
                 foreach (var charClass in classes)
                 {
-                    var fullLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket);
+                    var fullLeaderboard = await _warcraftCachedData.CachedClassCharacters(region, charClass, bracket, HttpContext.GetGameFlavor());
                     filteredLadder.AddRange(fullLeaderboard);
                 }
                 filteredLadder = filteredLadder.OrderBy(r => r?.Rank).Skip(skip).Take(take).ToList();
                 //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
                 var LadderLeaderboardEntries = filteredLadder.Where(p => p != null).Select(p => p!).Select(async ladderEntry =>
                 {
-                    var ProfileSummaryEntries = await _warcraftCachedData.GetCharSummary(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region);
-                    var specName = await _warcraftCachedData.GetCharacterSpecName(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region);
+                    var ProfileSummaryEntries = await _warcraftCachedData.GetCharSummary(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region, HttpContext.GetGameFlavor());
+                    var specName = await _warcraftCachedData.GetCharacterSpecName(ladderEntry.Character.Realm.Slug, ladderEntry.Character.Name, region, HttpContext.GetGameFlavor());
                     return new PvpCharacterSummary
                     {
                         // 3 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)

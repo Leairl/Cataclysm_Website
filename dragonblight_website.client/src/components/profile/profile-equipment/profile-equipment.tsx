@@ -14,6 +14,7 @@ import TalentViewer from "../../talent-viewer/talent-viewer";
 import GlyphViewer  from "../../glyph-viewer/glyph-viewer";
 
 import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { wowheadUrl } from "../../../helpers/game-flavor";
 
 interface profileEquipmentProps {
   characterProfileSummary: Dragonblight.CharacterProfileSummary | undefined;
@@ -612,10 +613,10 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                   : "slot-icon-background"
               }
               style={{ backgroundImage: `url(${getBackgroundIcon(s)})` }}
-              href={`https://www.wowhead.com/mop-classic/item=${getItem(
+              href={wowheadUrl(`item=${getItem(
                 props.characterEquipmentSummary,
                 s
-              )}`}
+              )}`)}
               rel={`item=${getItem(props.characterEquipmentSummary, s)}&ench=${
                 getEnchant(s)?.enchantment_id
               }&gems=${getGems(s)}&rand=${getRandomEnchantments(
@@ -631,10 +632,10 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                 className={
                   i + skip > 8 ? "align-right-name item-name" : "item-name"
                 }
-                href={`https://www.wowhead.com/mop-classic/item=${getItem(
+                href={wowheadUrl(`item=${getItem(
                   props.characterEquipmentSummary,
                   s
-                )}`}
+                )}`)}
                 data-wowhead={`item=${getItem(
                   props.characterEquipmentSummary,
                   s
@@ -652,9 +653,9 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                     ? "align-right-name item-enchant"
                     : "item-enchant"
                 }
-                href={`https://www.wowhead.com/mop-classic/item=${
+                href={wowheadUrl(`item=${
                   getEnchant(s)?.source_item?.id
-                }`}
+                }`)}
               >
                 <div className="green_text">
                   {" "}

@@ -29,8 +29,12 @@ public class BgService : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var services = scope.ServiceProvider;
             var charService = services.GetRequiredService<CharacterCacheService>();
-            await charService.CacheAllLadders("us");
-            await charService.CacheAllLadders("eu");
+            // await charService.CacheAllLadders("us", GameFlavor.MistsClassic);
+            // await charService.CacheAllLadders("eu", GameFlavor.MistsClassic);
+            // //retail roughly doubles the Blizzard call volume - comment these two
+            // //out if the rate limit becomes a problem
+            await charService.CacheAllLadders("us", GameFlavor.Retail);
+            // await charService.CacheAllLadders("eu", GameFlavor.Retail);
         } 
         catch (Exception ex) 
         {

@@ -22,12 +22,11 @@ COPY ["dragonblight_website.client/dragonblight_website.client.esproj", "dragonb
 RUN dotnet restore "./Dragonblight_Website.Server/Dragonblight_Website.Server.csproj"
 COPY . .
 WORKDIR "/src/Dragonblight_Website.Server"
-RUN dotnet build "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:GenerateOpenApi=false
+RUN dotnet build "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build 
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Debug
-RUN dotnet publish "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false /p:GenerateOpenApi=false
-
+RUN dotnet publish "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .

@@ -25,12 +25,12 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var fullLeaderboard = await _warcraftCachedData.GetBracketActivityPage(bracket, region);
+                var fullLeaderboard = await _warcraftCachedData.GetBracketActivityPage(bracket, region, HttpContext.GetGameFlavor());
                 var firstHundredPlayers = fullLeaderboard.Where(l => l != null).Select(l => l!).OrderBy(d => DateTime.Now.Subtract(d.NewPlayer.Time).Hours).ThenBy(r => r.NewPlayer.Rank).Skip(skip).Take(take);
                 var LeaderboardEntry = firstHundredPlayers.Select(async p =>
                 {
-                    var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
-                    var specName = await _warcraftCachedData.GetCharacterSpecName(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region);
+                    var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region, HttpContext.GetGameFlavor());
+                    var specName = await _warcraftCachedData.GetCharacterSpecName(p.NewPlayer.Character.Realm.Slug, p.NewPlayer.Character.Name, region, HttpContext.GetGameFlavor());
                     return new ActivityCharacterSummary
                     {
                         PrevPvpEntry = p.OldPlayer,
@@ -59,15 +59,15 @@ namespace Dragonblight_Website.Server.Controllers
                 List<PlayerActivity?> filteredLadder = [];
                 foreach (var charClass in classes)
                 {
-                    var fullLeaderboard = await _warcraftCachedData.GetBracketClassFilteredActivityPage(bracket, region, charClass);
+                    var fullLeaderboard = await _warcraftCachedData.GetBracketClassFilteredActivityPage(bracket, region, charClass, HttpContext.GetGameFlavor());
                     filteredLadder.AddRange(fullLeaderboard);
                 }
                 filteredLadder = filteredLadder.Where(p => p?.NewPlayer != null).OrderBy(r => r?.NewPlayer?.Rank).Skip(skip).Take(take).ToList();
                 //going through the list of all selected filters, connects our leaderboardentries to our profilesummary, and combines the players
                 var LadderLeaderboardEntries = filteredLadder.Where(l => l != null).Select(l => l!).Select(async ladderEntry =>
                 {
-                    var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
-                    var specName = await _warcraftCachedData.GetCharacterSpecName(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region);
+                    var ProfileSummaryEntry = await _warcraftCachedData.GetCharSummary(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region, HttpContext.GetGameFlavor());
+                    var specName = await _warcraftCachedData.GetCharacterSpecName(ladderEntry.NewPlayer.Character.Realm.Slug, ladderEntry.NewPlayer.Character.Name, region, HttpContext.GetGameFlavor());
                     return new ActivityCharacterSummary
                     {
                         // 2 properties pulled from class below (rbgEntry is pulling all leaderboad data & ProfileSummaryEntry is pulling CharacterSummary data)

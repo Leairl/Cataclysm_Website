@@ -3,6 +3,7 @@ import { Button, Card, Theme } from "@radix-ui/themes";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Link } from "react-router-dom";
 import "./nav-bar.css";
+import FlavorToggle from "./flavor-toggle";
 function NavBar() {
   return (
     <Theme radius="none">
@@ -13,6 +14,9 @@ function NavBar() {
       >
           <img src={`/Nav/db_io.webp`}></img>
       </Link>
+      <div className="flex items-center ml-4">
+        <FlavorToggle />
+      </div>
       <NavigationMenu.Root className="justify-end w-11/12 desktop-nav-menu mr-[1vw]">
         <NavigationMenu.List className="center flex justify-evenly list-none rounded-[6px] ">
           <NavigationMenu.Item>

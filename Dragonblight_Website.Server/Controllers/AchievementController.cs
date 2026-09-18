@@ -24,7 +24,7 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                var result = await _warcraftCachedData.GetCharacterAchievements(server.ToLower(), characterName.ToLower(), region);
+                var result = await _warcraftCachedData.GetCharacterAchievements(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
                 return Ok(result);
             }
             catch (Exception ex)

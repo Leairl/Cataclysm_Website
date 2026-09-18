@@ -5,6 +5,7 @@ import { Dragonblight } from "../../clients/Dragonblight";
 import { ClassColor } from '../../helpers/classColorHelper';
 import Glyphs from '../../data/glyph';
 import { Card } from '@radix-ui/themes/src/index.js';
+import { wowheadUrl } from "../../helpers/game-flavor";
 declare const $WowheadPower: { refreshLinks: () => void };
 
 interface GlyphViewerProps {
@@ -113,8 +114,8 @@ const GlyphViewer: React.FC<GlyphViewerProps> = (props) => {
             <div className='w-[44px] h-[44px] mr-3'>
             <a className="block w-[40px] h-[40px] talentIcon"
                                                         href={getActiveGlyphIcon(i, glyphType) == 0 
-                                                          ? `https://www.wowhead.com/mop-classic/item=206953/charred-glyph`
-                                                          :`https://www.wowhead.com/mop-classic/spell=${getActiveGlyphIcon(i, glyphType)}`}
+                                                          ? wowheadUrl(`item=206953/charred-glyph`)
+                                                          :wowheadUrl(`spell=${getActiveGlyphIcon(i, glyphType)}`)}
                                                         >
                                                         </a>
             </div>
