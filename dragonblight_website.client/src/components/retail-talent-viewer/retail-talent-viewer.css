@@ -1,0 +1,107 @@
+/* Retail talent trees: nodes are placed absolutely from the grid positions Blizzard gives them,
+   with the connector lines drawn behind them in the same coordinate space. */
+
+.retailTalentTrees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    /* the hero tree is half the height of the other two, and sits level with their middle
+       in game rather than hanging from the top */
+    align-items: center;
+    padding: 0.75rem;
+}
+
+.retailTalentGrid {
+    position: relative;
+}
+
+.retailTalentLines {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+}
+
+.retailTalentLine {
+    stroke: #3a3a3a;
+    stroke-width: 2;
+}
+
+/* a line between two talents the character actually took */
+.retailTalentLine.taken {
+    stroke: rgba(39, 150, 255, 0.7);
+    stroke-width: 3;
+}
+
+.retailTalentNode {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+}
+
+/* untaken talents stay visible but drain out, the way Wowhead dims them */
+.retailTalentNode[data-taken="false"] {
+    filter: grayscale(100%);
+    opacity: 0.45;
+}
+
+.retailTalentNode[data-taken="true"] .retailTalentIcon > .iconlarge > ins {
+    box-shadow: 0 0 6px 2px rgba(39, 150, 255, 0.7);
+}
+
+/* Wowhead's script replaces the empty anchor with its own icon markup, so the sizes below
+   target what it injects rather than anything in this file. */
+.retailTalentIcon {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+.retailTalentIcon > .iconlarge {
+    width: 32px;
+    height: 32px;
+}
+
+.retailTalentIcon > .iconlarge > ins {
+    width: 32px;
+    height: 32px;
+    left: 0;
+    top: 0;
+    border-radius: 3px;
+    /* the icon Wowhead injects is larger than the cell, so it has to scale rather than crop */
+    background-size: 100% 100%;
+}
+
+.retailTalentIcon > .iconlarge > del {
+    width: 36px;
+    height: 36px;
+    background-repeat: no-repeat;
+    /* the border frame surrounds the icon rather than sitting inside it, so it is drawn
+       slightly larger and pulled out by half the difference. Its natural size is 44px, so it
+       has to scale down with the rest. */
+    background-size: 100% 100%;
+    display: block;
+    left: -2px;
+    top: -2px;
+    position: absolute;
+    z-index: 10;
+}
+
+/* points spent, bottom-right of the icon, like the in-game tree */
+.retailTalentRank {
+    position: absolute;
+    right: -3px;
+    bottom: -5px;
+    background-color: #000;
+    border-radius: 3px;
+    color: #787878;
+    font-size: 8px;
+    padding: 0 3px;
+    user-select: none;
+    z-index: 11;
+}
+
+.retailTalentNode[data-taken="true"] .retailTalentRank {
+    color: rgba(177, 218, 241, 0.9);
+}

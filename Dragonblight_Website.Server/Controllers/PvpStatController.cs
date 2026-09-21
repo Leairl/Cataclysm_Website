@@ -24,7 +24,8 @@ namespace Dragonblight_Website.Server.Controllers
         {
             try
             {
-                List<string> Brackets = new List<string> { "2v2", "3v3", "5v5", "rbg" };
+                //order matters: the client labels rating cards by position using the same list
+                var Brackets = HttpContext.GetGameFlavor().Brackets();
                 List<CharacterPvpBracketStatistics> results = new List<CharacterPvpBracketStatistics>();
                 foreach (var PvPBracket in Brackets)
                 {

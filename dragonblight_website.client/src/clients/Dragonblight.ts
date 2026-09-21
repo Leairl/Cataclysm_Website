@@ -962,6 +962,47 @@ export class TalentClient {
         this.baseUrl = baseUrl ?? "";
     }
 
+    getTalentTree(specId: number | undefined, region: string | undefined): Promise<TalentTree> {
+        let url_ = this.baseUrl + "/api/Talent/GetTalentTree?";
+        if (specId === null)
+            throw new Error("The parameter 'specId' cannot be null.");
+        else if (specId !== undefined)
+            url_ += "specId=" + encodeURIComponent("" + specId) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetTalentTree(_response);
+        });
+    }
+
+    protected processGetTalentTree(response: Response): Promise<TalentTree> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as TalentTree;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<TalentTree>(null as any);
+    }
+
     getCharacterTalents(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<CharacterSpecializationsSummary> {
         let url_ = this.baseUrl + "/api/Talent/GetCharacterTalents?";
         if (server === null)
@@ -1289,6 +1330,7 @@ export interface CharacterAppearanceSummary {
     faction?: EnumType | undefined;
     guild_crest?: GuildCrest | undefined;
     appearance?: Appearance | undefined;
+    customizations?: CharacterCustomization[] | undefined;
     items?: EquippedItemAppearance[] | undefined;
 }
 
@@ -1338,6 +1380,24 @@ export interface Appearance {
     hair_color: number;
     feature_variation: number;
     custom_display_options?: number[] | undefined;
+}
+
+export interface CharacterCustomization {
+    option?: CustomizationOption | undefined;
+    choice?: CustomizationChoice | undefined;
+}
+
+export interface CustomizationOption {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface CustomizationChoice {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+    display_order: number;
 }
 
 export interface EquippedItemAppearance {
@@ -1701,12 +1761,80 @@ export interface CorruptionStatistics {
     effective_corruption: number;
 }
 
+export interface TalentTree {
+    _links?: Links | undefined;
+    id: number;
+    playable_class?: PlayableClassReference | undefined;
+    playable_specialization?: PlayableSpecializationReference | undefined;
+    name?: string | undefined;
+    media?: TalentTreeMediaReference | undefined;
+    restriction_lines?: TalentTreeRestrictionLine[] | undefined;
+    class_talent_nodes?: TalentNode[] | undefined;
+    spec_talent_nodes?: TalentNode[] | undefined;
+    hero_talent_trees?: HeroTalentTree[] | undefined;
+}
+
+export interface TalentTreeMediaReference {
+    key?: Self | undefined;
+}
+
+export interface TalentTreeRestrictionLine {
+    required_points: number;
+    restricted_row: number;
+    is_for_class: boolean;
+}
+
+export interface TalentNode {
+    id: number;
+    locked_by?: number[] | undefined;
+    unlocks?: number[] | undefined;
+    node_type?: TalentNodeType | undefined;
+    ranks?: TalentNodeRank[] | undefined;
+    display_row: number;
+    display_col: number;
+    raw_position_x: number;
+    raw_position_y: number;
+}
+
+export interface TalentNodeType {
+    id: number;
+    type?: string | undefined;
+}
+
+export interface TalentNodeRank {
+    rank: number;
+    tooltip?: TalentNodeTooltip | undefined;
+    choice_of_tooltips?: TalentNodeTooltip[] | undefined;
+    default_points?: number | undefined;
+}
+
+export interface TalentNodeTooltip {
+    talent?: TalentReference | undefined;
+    spell_tooltip?: SpellTooltip | undefined;
+}
+
+export interface TalentReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
+}
+
+export interface HeroTalentTree {
+    id: number;
+    name?: string | undefined;
+    media?: TalentTreeMediaReference | undefined;
+    hero_talent_nodes?: TalentNode[] | undefined;
+    playable_class?: PlayableClassReference | undefined;
+    playable_specializations?: PlayableSpecializationReference[] | undefined;
+}
+
 export interface CharacterSpecializationsSummary {
     _links?: Links | undefined;
     specializations?: CharacterSpecialization[] | undefined;
     specialization_groups?: CharacterSpecializationGroup[] | undefined;
     active_specialization?: PlayableSpecializationReference | undefined;
     character?: CharacterReference | undefined;
+    active_hero_talent_tree?: HeroTalentTreeReference | undefined;
 }
 
 export interface CharacterSpecialization {
@@ -1721,12 +1849,6 @@ export interface TalentSelection {
     spell_tooltip?: SpellTooltipForAbility | undefined;
     tier_index: number;
     column_index: number;
-}
-
-export interface TalentReference {
-    key?: Self | undefined;
-    name?: string | undefined;
-    id: number;
 }
 
 export interface SpellTooltipForAbility {
@@ -1757,17 +1879,13 @@ export interface SpecializationLoadout {
     talent_loadout_code?: string | undefined;
     selected_class_talents?: LoadoutTalent[] | undefined;
     selected_spec_talents?: LoadoutTalent[] | undefined;
+    selected_hero_talents?: LoadoutTalent[] | undefined;
 }
 
 export interface LoadoutTalent {
     id: number;
     rank: number;
     tooltip?: TalentNodeTooltip | undefined;
-}
-
-export interface TalentNodeTooltip {
-    talent?: TalentReference | undefined;
-    spell_tooltip?: SpellTooltip | undefined;
 }
 
 export interface CharacterSpecializationGroup {
@@ -1785,6 +1903,12 @@ export interface CharacterClassicSpecialization {
 export interface Glyph {
     id: number;
     name?: string | undefined;
+}
+
+export interface HeroTalentTreeReference {
+    key?: Self | undefined;
+    name?: string | undefined;
+    id: number;
 }
 
 export interface Stream {

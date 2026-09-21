@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using ArgentPonyWarcraftClient;
 using StackExchange.Redis;
 
@@ -11,6 +12,16 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }
         return _warcraftClient;
     }}
+    //Cached entries are JSON of the models these methods return, so adding a field to one of those
+    //models changes nothing already in Redis: a character looked up before the change keeps coming
+    //back with the new field empty until its key expires, which is a day for some of them. Raising
+    //this number retires every cached entry at once, and it has to be raised whenever a cached model
+    //gains a field the site reads.
+    private const string SchemaVersion = "v2:";
+
+    //the key a cache entry actually lives under
+    private static string VersionedKey(string key) => SchemaVersion + key;
+
     public async Task<T?> GetRedisData<T>(string key)
     {  //async call to return data (of generic type), second type is to define the type.
         var db = redis.GetDatabase(); //var to redis database
@@ -33,14 +44,14 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
     public async Task<T> GetBlizzardData<T>(string key, Func<Task<T>> BlizzardCall, TimeSpan expiration)
     {
         var BlizzardData = await BlizzardCall(); //setting var of generic function
-        await SaveToRedis(key, BlizzardData, expiration); //calls to savetoredis method with blizzardData (set in other methods below, and is currently a generic function here)
+        await SaveToRedis(VersionedKey(key), BlizzardData, expiration); //calls to savetoredis method with blizzardData (set in other methods below, and is currently a generic function here)
         return BlizzardData; //returns warcraftclient data after saved to redis on UI
     }
 
     public async Task<T> GetBlizzardDataCached<T>(string key, Func<Task<T>> BlizzardCall, TimeSpan expiration)
     {
         //has unique key for each character, results in no duplicate characters pulled from redis
-        var res = await GetRedisData<T>(key);
+        var res = await GetRedisData<T>(VersionedKey(key));
         if (res == null || res is 0)
         {
             res = await GetBlizzardData(key, BlizzardCall, expiration);
@@ -86,6 +97,42 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
             var charSpecSummary = await warcraftClient.GetCharacterSpecializationsSummaryAsync(server, characterName, region, GetRegion(region), GetLocale(region));
             return charSpecSummary.Value;
         }, TimeSpan.FromHours(6));
+    }
+
+    //The retail talent trees a spec draws from: one call returns the class tree, the spec tree
+    //and every hero tree, each node carrying the grid position Wowhead lays them out by.
+    //Static game data, so it is cached for a month. A failure returns null and is not cached,
+    //so the next request retries instead of serving an empty tree for 30 days.
+    public async Task<TalentTree?> GetTalentTree(int specId, string region, GameFlavor flavor = GameFlavor.Retail)
+    {
+        var ns = GetStaticRegion(region, flavor);
+        return await GetBlizzardDataCached<TalentTree?>("TalentTree" + specId + ns, async () =>
+        {
+            var index = await warcraftClient.GetTalentTreeIndexAsync(ns, GetRegion(ns), GetLocale(ns));
+            if (!index.Success)
+            {
+                return null;
+            }
+            //a tree belongs to a class, not a spec, and the index is the only place the pairing
+            //is published - each spec entry's href ends in the spec id it is for.
+            var href = index.Value.SpecTalentTrees?
+                .FirstOrDefault(t => t.Key?.Href?.ToString().Contains($"/playable-specialization/{specId}?") == true)
+                ?.Key?.Href?.ToString();
+            var treeId = TalentTreeIdFromHref(href);
+            if (treeId == null)
+            {
+                return null;
+            }
+            var tree = await warcraftClient.GetTalentTreeAsync(treeId.Value, specId, ns, GetRegion(ns), GetLocale(ns));
+            return tree.Success ? tree.Value : null;
+        }, TimeSpan.FromDays(30));
+    }
+
+    //pulls 774 out of .../data/wow/talent-tree/774/playable-specialization/253?namespace=...
+    private static int? TalentTreeIdFromHref(string? href)
+    {
+        var match = Regex.Match(href ?? "", @"talent-tree/(\d+)/playable-specialization");
+        return match.Success ? int.Parse(match.Groups[1].Value) : null;
     }
 
         public async Task<string> GetCharacterSpecName(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic)
@@ -294,7 +341,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromHours(2)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterPvpBracketStatistics())
         {
-            redis.GetDatabase().KeyDelete("GetCharacterRating" + server + characterName + pvpBracket + region);
+            redis.GetDatabase().KeyDelete(VersionedKey("GetCharacterRating" + server + characterName + pvpBracket + region));
             result = await GetBlizzardDataCached<CharacterPvpBracketStatistics>("GetCharacterRating" + server + characterName + pvpBracket + region, async () =>
             {
                 //gets character data from wow api
@@ -326,7 +373,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromHours(6)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterStatisticsSummary())
         {
-            redis.GetDatabase().KeyDelete("GetCharacterStats" + server + characterName + region);
+            redis.GetDatabase().KeyDelete(VersionedKey("GetCharacterStats" + server + characterName + region));
             result = await GetBlizzardDataCached<CharacterStatisticsSummary>("GetCharacterStats" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -362,7 +409,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterProfileSummary())
         {
-            redis.GetDatabase().KeyDelete("GetCharacter" + server + characterName + region);
+            redis.GetDatabase().KeyDelete(VersionedKey("GetCharacter" + server + characterName + region));
             result = await GetBlizzardDataCached<CharacterProfileSummary>("GetCharacter" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -397,7 +444,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterAppearanceSummary())
         {
-            redis.GetDatabase().KeyDelete("GetCharacterAppearance" + server + characterName + region);
+            redis.GetDatabase().KeyDelete(VersionedKey("GetCharacterAppearance" + server + characterName + region));
             result = await GetBlizzardDataCached<CharacterAppearanceSummary>("GetCharacterAppearance" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -431,7 +478,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterAchievementsSummary())
         {
-            redis.GetDatabase().KeyDelete("GetCharacterAchievements" + server + characterName + region);
+            redis.GetDatabase().KeyDelete(VersionedKey("GetCharacterAchievements" + server + characterName + region));
             result = await GetBlizzardDataCached<CharacterAchievementsSummary>("GetCharacterAchievements" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -465,7 +512,7 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         if (result == new CharacterEquipmentSummary())
         {
-            redis.GetDatabase().KeyDelete("GetCharacterEquipment" + server + characterName + region);
+            redis.GetDatabase().KeyDelete(VersionedKey("GetCharacterEquipment" + server + characterName + region));
             result = await GetBlizzardDataCached<CharacterEquipmentSummary>("GetCharacterEquipment" + server + characterName + region, async () =>
             {
                 //gets character data from wow api
@@ -646,6 +693,41 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
             //a failed request still returns a result object, with Success false and a null Value.
             //returning null keeps the failure out of the cache so the next call retries.
             return getItemIcon.Success ? getItemIcon.Value : null;
+        }, TimeSpan.FromDays(30));
+    }
+    //inventory type names Blizzard returns, mapped to the numbers the model viewer files armor under
+    private static readonly Dictionary<string, int> InventoryTypes = new()
+    {
+        ["HEAD"] = 1, ["NECK"] = 2, ["SHOULDER"] = 3, ["BODY"] = 4, ["CHEST"] = 5, ["WAIST"] = 6,
+        ["LEGS"] = 7, ["FEET"] = 8, ["WRIST"] = 9, ["HAND"] = 10, ["FINGER"] = 11, ["TRINKET"] = 12,
+        ["WEAPON"] = 13, ["SHIELD"] = 14, ["RANGED"] = 15, ["CLOAK"] = 16, ["TWOHWEAPON"] = 17,
+        ["BAG"] = 18, ["TABARD"] = 19, ["ROBE"] = 20, ["WEAPONMAINHAND"] = 21, ["WEAPONOFFHAND"] = 22,
+        ["HOLDABLE"] = 23, ["AMMO"] = 24, ["THROWN"] = 25, ["RANGEDRIGHT"] = 26, ["QUIVER"] = 27, ["RELIC"] = 28,
+    };
+
+    //Model viewer display info for an item: item -> appearance -> item_display_info_id.
+    //Retail only - Blizzard has no item-appearance endpoint for classic (it 404s).
+    //Raid and PvP gear lists one appearance per variant and the equipment response can't say
+    //which is worn, so this takes the first, which is also the one Wowhead shows.
+    //Failures return null and are not cached, so the next request retries.
+    public async Task<ItemDisplayInfo?> GetItemDisplayInfo(int itemId, string region, GameFlavor flavor)
+    {
+        var ns = GetStaticRegion(region, flavor);
+        return await GetBlizzardDataCached<ItemDisplayInfo?>("ItemDisplayInfo" + itemId + ns, async () =>
+        {
+            var item = await warcraftClient.GetItemAsync(itemId, ns, GetRegion(ns), GetLocale(ns));
+            var appearanceId = item.Success ? item.Value.Appearances?.FirstOrDefault()?.Id : null;
+            if (appearanceId == null)
+            {
+                return null;
+            }
+            var appearance = await warcraftClient.GetItemAppearanceAsync(appearanceId.Value, ns, GetRegion(ns), GetLocale(ns));
+            if (!appearance.Success)
+            {
+                return null;
+            }
+            var inventoryType = InventoryTypes.GetValueOrDefault(item.Value.InventoryType?.Type ?? "", 0);
+            return new ItemDisplayInfo(itemId, inventoryType, appearance.Value.Id, appearance.Value.ItemDisplayInfoId);
         }, TimeSpan.FromDays(30));
     }
     public async Task ClearLeaderboard(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic)

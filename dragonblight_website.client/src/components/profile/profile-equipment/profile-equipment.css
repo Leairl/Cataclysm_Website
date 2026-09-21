@@ -257,3 +257,55 @@
   top: -1px;
   background-size: cover;
 }
+/* Gems, on their own line under the item name and enchant. Wowhead's script injects the icon
+   markup into the link, so the sizes below target what it inserts rather than anything here. */
+.item-gems {
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+  padding-left: .625rem;
+  padding-top: .125rem;
+}
+
+/* the right-hand column of the paperdoll reads inwards */
+.align-right-gems {
+  justify-content: flex-end;
+  padding-left: 0;
+  padding-right: .625rem;
+}
+
+.gem-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.gem-icon > .iconlarge {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.gem-icon > .iconlarge > ins {
+  width: 18px;
+  height: 18px;
+  left: 0;
+  top: 0;
+  border-radius: 2px;
+  background-size: 100% 100%;
+}
+
+/* the border frame is too heavy to read at this size */
+.gem-icon > .iconlarge > del {
+  display: none;
+}
+
+/* a socket with nothing in it - a stat the character is not getting */
+.gem-empty {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 1px dashed #6b6b6b;
+  border-radius: 2px;
+  background-color: rgba(0, 0, 0, .35);
+}

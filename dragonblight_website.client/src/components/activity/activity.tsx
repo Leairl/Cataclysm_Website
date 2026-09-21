@@ -22,6 +22,7 @@ import { Pagination } from "react-headless-pagination";
 import ClassFilter from "../class-filter/class-filter";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import Cutoffs from "../cutoffs/cutoffs";
+import { brackets } from "../../helpers/game-flavor";
 
 const Skeletons = [0, 1, 2];
 
@@ -60,13 +61,13 @@ function Activity() {
   //changes bracket from segmented control
   function BracketClick(bracketName: string) {
     if (bracket != bracketName) {
-      window.history.replaceState(null, "", `/activity/${region}/${bracketName}`);
+      navigate(`/activity/${region}/${bracketName}`, { replace: true });
       setBracket(bracketName);
     }
   }
   function RegionClick(regionName: string) {
     if (region != regionName) {
-      window.history.replaceState(null, "", `/activity/${regionName}/${bracket}`);
+      navigate(`/activity/${regionName}/${bracket}`, { replace: true });
       setRegion(regionName);
     }
   }
@@ -99,14 +100,16 @@ function Activity() {
               >
                 3v3
               </SegmentedControl.Item>
-              <SegmentedControl.Item
-                onClick={() => {
-                  BracketClick("5v5");
-                }}
-                value="5v5"
-              >
-                5v5
-              </SegmentedControl.Item>
+              {brackets().includes("5v5") && (
+                <SegmentedControl.Item
+                  onClick={() => {
+                    BracketClick("5v5");
+                  }}
+                  value="5v5"
+                >
+                  5v5
+                </SegmentedControl.Item>
+              )}
               <SegmentedControl.Item
                 onClick={() => {
                   BracketClick("rbg");

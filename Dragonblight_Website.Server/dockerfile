@@ -14,19 +14,20 @@ RUN apt-get -y install nodejs
 # lets you debug vs code in vs
 RUN curl -sL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg
 
-FROM with-node AS build
+FROM with-node AS publish
 ARG BUILD_CONFIGURATION=Debug
 WORKDIR /src
+# csproj files first: this layer is cached until a project file changes, so restore
+# is skipped on a source-only rebuild
 COPY ["Dragonblight_Website.Server/Dragonblight_Website.Server.csproj", "Dragonblight_Website.Server/"]
+COPY ["ArgentPonyWarcraftClient/ArgentPonyWarcraftClient.csproj", "ArgentPonyWarcraftClient/"]
 COPY ["dragonblight_website.client/dragonblight_website.client.esproj", "dragonblight_website.client/"]
 RUN dotnet restore "./Dragonblight_Website.Server/Dragonblight_Website.Server.csproj"
 COPY . .
 WORKDIR "/src/Dragonblight_Website.Server"
-RUN dotnet build "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build 
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Debug
-RUN dotnet publish "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false 
+# publish compiles everything the image needs, including the vite build, so there is
+# no separate dotnet build step - that only produced output nothing copied from
+RUN dotnet publish "./Dragonblight_Website.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .

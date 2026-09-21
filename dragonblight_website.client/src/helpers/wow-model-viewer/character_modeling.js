@@ -110,6 +110,30 @@ function getCharacterOptions(character, fullOptions) {
 }
 
 /**
+ * Blizzard's profile API reports a character's customizations with the same option and choice ids
+ * the model viewer uses, so they need no translation - only filtering. A character can report
+ * options this race and gender has no model for: a Dracthyr lists its drake and its visage
+ * customizations together, and the two forms are separate races in the viewer's data, each holding
+ * only its own half. Anything the race's own option list does not know is dropped.
+ *
+ * @param {[{optionId: number, choiceId: number}]} customizations - From the profile API.
+ * @param {{}} fullOptions - Zaming API character options payload.
+ * @return {[{optionId: number, choiceId: number}]}
+ */
+function knownCustomizations(customizations, fullOptions) {
+    const choicesByOption = new Map(
+        fullOptions.Options.map(option => [
+            option.Id,
+            new Set(option.Choices.map(choice => choice.Id))
+        ])
+    )
+
+    return customizations.filter(
+        customization => choicesByOption.get(customization.optionId)?.has(customization.choiceId)
+    )
+}
+
+/**
  * This function return the design choices for a character this does not work for NPC / Creature / Items
  * @param {Object} model - The model object to generate options from.
  * @param {{}} fullOptions - The type of the model.
@@ -121,7 +145,11 @@ function optionsFromModel(model, fullOptions) {
 
     // slot ids on model viewer
     const characterItems = (model.items) ? model.items.filter(e => !NOT_DISPLAYED_SLOTS.includes(e[0])) : []
-    const options = getCharacterOptions(model, fullOptions)
+    // a character's own customizations when the caller has them, otherwise the generic look
+    // getCharacterOptions puts together from a handful of named parts
+    const options = (model.customizations)
+        ? knownCustomizations(model.customizations, fullOptions)
+        : getCharacterOptions(model, fullOptions)
     let charCustomization = {
         options: options
     }
@@ -265,6 +293,7 @@ async function findRaceGenderOptions(race, gender) {
 }
 
 export {
+    knownCustomizations,
     optionsFromModel,
     findRaceGenderOptions,
     findItemsInEquipments,

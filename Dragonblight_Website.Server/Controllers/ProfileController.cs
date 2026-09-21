@@ -20,9 +20,11 @@ namespace Dragonblight_Website.Server.Controllers
             _logger = logger;
             _warcraftCachedData = warcraftCachedData; //dependency injection to IWarcraftRedisProxy cs file
         }
-        private async Task UpdateBracketSummary(string bracket, string region, string characterName, string server, CharacterProfileSummary result, string specName)
+        //runs after the response has been sent, so the flavor is passed in rather than read
+        //from HttpContext, which may already belong to a different request by then
+        private async Task UpdateBracketSummary(string bracket, string region, string characterName, string server, CharacterProfileSummary result, string specName, GameFlavor flavor)
         {
-            var ladder = await _warcraftCachedData.GetPvpLeaderSummaries(bracket, region, HttpContext.GetGameFlavor());
+            var ladder = await _warcraftCachedData.GetPvpLeaderSummaries(bracket, region, flavor);
             var playerSummary = ladder.FirstOrDefault(x => x?.charSummary.Name.ToLower() == characterName.ToLower() 
                                                     && x.charSummary.Realm.Slug.ToLower() == server.ToLower());
             if (playerSummary != null && playerSummary.PvpEntry != null) 
@@ -32,7 +34,7 @@ namespace Dragonblight_Website.Server.Controllers
                     charSummary = result,
                     spec = specName,
                     PvpEntry = playerSummary.PvpEntry
-                }, bracket, region, HttpContext.GetGameFlavor());
+                }, bracket, region, flavor);
             }
         }
         /* 
@@ -46,12 +48,13 @@ namespace Dragonblight_Website.Server.Controllers
             {
                 var result = await _warcraftCachedData.GetCharSummary(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
                 var specName = await _warcraftCachedData.GetCharacterSpecName(server.ToLower(), characterName.ToLower(), region, HttpContext.GetGameFlavor());
-                // spin off a background thread to update the 2v2,3v3,5v5,rbg char summary and spec name
+                // spin off a background thread to update each bracket's char summary and spec name
+                var flavor = HttpContext.GetGameFlavor();
                 _ = Task.Run(async () => {
-                    await UpdateBracketSummary("2v2", region, characterName, server, result, specName);
-                    await UpdateBracketSummary("3v3", region, characterName, server, result, specName);
-                    await UpdateBracketSummary("5v5", region, characterName, server, result, specName);
-                    await UpdateBracketSummary("rbg", region, characterName, server, result, specName);
+                    foreach (var bracket in flavor.Brackets())
+                    {
+                        await UpdateBracketSummary(bracket, region, characterName, server, result, specName, flavor);
+                    }
                 });
                 return Ok(new CharacterProfileSummaryAndSpec
                 {

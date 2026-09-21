@@ -106,4 +106,10 @@ public record Item
     /// </summary>
     [JsonPropertyName("purchase_quantity")]
     public int PurchaseQuantity { get; init; }
+
+    /// <summary>
+    /// Gets the appearances of the item (retail only). Raid and PvP gear has one per variant.
+    /// </summary>
+    [JsonPropertyName("appearances")]
+    public ItemAppearanceReference[] Appearances { get; init; }
 }

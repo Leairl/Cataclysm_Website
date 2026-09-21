@@ -35,6 +35,7 @@ namespace CORSProxy
         }
 
         [Route("data/modelviewer/mists/background-classic-181818.png")]
+        [Route("data/modelviewer/live/background-classic-181818.png")]
         public FileContentResult image()
         {
             try

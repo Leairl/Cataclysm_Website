@@ -31,4 +31,10 @@ public record CharacterSpecializationsSummary
     /// </summary>
     [JsonPropertyName("character")]
     public CharacterReference Character { get; init; }
+
+    /// <summary>
+    /// Gets a reference to the hero talent tree the character has active.
+    /// </summary>
+    [JsonPropertyName("active_hero_talent_tree")]
+    public HeroTalentTreeReference ActiveHeroTalentTree { get; init; }
 }

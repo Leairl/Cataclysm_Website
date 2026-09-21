@@ -33,4 +33,16 @@ public static class GameFlavorExtensions
         GameFlavor.MistsClassic => "classic_",
         _ => throw new ArgumentOutOfRangeException(nameof(flavor))
     };
+
+    /// <summary>
+    /// PvP brackets this flavor has ladders for, in display order. Retail removed 5v5.
+    /// The client mirrors this list (brackets() in helpers/game-flavor.ts) and labels
+    /// rating cards by position, so the two lists must stay in the same order.
+    /// </summary>
+    public static IReadOnlyList<string> Brackets(this GameFlavor flavor) => flavor switch
+    {
+        GameFlavor.Retail       => ["2v2", "3v3", "rbg"],
+        GameFlavor.MistsClassic => ["2v2", "3v3", "5v5", "rbg"],
+        _ => throw new ArgumentOutOfRangeException(nameof(flavor))
+    };
 }

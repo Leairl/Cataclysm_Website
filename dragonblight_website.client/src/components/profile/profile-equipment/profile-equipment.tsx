@@ -12,9 +12,11 @@ import { modelingType } from "../../../helpers/wow-model-viewer";
 import { ClassColor } from "../../../helpers/classColorHelper";
 import TalentViewer from "../../talent-viewer/talent-viewer";
 import GlyphViewer  from "../../glyph-viewer/glyph-viewer";
+import RetailTalentViewer from "../../retail-talent-viewer/retail-talent-viewer";
 
 import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { wowheadUrl } from "../../../helpers/game-flavor";
+import { getFlavor, wowheadUrl } from "../../../helpers/game-flavor";
+import { installTierSetSpecFilter } from "../../../helpers/wowhead-tier-set";
 
 interface profileEquipmentProps {
   characterProfileSummary: Dragonblight.CharacterProfileSummary | undefined;
@@ -202,6 +204,31 @@ const zooms = [
   6,
 ];
 
+//Wowhead's model viewer files its customization data under its own race numbering, which matches
+//Blizzard's for most races - every Legion and BfA allied race included - but not for the races
+//Blizzard splits into an Alliance id and a Horde id sharing one set of models. Wowhead keeps one
+//file for those, so asking for the faction id fetches
+//meta/charactercustomization/{race*2-1+gender}.json, gets a 404, and the viewer never starts.
+//Dracthyr is further out: its drake and visage forms are separate races in the viewer's data, and
+//neither is numbered 52 or 70.
+//
+//Each mapping below was confirmed by matching the customization option ids Blizzard reports for a
+//real character of that race against the ids in the file. null means the viewer has no data for
+//the race at all, and the paperdoll stands in for the model.
+const VIEWER_MODEL: Record<number, { race: number; gender?: number } | null> = {
+  25: { race: 24 },            // Pandaren, Alliance - the neutral Pandaren models serve all three
+  26: { race: 24 },            // Pandaren, Horde
+  52: { race: 45, gender: 0 }, // Dracthyr, Alliance - the drake form, one model for both genders,
+  70: { race: 45, gender: 0 }, // Dracthyr, Horde      which is the form the character sheet shows
+  84: { race: 98 },            // Earthen, Horde
+  85: { race: 98 },            // Earthen, Alliance
+  86: null,                    // Haranir, Alliance - nothing published for the race yet
+  91: null,                    // Haranir, Horde - the id its numbering lands on holds another model
+};
+
+//zooms is indexed by Blizzard's race id and stops short of the newer races
+const DEFAULT_ZOOM = 5;
+
 // pulls from the current URL by using useParams
 const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -224,6 +251,12 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   }
   function SetupModelViewer() {
     setModelLoading(true);
+    //The character's own appearance choices. Blizzard reports these with the same option and choice
+    //ids the model viewer uses, so they can be handed straight over; a failure here is not worth
+    //losing the model for, and the viewer falls back to a generic look for the race.
+    const appearance = new Dragonblight.ProfileClient()
+      .getAppearance(server, characterName, region)
+      .catch(() => undefined);
     //pushes equipment data into list before displaying character data
     const DisplayIdClient = new Dragonblight.DisplayIdClient();
     const equipments: number[][] = [];
@@ -245,23 +278,51 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         );
       }
     }
-    Promise.all(displayInfoPromises).then(() => {
+    Promise.all([...displayInfoPromises, appearance]).then(([...results]) => {
+      const looks = results[results.length - 1] as
+        | Dragonblight.CharacterAppearanceSummary
+        | undefined;
+      const customizations = looks?.customizations
+        ?.filter((c) => c.option?.id != undefined && c.choice?.id != undefined)
+        .map((c) => ({ optionId: c.option!.id, choiceId: c.choice!.id }));
+      const race = props.characterProfileSummary?.race?.id;
+      const gender = props.characterProfileSummary?.gender?.type == "FEMALE" ? 1 : 0;
+      const model = race != undefined ? VIEWER_MODEL[race] : undefined;
+      if (model === null) {
+        //a race the viewer cannot draw. Stopping here leaves the paperdoll in place instead of
+        //loading whatever model that race's number happens to point at.
+        setModelLoading(false);
+        return;
+      }
       const character = {
-        race: props.characterProfileSummary?.race?.id,
-        gender: props.characterProfileSummary?.gender?.type == "FEMALE" ? 1 : 0,
+        race: model?.race ?? race,
+        gender: model?.gender ?? gender,
         skin: 4,
         face: 0,
-        hairStyle: props.characterProfileSummary?.race?.id == 2 ? 4 : 5,
+        hairStyle: race == 2 ? 4 : 5,
         hairColor: 5,
         facialStyle: 5,
+        //the five values above are the generic fallback the viewer uses when a character's real
+        //customizations are not available, which is why they are fixed numbers
+        customizations: customizations != undefined && customizations.length > 0
+          ? customizations
+          : undefined,
         items: equipments,
         type: modelingType.CHARACTER,
       };
 
-      generateModels(2, `#model3d`, character, "classic").then((m) => {
-        wow_model_viewer = m;
-        setAnimationAfterLoad(m, zooms[character.race ?? 1]);
-      });
+      //"classic" selects the MoP viewer options; anything else is retail
+      generateModels(2, `#model3d`, character, getFlavor() === "retail" ? "live" : "classic")
+        .then((m) => {
+          wow_model_viewer = m;
+          setAnimationAfterLoad(m, zooms[race ?? 1] ?? DEFAULT_ZOOM);
+        })
+        .catch((error) => {
+          //a race the viewer has no data for would otherwise spin forever, hiding the paperdoll
+          //behind a model that is never coming
+          console.warn(`Model viewer unavailable for race ${race}:`, error);
+          setModelLoading(false);
+        });
     });
   }
 
@@ -280,6 +341,15 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   useEffect(() => {
     setLoading(props.loading);
   }, [props.loading]);
+  //Wowhead's tooltips list a tier set's bonuses for every specialization in the class. Only the
+  //one the character plays is theirs, so the rest are removed as each tooltip appears. MoP Classic
+  //set bonuses are per class rather than per spec, so this only applies to retail.
+  useEffect(() => {
+    if (getFlavor() !== "retail") {
+      return;
+    }
+    return installTierSetSpecFilter(() => props.characterProfileSummary?.active_spec?.id);
+  }, [props.characterProfileSummary?.active_spec?.id]);
   //activates useEffect from change in region / server / charactername (when we load new character data), and
   useEffect(() => {
     if (!props.characterProfileSummary || !props.characterEquipmentSummary) {
@@ -398,6 +468,18 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         </Card>)}
         {props.currTab == "talents" && (
           <Card className="talent-row">
+            {/* the two games draw talents nothing alike: retail has three grid trees that come
+                from the API, MoP Classic a fixed 6x3 pane that ships with the client */}
+            {getFlavor() === "retail" ? (
+            <RetailTalentViewer
+              charClass={
+                props.characterProfileSummary?.character_class?.name ?? ""
+              }
+              region={region ?? ""}
+              charName={characterName ?? ""}
+              server={server ?? ""}
+            ></RetailTalentViewer>
+            ) : (
             <TalentViewer
               pet={false}
               charClass={
@@ -408,6 +490,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               charName={characterName ?? ""}
               server={server ?? ""}
             ></TalentViewer>
+            )}
           </Card>
         )}
         {props.currTab == "pettalents" && (
@@ -554,10 +637,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             }}
           >
             <span className="hide-">
-              {(props.characterProfileSummary?.active_title?.name?.replace(
-                "%s",
-                characterName ?? ""
-              ) ?? characterName) +
+              {getTitledName() +
                 " - " +
                 server}{" "}
             </span>
@@ -617,15 +697,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                 props.characterEquipmentSummary,
                 s
               )}`)}
-              rel={`item=${getItem(props.characterEquipmentSummary, s)}&ench=${
-                getEnchant(s)?.enchantment_id
-              }&gems=${getGems(s)}&rand=${getRandomEnchantments(
-                s
-              )}&pcs=${getPcs(s)}&transmog=${getTransmog(
-                props.characterEquipmentSummary,
-                s,
-                true
-              )}`}
+              rel={itemTooltipParams(s)}
             ></a>
             <div className="item-details ">
               <a
@@ -636,14 +708,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                   props.characterEquipmentSummary,
                   s
                 )}`)}
-                data-wowhead={`item=${getItem(
-                  props.characterEquipmentSummary,
-                  s
-                )}&ench=${getEnchant(s)?.enchantment_id}&gems=${getGems(
-                  s
-                )}&rand=${getRandomEnchantments(s)}&pcs=${getPcs(
-                  s
-                )}&transmog=${getTransmog(props.characterEquipmentSummary, s, true)}`}
+                data-wowhead={itemTooltipParams(s)}
               >
                 {getItemName(s)}
               </a>
@@ -659,12 +724,32 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               >
                 <div className="green_text">
                   {" "}
-                  {getEnchant(s)?.display_string?.replace(
-                    "Enchanted: ",
-                    ""
-                  )}{" "}
+                  {getEnchantName(s)}{" "}
                 </div>
               </a>
+              {/* one icon per socket. Wowhead's script draws the gem and its tooltip from the
+                  link, the same way it does for gear; an empty socket is shown as a hole, since
+                  it is a stat the character is not getting. */}
+              {getGemSockets(s).length > 0 && (
+                <div className={i + skip > 8 ? "item-gems align-right-gems" : "item-gems"}>
+                  {getGemSockets(s).map((gem, socketIndex) =>
+                    gem.itemId != undefined ? (
+                      <a
+                        key={"gem" + s + socketIndex}
+                        className="gem-icon"
+                        href={wowheadUrl(`item=${gem.itemId}`)}
+                        data-wowhead={`item=${gem.itemId}`}
+                      ></a>
+                    ) : (
+                      <span
+                        key={"gem" + s + socketIndex}
+                        className="gem-empty"
+                        title={gem.empty}
+                      ></span>
+                    )
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))
@@ -697,6 +782,30 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
       }
     }
     return 0;
+  }
+
+  //the enchant's source item name (e.g. "Enchant Boots - Lynx's Dexterity"), falling
+  //back to the display string when there is no source item
+  //Retail titles put the name in display_string as "{name} the Faceless One";
+  //MoP Classic puts a %s placeholder in name. Handle both, and show the bare
+  //name when there's no title or neither placeholder is present.
+  function getTitledName(): string {
+    const name = props.characterProfileSummary?.name ?? characterName ?? "";
+    const title = props.characterProfileSummary?.active_title;
+    if (title?.display_string?.includes("{name}")) {
+      return title.display_string.replace("{name}", name);
+    }
+    if (title?.name?.includes("%s")) {
+      return title.name.replace("%s", name);
+    }
+    return name;
+  }
+
+  function getEnchantName(s: number): string {
+    const enchant = getEnchant(s);
+    if (!enchant) return "";
+    const name = enchant.source_item?.name ?? enchant.display_string ?? "";
+    return stripWowMarkup(name.replace("Enchanted: ", ""));
   }
 
   function getEnchant(s: number): Dragonblight.Enchantment | undefined {
@@ -740,47 +849,71 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
     return 0;
   }
 
-  function getGems(s: number): string | undefined {
-    if (props.characterEquipmentSummary?.equipped_items != null) {
-      const equipmentItem = props.characterEquipmentSummary.equipped_items.find(
-        (item) => item.slot?.type?.toLowerCase() == slotName[s]
-      );
-      //equipmentItem.enchantments.length > 0 in case there is an empty list
-      if (
-        equipmentItem != undefined &&
-        equipmentItem.enchantments != null &&
-        equipmentItem.enchantments.length > 0
-      ) {
-        const gems = equipmentItem.enchantments.filter(
-          (e) =>
-            e.enchantment_slot?.id == 2 ||
-            e.enchantment_slot?.id == 3 ||
-            e.enchantment_slot?.id == 4
-        );
-        //checks to see if a player has gems in their gear or not.
-        if (gems != undefined) {
-          //returns gems placed in gear from player tab, join combines array into string for wowhead tooltip to read
-          return gems.map((g) => g.source_item?.id).join(":");
-        }
-      }
-    }
+  //What Wowhead needs to draw the item this character is actually wearing. Without the bonus ids
+  //and item level it renders the item's base version instead: a crafted 331 shows as its 246 base,
+  //with "Random Stat 1" in place of the stats the crafter chose. The bonus ids carry the upgrade
+  //track, the crafted stats and any PvP scaling; the item level is what the character has.
+  function itemTooltipParams(s: number): string {
+    const item = props.characterEquipmentSummary?.equipped_items?.find(
+      (i) => i.slot?.type?.toLowerCase() == slotName[s]
+    );
+    return (
+      `item=${getItem(props.characterEquipmentSummary, s)}` +
+      `&ench=${getEnchant(s)?.enchantment_id}` +
+      `&gems=${getGems(s)}` +
+      `&rand=${getRandomEnchantments(s)}` +
+      `&pcs=${getPcs(s)}` +
+      `&transmog=${getTransmog(props.characterEquipmentSummary, s, true)}` +
+      `&bonus=${item?.bonus_list?.join(":") ?? ""}` +
+      `&ilvl=${item?.level?.value ?? ""}`
+    );
   }
 
+  //the equipped pieces of an item's set, which is how Wowhead knows which set bonuses are active
   function getPcs(s: number): string | undefined {
     if (props.characterEquipmentSummary?.equipped_items != null) {
       const equipmentItem = props.characterEquipmentSummary.equipped_items.find(
         (item) => item.slot?.type?.toLowerCase() == slotName[s]
       );
-      //equipmentItem.enchantments.length > 0 in case there is an empty list, filter returns a subset of a set where condition is true
       if (equipmentItem != undefined) {
         const pcs = equipmentItem.set?.items?.filter((i) => i.is_equipped);
-        //checks to see if a player has gems in their gear or not.
         if (pcs != undefined) {
-          //returns tiersets placed in gear from player tab, join combines array into string for wowhead tooltip to read
           return pcs.map((t) => t.item?.id).join(":");
         }
       }
     }
+  }
+
+  //What sits in each of an item's sockets, in socket order. Retail reports sockets directly and
+  //includes the empty ones; MoP Classic has no sockets array at all and reports its gems as
+  //enchantments in slots 2 to 4, where an empty socket simply does not appear.
+  function getGemSockets(s: number): { itemId?: number; empty?: string }[] {
+    const equipmentItem = props.characterEquipmentSummary?.equipped_items?.find(
+      (item) => item.slot?.type?.toLowerCase() == slotName[s]
+    );
+    if (equipmentItem?.sockets != null) {
+      return equipmentItem.sockets.map((socket) =>
+        socket.item?.id != undefined
+          ? { itemId: socket.item.id }
+          : { empty: socket.socket_type?.name ?? "Empty Socket" }
+      );
+    }
+    return (equipmentItem?.enchantments ?? [])
+      .filter(
+        (e) =>
+          e.enchantment_slot?.id == 2 ||
+          e.enchantment_slot?.id == 3 ||
+          e.enchantment_slot?.id == 4
+      )
+      .map((e) => ({ itemId: e.source_item?.id }));
+  }
+
+  //the gem ids Wowhead needs in order to draw the item as it is socketed
+  function getGems(s: number): string {
+    return getGemSockets(s)
+      .map((gem) => gem.itemId)
+      .filter((id) => id != undefined)
+      .join(":");
   }
 
   //check to make sure the correct transmog is shown when featuring profile
@@ -922,6 +1055,19 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   }
 };
 export default ProfileEquipment;
+
+//Blizzard strings carry in-game UI escape codes that only the game client renders:
+//|A...|a atlas icons (e.g. the crafting quality star), |T...|t textures,
+//|cAARRGGBB...|r colours. On the web they show up as raw text, so drop them.
+function stripWowMarkup(text: string): string {
+  return text
+    .replace(/\|A[^|]*\|a/g, "")
+    .replace(/\|T[^|]*\|t/g, "")
+    .replace(/\|c[0-9a-fA-F]{8}/g, "")
+    .replace(/\|r/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function getBackgroundIcon(s: number) {
   return defaultIcons[s];

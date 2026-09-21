@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Link } from "react-router-dom";
 import "./nav-bar.css";
 import FlavorToggle from "./flavor-toggle";
+import { flavorHref } from "../../helpers/game-flavor";
 function NavBar() {
   return (
     <Theme radius="none">
@@ -165,7 +166,7 @@ function NavBar() {
           
           <NavigationMenu.Item>
             <div className="px-3 py-2 w-full">
-            <a onClick={() => { window.location.href = "/" }}>
+            <a onClick={() => { window.location.href = flavorHref("/") }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
@@ -177,7 +178,7 @@ function NavBar() {
           </NavigationMenu.Item>
           <NavigationMenu.Item>
             <div className="px-3 py-2 w-full">
-            <a onClick={() => { window.location.href = "/rankings" }}>
+            <a onClick={() => { window.location.href = flavorHref("/rankings") }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
@@ -189,7 +190,7 @@ function NavBar() {
           </NavigationMenu.Item>
           <NavigationMenu.Item>
             <div className="px-3 py-2 w-full">
-            <a onClick={() => { window.location.href = "/activity" }}>
+            <a onClick={() => { window.location.href = flavorHref("/activity") }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">
@@ -201,7 +202,7 @@ function NavBar() {
           </NavigationMenu.Item>
           <NavigationMenu.Item>
             <div className="px-3 py-2 w-full">
-            <a onClick={() => { window.location.href = "/class-stats" }}>
+            <a onClick={() => { window.location.href = flavorHref("/class-stats") }}>
             {/* acts as a button */}
               <NavigationMenu.Trigger className=" h-12  w-full group flex grey-login-border select-none items-center gap-[2px] rounded-[4px] text-[15px] font-medium leading-none outline-none">
                 <div className="h-12 w-full bg-transparent font-semibold py-2 px-8 border border-gray-500 rounded">

@@ -1,46 +1,54 @@
-// Which version of WoW the site is showing.
-// Lives in the URL (?flavor=retail) so links stay shareable and a refresh keeps
-// the choice, and is sent to the API as a header so no endpoint signature has to
-// change. Classic is the default, so existing links keep working untouched.
+// Which version of WoW the site is showing: MoP Classic or retail.
+//
+// Every route names its flavor as its first path segment - /classic/rankings,
+// /retail/profile/... - so the URL alone decides, with no stored preference to fall back
+// on. The router's basename adds the segment to every Link and navigate(), so route
+// definitions and the paths in this file stay flavor-free.
 
 export type GameFlavor = "classic" | "retail";
 
-const PARAM = "flavor";
-const STORAGE_KEY = "gameFlavor";
 const HEADER = "X-Game-Flavor";
 
-function isFlavor(value: string | null): value is GameFlavor {
-  return value === "classic" || value === "retail";
-}
-
+// Retail is the exception; anything else, including a URL missing its flavor, is classic.
 export function getFlavor(): GameFlavor {
-  const fromUrl = new URLSearchParams(window.location.search).get(PARAM);
-  if (isFlavor(fromUrl)) return fromUrl;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (isFlavor(stored)) return stored;
-  } catch {
-    // private browsing / blocked storage - fall through to the default
-  }
-  return "classic";
+  return window.location.pathname.split("/")[1] === "retail" ? "retail" : "classic";
 }
 
-export function setFlavor(flavor: GameFlavor): void {
+// Prefixes a path for plain browser navigation. Links inside the router don't need this -
+// basename adds the flavor for them.
+export function flavorHref(path: string): string {
+  return `/${getFlavor()}${path}`;
+}
+
+// Where the toggle lands you, given the flavor-free path you are on now. A character
+// belongs to one flavor, so switching leaves its page; retail has no 5v5 ladder.
+function destination(flavor: GameFlavor, path: string): string {
+  if (path.startsWith("/profile")) return "/rankings";
+  if (flavor === "retail" && path.endsWith("/5v5")) return path.replace("/5v5", "/3v3");
+  return path;
+}
+
+// Switches flavor. `path` is the current path without its flavor - exactly what
+// useLocation() returns inside the router. This is a full page load rather than a
+// client-side navigation, so every page refetches and index.html re-reads the flavor
+// for tooltips and the model viewer.
+export function setFlavor(flavor: GameFlavor, path: string): void {
   if (flavor === getFlavor()) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, flavor);
-  } catch {
-    // not fatal - the URL still carries the choice
-  }
-  const url = new URL(window.location.href);
-  if (flavor === "classic") url.searchParams.delete(PARAM);
-  else url.searchParams.set(PARAM, flavor);
-  // Full reload: every page fetches in its own effect, so reloading is what
-  // guarantees they all refetch under the new flavor.
-  window.location.assign(url.toString());
+  window.location.assign(`/${flavor}${destination(flavor, path)}`);
 }
 
-// Adds the flavor header to our own API calls. Called once at startup.
+// A URL with no flavor - an old link, a bookmark, a typed address - gets the default
+// written into it before the app renders, so the router's basename always matches.
+// replaceState rewrites this history entry instead of adding one.
+export function ensureFlavorInPath(): void {
+  if (window.location.pathname.split("/")[1] === getFlavor()) return;
+  const path = `/${getFlavor()}${window.location.pathname}`;
+  window.history.replaceState(window.history.state, "", path + window.location.search);
+}
+
+// Wraps fetch so every request to our own API carries the current flavor as a header,
+// which is how the server picks a flavor without it being a parameter on each endpoint.
+// Call once at startup.
 export function installFlavorHeader(): void {
   const original = window.fetch.bind(window);
   window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
@@ -63,9 +71,9 @@ export function installFlavorHeader(): void {
   };
 }
 
-// Wowhead serves each game version under its own path: MoP Classic lives at
-// /mop-classic/, retail sits at the root. The tooltip script reads the matching
-// `domain` from whTooltips, which index.html sets before tooltips.js loads.
+// The path segment Wowhead serves each game version under: MoP Classic lives at
+// /mop-classic/, retail at the root. Tooltip contents come from the matching `domain`
+// in whTooltips, which index.html sets before tooltips.js loads.
 export function wowheadPath(flavor: GameFlavor = getFlavor()): string {
   return flavor === "classic" ? "mop-classic/" : "";
 }
@@ -73,4 +81,11 @@ export function wowheadPath(flavor: GameFlavor = getFlavor()): string {
 // Builds a Wowhead link for the current flavor, e.g. wowheadUrl(`item=${id}`).
 export function wowheadUrl(path: string, flavor: GameFlavor = getFlavor()): string {
   return `https://www.wowhead.com/${wowheadPath(flavor)}${path}`;
+}
+
+// The PvP brackets a flavor has ladders for, in display order. Retail has no 5v5.
+// The server's GameFlavorExtensions.Brackets() returns the same brackets in the same
+// order, and profile-rating labels its cards by position, so the two must agree.
+export function brackets(flavor: GameFlavor = getFlavor()): string[] {
+  return flavor === "retail" ? ["2v2", "3v3", "rbg"] : ["2v2", "3v3", "5v5", "rbg"];
 }

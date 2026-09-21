@@ -4,10 +4,11 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import "./class-leaderboard-analytic.css"
 import { Dragonblight } from "../../clients/Dragonblight";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ClassColor } from '../../helpers/classColorHelper';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { brackets } from "../../helpers/game-flavor";
 
 interface ClassAnalyticsProps {
 }
@@ -16,6 +17,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
   const { URLregion, URLbracket } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [region, setRegion] = useState<string>(URLregion ?? "us");
   const [bracket, setBracket] = useState<string>(URLbracket ?? "3v3");
@@ -36,14 +38,14 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
 
   function BracketClick(bracketName: string) {
     if (bracket !== bracketName) {
-      window.history.replaceState(null, "", `/class-stats/${region}/${bracketName}`);
+      navigate(`/class-stats/${region}/${bracketName}`, { replace: true });
       setBracket(bracketName);
     }
   }
 
   function RegionClick(regionName: string) {
     if (region !== regionName) {
-      window.history.replaceState(null, "", `/class-stats/${regionName}/${bracket}`);
+      navigate(`/class-stats/${regionName}/${bracket}`, { replace: true });
       setRegion(regionName);
     }
   }
@@ -128,9 +130,11 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = () => {
               <SegmentedControl.Item onClick={() => BracketClick("3v3")} value="3v3">
                 3v3
               </SegmentedControl.Item>
-              <SegmentedControl.Item onClick={() => BracketClick("5v5")} value="5v5">
-                5v5
-              </SegmentedControl.Item>
+              {brackets().includes("5v5") && (
+                <SegmentedControl.Item onClick={() => BracketClick("5v5")} value="5v5">
+                  5v5
+                </SegmentedControl.Item>
+              )}
               <SegmentedControl.Item onClick={() => BracketClick("rbg")} value="rbg">
                 RBG
               </SegmentedControl.Item>

@@ -3,6 +3,7 @@ import { Dragonblight } from "../../../clients/Dragonblight";
 import { useParams } from "react-router-dom";
 import { Card, Heading, Skeleton } from "@radix-ui/themes";
 import "./profile-rating.css";
+import { brackets } from "../../../helpers/game-flavor";
 
 interface ProfileRatingProps {}
 
@@ -184,10 +185,8 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
           </div>
           <Heading size="3" className="text-center">
             {" "}
-            {index == 0 ? "2v2" : ""}
-            {index == 1 ? "3v3" : ""}
-            {index == 2 ? "5v5" : ""}
-            {index == 3 ? "RBG" : ""}
+            {/* results arrive in brackets() order, which differs per flavor */}
+            {brackets()[index]?.replace("rbg", "RBG")}
           </Heading>
         </Card>
         <div className="flex justify-center text-sm">

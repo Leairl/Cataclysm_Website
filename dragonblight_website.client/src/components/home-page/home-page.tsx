@@ -8,6 +8,7 @@ import { ClassColor } from "../../helpers/classColorHelper";
 import { Dragonblight } from "../../clients/Dragonblight";
 import { UsRealms, EuRealms } from "../../clients/ServerNames";
 import { Link, Outlet } from "react-router-dom";
+import { flavorHref } from "../../helpers/game-flavor";
 
 function HomePage() {
   //finding data with setSearchResults, and referencing / storing with searchResults
@@ -36,7 +37,7 @@ function HomePage() {
                   const name = optionsSplit[0]
                   const server = optionsSplit[1]
                   const region = optionsSplit[2]
-                  window.location.href = `/profile/${region}/${server}/${name}`}
+                  window.location.href = flavorHref(`/profile/${region}/${server}/${name}`)}
               }
               mode="combobox"
               notFoundContent={null}

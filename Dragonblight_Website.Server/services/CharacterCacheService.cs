@@ -136,7 +136,10 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
     public async Task CacheAllLadders(string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
         await CacheRBGLadder(region, flavor);
-        await Cache5v5Ladder(region, flavor);
+        if (flavor.Brackets().Contains("5v5"))
+        {
+            await Cache5v5Ladder(region, flavor);
+        }
         await Cache3v3Ladder(region, flavor);
         await Cache2v2Ladder(region, flavor);
 

@@ -58,4 +58,10 @@ public record TalentTree
     /// </summary>
     [JsonPropertyName("spec_talent_nodes")]
     public TalentNode[] SpecializationTalentNodes { get; init; }
+
+    /// <summary>
+    /// Gets the hero talent trees available to the specialization.
+    /// </summary>
+    [JsonPropertyName("hero_talent_trees")]
+    public HeroTalentTree[] HeroTalentTrees { get; init; }
 }

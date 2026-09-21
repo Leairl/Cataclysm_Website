@@ -156,4 +156,26 @@ public interface IItemApi
     ///     Media for an item by ID.
     /// </returns>
     Task<RequestResult<ItemMedia>> GetItemMediaAsync(int itemId, string @namespace, Region region, Locale locale);
+
+    /// <summary>
+    ///     Get an item appearance by ID. Retail only - the classic namespaces return 404.
+    /// </summary>
+    /// <param name="appearanceId">The item appearance ID.</param>
+    /// <param name="namespace">The namespace to use to locate this document.</param>
+    /// <returns>
+    ///     The item appearance.
+    /// </returns>
+    Task<RequestResult<ItemAppearance>> GetItemAppearanceAsync(int appearanceId, string @namespace);
+
+    /// <summary>
+    ///     Get an item appearance by ID. Retail only - the classic namespaces return 404.
+    /// </summary>
+    /// <param name="appearanceId">The item appearance ID.</param>
+    /// <param name="namespace">The namespace to use to locate this document.</param>
+    /// <param name="region">Specifies the region that the API will retrieve its data from.</param>
+    /// <param name="locale">Specifies the language that the result will be in.</param>
+    /// <returns>
+    ///     The item appearance.
+    /// </returns>
+    Task<RequestResult<ItemAppearance>> GetItemAppearanceAsync(int appearanceId, string @namespace, Region region, Locale locale);
 }

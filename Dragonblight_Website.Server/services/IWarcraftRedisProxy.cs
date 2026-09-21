@@ -33,8 +33,10 @@ public interface IWarcraftRedisProxy
     string GetProfileRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic);
     string GetDynamicRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic);
     string GetStaticRegion(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<ItemDisplayInfo?> GetItemDisplayInfo(int itemId, string region, GameFlavor flavor);
     Task<ItemMedia?> GetItemIcon(int itemId, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<CharacterSpecializationsSummary> GetPlayerTalents(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<TalentTree?> GetTalentTree(int specId, string region, GameFlavor flavor = GameFlavor.Retail);
     Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task BracketClassPlayerExpiration(string bracket, string region, string characterClass, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<int> GetSeason(string region, GameFlavor flavor = GameFlavor.MistsClassic);

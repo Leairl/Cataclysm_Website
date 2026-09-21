@@ -92,4 +92,17 @@ public partial class WarcraftClient
         string host = GetHost(region);
         return await GetAsync<ItemMedia>($"{host}/data/wow/media/item/{itemId}?namespace={@namespace}&locale={locale}");
     }
+
+    /// <inheritdoc />
+    public async Task<RequestResult<ItemAppearance>> GetItemAppearanceAsync(int appearanceId, string @namespace)
+    {
+        return await GetItemAppearanceAsync(appearanceId, @namespace, Region, Locale);
+    }
+
+    /// <inheritdoc />
+    public async Task<RequestResult<ItemAppearance>> GetItemAppearanceAsync(int appearanceId, string @namespace, Region region, Locale locale)
+    {
+        string host = GetHost(region);
+        return await GetAsync<ItemAppearance>($"{host}/data/wow/item-appearance/{appearanceId}?namespace={@namespace}&locale={locale}");
+    }
 }

@@ -19,6 +19,7 @@ import * as Accordion from "@radix-ui/react-accordion";
 import "../profile.css";
 import "./profile-stats.css";
 import classNames from "classnames";
+import { getFlavor } from "../../../helpers/game-flavor";
 
 //allows subset calls of profile from profile.tsx
 interface ProfileStatsProps {
@@ -32,6 +33,11 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     Dragonblight.CharacterStatisticsSummary
   >();
   const [loading, setLoading] = useState<boolean>(true);
+
+  // The two games have different stats, not just different numbers: retail dropped Spirit, Hit,
+  // Expertise, Resilience and reforging, and applies one crit and one haste to everything rather
+  // than separate melee, ranged and spell values.
+  const retail = getFlavor() === "retail";
 
   const { region, server, characterName } = useParams();
   const CardStyles: string[] = [
@@ -104,7 +110,10 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     return <div className="flex flex-col profile-stats">{SkeletonCards}</div>;
   }
 
-  function reforgeWarning(): ReactElement {
+  // MoP Classic hides stats behind reforging, which the Blizzard API does not report, so the
+  // affected values are flagged. Retail has no reforging, so there is nothing to warn about.
+  function reforgeWarning(): ReactElement | null {
+    if (retail) { return null; }
     return (
       <Tooltip
         className="background-warning-color"
@@ -209,7 +218,8 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 {characterStats?.intellect?.effective}{" "}
               </DataList.Value>
             </DataList.Item>
-            <DataList.Item>
+            {/* retail has no Spirit, and shows Mastery with the other secondaries instead */}
+            {!retail && (<DataList.Item>
               <DataList.Label minWidth="90px">
                 Spirit {reforgeWarning()}
               </DataList.Label>
@@ -219,8 +229,8 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                   (characterStats?.spirit?.base ?? 0) ? "green_text ": ""}>
                 {characterStats?.spirit?.effective}{" "}
               </DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
+            </DataList.Item>)}
+            {!retail && (<DataList.Item>
               <DataList.Label minWidth="90px">
                 Mastery {reforgeWarning()}
                 </DataList.Label>
@@ -232,6 +242,51 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 }
               > {(characterStats?.mastery?.value ?? 0).toFixed(2)} </DataList.Value>
               
+            </DataList.Item>)}
+          </DataList.Root>
+        </Card>
+      </div>
+    );
+  }
+  // Retail's secondaries apply to everything the character does, so they belong together in one
+  // card rather than repeated under Melee, Ranged and Spell - the API returns the same crit and
+  // the same haste for all three.
+  function getSecondaryCard(): ReactElement {
+    return (
+      <div className="pt-3" key={"GetStatsSecondary"}>
+        <Card>
+          <Heading mb="2" size="2">
+            {" "}
+            Secondary{" "}
+          </Heading>
+          <DataList.Root size="1">
+            <DataList.Item>
+              <DataList.Label minWidth="90px"> Critical Strike </DataList.Label>
+              <DataList.Value className="">
+                {(characterStats?.melee_crit?.value ?? 0).toFixed(2) + "%"}
+              </DataList.Value>
+            </DataList.Item>
+            <DataList.Item>
+              <DataList.Label minWidth="90px"> Haste </DataList.Label>
+              <DataList.Value className="">
+                {(characterStats?.melee_haste?.value ?? 0).toFixed(2) + "%"}
+              </DataList.Value>
+            </DataList.Item>
+            <DataList.Item>
+              <DataList.Label minWidth="90px"> Mastery </DataList.Label>
+              <DataList.Value
+                className={
+                  (characterStats?.mastery?.rating_bonus ?? 0) > 0 ? "green_text " : ""
+                }
+              >
+                {(characterStats?.mastery?.value ?? 0).toFixed(2) + "%"}
+              </DataList.Value>
+            </DataList.Item>
+            <DataList.Item>
+              <DataList.Label minWidth="90px"> Versatility </DataList.Label>
+              <DataList.Value className="">
+                {(characterStats?.versatility_damage_done_bonus ?? 0).toFixed(2) + "%"}
+              </DataList.Value>
             </DataList.Item>
           </DataList.Root>
         </Card>
@@ -275,6 +330,9 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {characterStats?.attack_power ?? 0}{" "}
                   </DataList.Value>
                 </DataList.Item>
+                {/* retail keeps haste and crit in the Secondary card, and has no hit or
+                    expertise at all */}
+                {!retail && (<>
                 <DataList.Item>
                   <DataList.Label minWidth="90px">
                     {" "}
@@ -308,6 +366,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                   </DataList.Label>
                   <DataList.Value className="">{(ExpertiseRating()/30.0272).toFixed(2) + "%"}</DataList.Value>
                 </DataList.Item>
+                </>)}
               </DataList.Root>
             </Accordion.AccordionContent>
           </Accordion.AccordionItem>
@@ -399,6 +458,9 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {characterStats?.spell_power}{" "}
                   </DataList.Value>
                 </DataList.Item>
+                {/* retail shows haste in the Secondary card, and has no spell hit or
+                    spell penetration */}
+                {!retail && (<>
                 <DataList.Item>
                   <DataList.Label minWidth="90px">
                     {" "}
@@ -424,6 +486,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {characterStats?.spell_penetration}
                   </DataList.Value>
                 </DataList.Item>
+                </>)}
                 <DataList.Item>
                   <DataList.Label minWidth="90px"> Mana Regen </DataList.Label>
                   <DataList.Value className="">{characterStats?.mana_regen}</DataList.Value>
@@ -437,7 +500,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                     {characterStats?.mana_regen_combat}
                   </DataList.Value>
                 </DataList.Item>
-                <DataList.Item>
+                {!retail && (<DataList.Item>
                   <DataList.Label minWidth="90px">
                     {" "}
                     Crit Chance {reforgeWarning()}
@@ -445,7 +508,7 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                   <DataList.Value className="">
                     {(characterStats?.spell_crit?.value ?? 0).toFixed(2) + "%"}
                   </DataList.Value>
-                </DataList.Item>
+                </DataList.Item>)}
               </DataList.Root>
             </Accordion.AccordionContent>
           </Accordion.AccordionItem>
@@ -488,10 +551,11 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
                 {(characterStats?.block?.value ?? 0).toFixed(0) + "%"}
               </DataList.Value>
             </DataList.Item>
-            <DataList.Item>
+            {/* resilience was removed from retail after MoP */}
+            {!retail && (<DataList.Item>
               <DataList.Label minWidth="90px"> Resilience </DataList.Label>
               <DataList.Value className=""> {getResilience()} </DataList.Value>
-            </DataList.Item>
+            </DataList.Item>)}
           </DataList.Root>
         </Card>
       </div>
@@ -615,24 +679,28 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
   }
   //loops through each character rating (remember: characterratings is updated every time the user looks up a character, and has character data from controller)
   function getStats() {
-    const StatsCards: ReactElement[] = [];
+    const cards: ReactElement[] = [];
+    const accordionCards: ReactElement[] = [];
     if (characterStats) {
-      StatsCards.push(getGeneralCard());
-      StatsCards.push(getAttributesCard());
-      StatsCards.push(getDefenseCard());
-      StatsCards.push(getMeleeCard());
-      StatsCards.push(getRangedCard());
-      StatsCards.push(getSpellCard());
+      cards.push(getGeneralCard());
+      cards.push(getAttributesCard());
+      if (retail) { cards.push(getSecondaryCard()); }
+      cards.push(getDefenseCard());
+      accordionCards.push(getMeleeCard());
+      // retail has no ranged weapons - a hunter's bow is their main hand - so the numbers this
+      // card works out from the MoP formulas mean nothing there
+      if (!retail) { accordionCards.push(getRangedCard()); }
+      accordionCards.push(getSpellCard());
     }
     return (
       <div>
-        <div className="flex flex-col profile-stats">{StatsCards.slice(0, 3)}</div>
+        <div className="flex flex-col profile-stats">{cards}</div>
         <Accordion.Root
           className="bg-mauve6 rounded-md shadow-[0_2px_5px] shadow-black/5"
           type="single"
           collapsible
         >
-          <div className="flex flex-col profile-stats">{StatsCards.slice(3, 6)}</div>
+          <div className="flex flex-col profile-stats">{accordionCards}</div>
         </Accordion.Root>
       </div>
     );

@@ -3,7 +3,8 @@ import ProfileEquipment from './profile-equipment/profile-equipment';
 import ProfileRating from './profile-rating/profile-rating';
 import ProfileStats from './profile-stats/profile-stats';
 import { Dragonblight } from '../../clients/Dragonblight';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getFlavor } from '../../helpers/game-flavor';
 import { Flex, Text, SegmentedControl, Switch, Callout } from '@radix-ui/themes';
 import "./profile.css"
 import { useCookies } from 'react-cookie';
@@ -24,6 +25,9 @@ const Profile: FC<ProfileProps> = () => {
       cookies.showModelViewer ?? true
     );
     const { region, server, characterName, urlTab } = useParams();
+    const navigate = useNavigate();
+    // Glyphs are a MoP Classic feature - retail removed them in Legion.
+    const showGlyphs = getFlavor() === "classic";
     const [currTab, setCurrTab] = useState<string>();
     const [err, setErr] = useState<string>();
 
@@ -64,7 +68,9 @@ const Profile: FC<ProfileProps> = () => {
 
     //updates the page to show the correct tab
     useEffect(() => {
-      ChangeTab(urlTab ?? 'gear')
+      const tab = urlTab ?? 'gear'
+      // a /glyphs link followed into retail has no pane to show
+      ChangeTab(tab === 'glyphs' && !showGlyphs ? 'gear' : tab)
     }, [urlTab])
 
 
@@ -74,7 +80,7 @@ const Profile: FC<ProfileProps> = () => {
         return setCurrTab(newTab)
       }
       if (currTab != newTab) {
-        window.history.replaceState(null, "", `/profile/${region}/${server}/${characterName}/${newTab}`);
+        navigate(`/profile/${region}/${server}/${characterName}/${newTab}`, { replace: true });
         setCurrTab(newTab);
       }
     }
@@ -127,14 +133,14 @@ const Profile: FC<ProfileProps> = () => {
               >
                 Pet
               </SegmentedControl.Item>)}
-              <SegmentedControl.Item
+              {showGlyphs && (<SegmentedControl.Item
                 onClick={() => {
                   ChangeTab("glyphs");
                 }}
                 value="glyphs"
               >
                 Glyphs
-              </SegmentedControl.Item>
+              </SegmentedControl.Item>)}
             </SegmentedControl.Root>
           </div>
           <div className='flex flex-grow h-100'></div>

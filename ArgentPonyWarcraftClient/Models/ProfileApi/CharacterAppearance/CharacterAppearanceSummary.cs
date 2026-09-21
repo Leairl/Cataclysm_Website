@@ -60,6 +60,13 @@ public record CharacterAppearanceSummary
     public Appearance Appearance { get; init; }
 
     /// <summary>
+    /// Gets the character's appearance choices. This replaced the fixed set of fields in
+    /// <see cref="Appearance"/>, which retail stopped returning after Battle for Azeroth.
+    /// </summary>
+    [JsonPropertyName("customizations")]
+    public CharacterCustomization[] Customizations { get; init; }
+
+    /// <summary>
     /// Gets the character's equipped items.
     /// </summary>
     [JsonPropertyName("items")]

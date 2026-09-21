@@ -1,6 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ClassColor = new Map<string, string>([
     ["Death Knight", "#C41E3A"],
+    ["Demon Hunter", "#A330C9"],
+    ["Evoker", "#33937F"],
     ["Druid", "#FF7C0A"],
     ["Hunter", "#AAD372"],
     ["hunterpet", "#AAD372"],

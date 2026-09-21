@@ -28,4 +28,10 @@ public record SpecializationLoadout
     /// </summary>
     [JsonPropertyName("selected_spec_talents")]
     public LoadoutTalent[] SelectedSpecTalents { get; init; }
+
+    /// <summary>
+    /// Gets the selected hero talents.
+    /// </summary>
+    [JsonPropertyName("selected_hero_talents")]
+    public LoadoutTalent[] SelectedHeroTalents { get; init; }
 }

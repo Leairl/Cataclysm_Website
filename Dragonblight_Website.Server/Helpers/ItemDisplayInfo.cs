@@ -1,5 +1,9 @@
 ﻿public class ItemDisplayInfo
 {
+    //System.Text.Json (used by the Redis cache) cannot bind the constructor below because its
+    //parameter names don't match the property names, so it needs a parameterless one to read back into
+    public ItemDisplayInfo() { }
+
     public ItemDisplayInfo(int itemId, int inventoryType, int itemAppearance, int displayId)
     {
         this.id = itemId;
