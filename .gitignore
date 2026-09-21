@@ -973,3 +973,6 @@ dragonblight_website.client/dist/*
 dragonblight_website.client/dragonblight_website.client.pem
 dragonblight_website.client/dragonblight_website.client.key
 latest-data/*
+
+# Claude Code session transcripts
+claude-logs/
