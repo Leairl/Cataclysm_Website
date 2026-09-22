@@ -109,6 +109,20 @@ namespace Dragonblight_Website.Server.Controllers
             }
         }
 
+        [HttpGet("GetSeasonStart")]
+        public async Task<ActionResult<DateTimeOffset?>> GetSeasonStart(string region)
+        {
+            try
+            {
+                return Ok(await _warcraftCachedData.GetSeasonStart(region, HttpContext.GetGameFlavor()));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching the season start.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
         [HttpGet("GetPvPRewards")]
         public async Task<ActionResult<IEnumerable<PvpSeasonRewardWithRank>>> GetPvPRewards(string region)
         {

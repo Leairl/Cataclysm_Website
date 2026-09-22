@@ -40,6 +40,7 @@ public interface IWarcraftRedisProxy
     Task InsertActivityCacheClassCharacter(string bracket, PvpLeaderboardEntry oldPlayer, PvpLeaderboardEntry newPlayer, CharacterProfileSummary characterClass, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task BracketClassPlayerExpiration(string bracket, string region, string characterClass, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<int> GetSeason(string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<DateTimeOffset?> GetSeasonStart(string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task SavePvpCharacterSummary(PvpCharacterSummary newPvpCharacterSummary, string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<List<PvpCharacterSummary?>> GetPvpLeaderSummaries(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task ClearPvpCharacterSummary(string bracket, string region, GameFlavor flavor = GameFlavor.MistsClassic);

@@ -323,6 +323,18 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
             return GetCurrSeason.Value.CurrentSeason.Id;
         }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of pvpleaderboard to get rbg ladder + region from redis
     }
+    //when the current season began, so season achievements can be told apart from last season's
+    //nullable so a cache miss reads as null and reaches Blizzard; a bare DateTimeOffset would read as year 1
+    public async Task<DateTimeOffset?> GetSeasonStart(string region, GameFlavor flavor = GameFlavor.MistsClassic)
+    {
+        var ns = GetDynamicRegion(region, flavor);
+        int season = await GetSeason(region, flavor);
+        return await GetBlizzardDataCached<DateTimeOffset?>("GetSeasonStart" + season + ns, async () =>
+        {
+            var currSeason = await warcraftClient.GetPvpSeasonAsync(season, ns, GetRegion(ns), GetLocale(ns));
+            return currSeason.Success ? currSeason.Value.SeasonStartTimestamp : null;
+        }, TimeSpan.FromDays(1));
+    }
     // get character summary in redis
     public async Task<CharacterPvpBracketStatistics> GetPvpBracketRating(string server, string characterName, string pvpBracket, string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {

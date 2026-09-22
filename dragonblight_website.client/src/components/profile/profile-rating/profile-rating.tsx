@@ -3,11 +3,33 @@ import { Dragonblight } from "../../../clients/Dragonblight";
 import { useParams } from "react-router-dom";
 import { Card, Heading, Skeleton } from "@radix-ui/themes";
 import "./profile-rating.css";
-import { brackets } from "../../../helpers/game-flavor";
+import { brackets, getFlavor } from "../../../helpers/game-flavor";
 
-interface ProfileRatingProps {}
+interface ProfileRatingProps {
+  // Arrives after the ratings, so a Gladiator title can appear a moment after the card.
+  achievements?: Dragonblight.CharacterAchievementsSummary;
+}
 
-const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
+interface RatingTier {
+  title: string;
+  // Rating tiers follow the current rating (Blizzard doesn't return the season high);
+  // rank 1 titles are only decided when the season ends, so those are a prediction.
+  label: "Current Title:" | "Predicted Title:";
+  text: string;
+  border: string;
+}
+
+// Retail titles come from fixed rating thresholds, highest first. The season's reward
+// cutoffs only decide rank 1 (top 0.1%), which getRetailTier checks before these.
+const RetailTiers: [number, RatingTier][] = [
+  [2300, { title: "Elite", label: "Current Title:", text: "text-purple-500", border: "border-purple-500 border-2" }],
+  [2100, { title: "Duelist", label: "Current Title:", text: "text-blue-500", border: "border-blue-500 border-2" }],
+  [1800, { title: "Rival", label: "Current Title:", text: "text-green-500", border: "border-green-500 border-2" }],
+  [1400, { title: "Challenger", label: "Current Title:", text: "text-white", border: "border-white border-2" }],
+  [1000, { title: "Combatant", label: "Current Title:", text: "text-neutral-500", border: "border-neutral-500 border-2" }],
+];
+
+const ProfileRating: FC<ProfileRatingProps> = ({ achievements }) => {
   // pulls dictionary of keys from pvp bracket
   const [characterRatings, setcharacterRatings] = useState<
     Dragonblight.CharacterPvpBracketStatistics[]
@@ -16,10 +38,17 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
   const [rewards, setRewards] = useState<
     Dragonblight.PvpSeasonRewardWithRank[]
   >();
+  const [seasonStart, setSeasonStart] = useState<Date | null>();
   const { region, server, characterName } = useParams();
 
   async function CutoffData() {
     const DragonblightClient = new Dragonblight.PvpLeaderboardClient();
+    if (getFlavor() === "retail") {
+      // Only the retail Gladiator check needs it; failing leaves it null, which turns the check off.
+      DragonblightClient.getSeasonStart(region)
+        .then(setSeasonStart)
+        .catch(() => setSeasonStart(null));
+    }
     setRewards(await DragonblightClient.getPvPRewards(region));
     setLoading(false);
   }
@@ -39,10 +68,74 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
     );
   }, [region, server, characterName]);
 
+  // Blizzard's retail season rewards hold the live rank 1 cutoff: one reward for 3v3,
+  // one per faction for RBG, none for 2v2. Undefined while rewards are loading.
+  function getRank1Reward(bracket: string, faction?: string) {
+    return bracketRewards(bracket)?.find(
+      (r) => !r.faction?.type || r.faction.type === faction
+    );
+  }
+
+  function getRetailTier(
+    bracket: string,
+    current_rating: number,
+    faction?: string
+  ): RatingTier | undefined {
+    const rank1 = getRank1Reward(bracket, faction);
+    if (rank1 && current_rating >= rank1.rating_cutoff) {
+      return {
+        // "Venomous Gladiator: Midnight Season 2" -> "Venomous Gladiator"
+        title: rank1.achievement?.name?.split(":")[0] ?? "Rank 1",
+        label: "Predicted Title:",
+        text: "text-orange-500",
+        border: "border-orange-500 border-2",
+      };
+    }
+    const tier = RetailTiers.find(([minimum]) => current_rating >= minimum)?.[1];
+    if (tier?.title === "Elite" && bracket === "ARENA_3v3" && hasSeasonGladiator()) {
+      return { ...tier, title: "Gladiator" };
+    }
+    return tier;
+  }
+
+  // Every season has its own "Gladiator: <season>" achievement, so the one earned since
+  // the current season began is this season's. The "Venomous Gladiator" rank 1 title
+  // doesn't match the prefix. Dates arrive as ISO strings despite the generated Date type.
+  function hasSeasonGladiator(): boolean {
+    if (!seasonStart) return false;
+    const start = new Date(seasonStart).getTime();
+    return (
+      achievements?.achievements?.some(
+        (a) =>
+          a.achievement?.name?.startsWith("Gladiator: ") &&
+          a.completed_timestamp &&
+          new Date(a.completed_timestamp).getTime() >= start
+      ) ?? false
+    );
+  }
+
+  // The title line under a card, label included, or "" when the rating earns none.
+  function getTitleLine(
+    bracket: string,
+    current_rating: number,
+    faction?: string
+  ): string {
+    if (getFlavor() === "retail") {
+      const tier = getRetailTier(bracket, current_rating, faction);
+      return tier ? `${tier.label} ${tier.title}` : "";
+    }
+    const title = getTitle(bracket, current_rating);
+    return title ? `Predicted Title: ${title}` : "";
+  }
+
   function getBracketColor(
     bracket: string,
-    current_rating: number
+    current_rating: number,
+    faction?: string
   ): string | undefined {
+    if (getFlavor() === "retail") {
+      return getRetailTier(bracket, current_rating, faction)?.text ?? "text-stone-100";
+    }
     const title = getTitle(bracket, current_rating);
     if (title?.endsWith(" Gladiator")) {
       return "text-yellow-600";
@@ -64,37 +157,47 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
     }
   }
 
+  // isolates rewards for a specific bracket, or returns [] when rewards are not yet loaded.
+  function bracketRewards(bracket: string) {
+    return rewards?.filter((r) => {
+      return (
+        r.bracket?.type?.includes(bracket) ||
+        (r.bracket?.type?.includes("BATTLEGROUNDS") && bracket == "rbg")
+      );
+    });
+  }
+
   function getTitle(
     bracket: string,
     current_rating: number
   ): string | undefined {
-    const bracketRewards = rewards
-      ?.filter((r) => {
-        return (
-          r.bracket?.type?.includes(bracket) ||
-          (r.bracket?.type?.includes("BATTLEGROUNDS") && bracket == "rbg")
-        );
-      })
-      .sort((c, p) => {
-        return c.rating_cutoff - p.rating_cutoff;
-      });
-
-    let title = "";
-    for (const bracketReward of bracketRewards ?? []) {
-      if (current_rating >= bracketReward.rating_cutoff)
-        title =
-          bracketReward.achievement?.name
-            ?.replace(/ - Season [0-9][0-9]/, "")
-            .replace(/: Season [0-9][0-9]/, "")
-            .replace("[DNT] ", "") ?? "";
+    // The best title is the reached reward with the highest cutoff, whatever order
+    // the rewards arrive in.
+    let best: Dragonblight.PvpSeasonRewardWithRank | undefined;
+    for (const bracketReward of bracketRewards(bracket) ?? []) {
+      if (
+        current_rating >= bracketReward.rating_cutoff &&
+        bracketReward.rating_cutoff > (best?.rating_cutoff ?? -1)
+      )
+        best = bracketReward;
     }
-    return title;
+    return (
+      best?.achievement?.name
+        ?.replace(/ - Season [0-9][0-9]/, "")
+        .replace(/: Season [0-9][0-9]/, "")
+        .replace("[DNT] ", "") ?? ""
+    );
   }
 
   function getCardBorder(
     bracket: string,
-    current_rating: number
+    current_rating: number,
+    faction?: string
   ): string | undefined {
+    if (getFlavor() === "retail") {
+      // Below Combatant the card keeps its default border.
+      return getRetailTier(bracket, current_rating, faction)?.border ?? "";
+    }
     const title = getTitle(bracket, current_rating);
 
     if (title?.endsWith(" Gladiator")) {
@@ -161,7 +264,8 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
           className={
             getCardBorder(
               BracketStatistics?.bracket?.type ?? "",
-              BracketStatistics?.rating ?? 0
+              BracketStatistics?.rating ?? 0,
+              BracketStatistics?.faction?.type
             ) +
             " " +
             (index == 0 || index == 2
@@ -174,7 +278,8 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
               className={
                 getBracketColor(
                   BracketStatistics?.bracket?.type ?? "",
-                  BracketStatistics?.rating ?? 0
+                  BracketStatistics?.rating ?? 0,
+                  BracketStatistics?.faction?.type
                 ) +
                 " " +
                 "font-bold text-3xl flex justify-center"
@@ -199,15 +304,10 @@ const ProfileRating: FC<ProfileRatingProps> = (/*props*/) => {
           </span>
         </div>
         <span className="text-xs italic justify-center">
-          {getTitle(
+          {getTitleLine(
             BracketStatistics?.bracket?.type ?? "",
-            BracketStatistics?.rating ?? 0
-          ) != ""
-            ? "Predicted Title:"
-            : ""}{" "}
-          {getTitle(
-            BracketStatistics?.bracket?.type ?? "",
-            BracketStatistics?.rating ?? 0
+            BracketStatistics?.rating ?? 0,
+            BracketStatistics?.faction?.type
           )}
         </span>
       </div>

@@ -171,7 +171,7 @@ const Profile: FC<ProfileProps> = () => {
     showModelViewer={showModelViewer}
     loading={loading} 
     ></ProfileEquipment> 
-    <ProfileRating></ProfileRating>
+    <ProfileRating achievements={achievementsSummary}></ProfileRating>
     </div>
     <ProfileStats characterProfileSummary={characterSummary} characterEquipmentSummary={characterEquipmentSummary} loading={loading}></ProfileStats>
 </div>
