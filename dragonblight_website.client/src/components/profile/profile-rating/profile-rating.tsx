@@ -4,30 +4,12 @@ import { useParams } from "react-router-dom";
 import { Card, Heading, Skeleton } from "@radix-ui/themes";
 import "./profile-rating.css";
 import { brackets, getFlavor } from "../../../helpers/game-flavor";
+import { RatingTier, RetailTiers } from "../../../helpers/ratingTierHelper";
 
 interface ProfileRatingProps {
   // Arrives after the ratings, so a Gladiator title can appear a moment after the card.
   achievements?: Dragonblight.CharacterAchievementsSummary;
 }
-
-interface RatingTier {
-  title: string;
-  // Rating tiers follow the current rating (Blizzard doesn't return the season high);
-  // rank 1 titles are only decided when the season ends, so those are a prediction.
-  label: "Current Title:" | "Predicted Title:";
-  text: string;
-  border: string;
-}
-
-// Retail titles come from fixed rating thresholds, highest first. The season's reward
-// cutoffs only decide rank 1 (top 0.1%), which getRetailTier checks before these.
-const RetailTiers: [number, RatingTier][] = [
-  [2300, { title: "Elite", label: "Current Title:", text: "text-purple-500", border: "border-purple-500 border-2" }],
-  [2100, { title: "Duelist", label: "Current Title:", text: "text-blue-500", border: "border-blue-500 border-2" }],
-  [1800, { title: "Rival", label: "Current Title:", text: "text-green-500", border: "border-green-500 border-2" }],
-  [1400, { title: "Challenger", label: "Current Title:", text: "text-white", border: "border-white border-2" }],
-  [1000, { title: "Combatant", label: "Current Title:", text: "text-neutral-500", border: "border-neutral-500 border-2" }],
-];
 
 const ProfileRating: FC<ProfileRatingProps> = ({ achievements }) => {
   // pulls dictionary of keys from pvp bracket

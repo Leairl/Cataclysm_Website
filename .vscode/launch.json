@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-    "name": "Backend",
+    "name": "Docker Backend",
     "type": "coreclr",
     "request": "attach",
     "processId": "1",
@@ -18,26 +18,49 @@
     }, "sourceFileMap": {"/src": "${workspaceFolder}"},
     },
     {
-      "name": "Frontend",
+      "name": "Docker Frontend",
       "type": "chrome",
       "request": "launch",
       "preLaunchTask": "npm run dev",
       "url": "https://localhost:5173"
     },
     {
-      "name": "Docker .NET Core Attach",
-      "type": "docker",
-      "request": "attach",
-      "platform": "netCore",
-      "sourceFileMap": {
-        "/src/Dragonblight_Website.Server": "${workspaceFolder}/Dragonblight_Website.Server"
+      //local workflow: redis in docker, backend on the host, frontend in its own watch server
+      "name": "Local Backend (dotnet run)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Local: Redis",
+      "program": "${workspaceFolder}/Dragonblight_Website.Server/bin/Debug/net8.0/Dragonblight_Website.Server.dll",
+      "cwd": "${workspaceFolder}/Dragonblight_Website.Server",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      },
+      //redis is reached on localhost here, not by container name
+      "env": {
+        //net8.0 app on the installed .NET 10 runtime
+        "DOTNET_ROLL_FORWARD": "LatestMajor",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5059",
+        "Redis__ConnectionString": "localhost:6379"
       }
     },
     {
-        "name": ".NET Core Attach",
-        "type": "coreclr",
-        "request": "attach",
-        "processId": "${command:pickProcess}"
+      "name": "Local Frontend (vite)",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "Local: Frontend",
+      "url": "https://localhost:5173"
+    }
+  ],
+  "compounds": [
+    {
+      //one pick starts redis, the backend and the frontend watch server
+      "name": "Local: Backend + Frontend",
+      "configurations": ["Local Backend (dotnet run)", "Local Frontend (vite)"],
+      "stopAll": true
     }
   ]
 }

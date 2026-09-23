@@ -13,6 +13,8 @@ import { ClassColor } from "../../../helpers/classColorHelper";
 import TalentViewer from "../../talent-viewer/talent-viewer";
 import GlyphViewer  from "../../glyph-viewer/glyph-viewer";
 import RetailTalentViewer from "../../retail-talent-viewer/retail-talent-viewer";
+import ProfileAlts from "../profile-alts/profile-alts";
+import { realmDisplayName } from "../../../helpers/realmNameHelper";
 
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { getFlavor, wowheadUrl } from "../../../helpers/game-flavor";
@@ -515,6 +517,11 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             ></TalentViewer>
           </Card>
         )}
+        {props.currTab == "alts" && (
+          <Card className="talent-row">
+            <ProfileAlts></ProfileAlts>
+          </Card>
+        )}
         {props.currTab == "glyphs" && (
           <Card className="talent-row">
             <GlyphViewer
@@ -639,7 +646,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             <span className="hide-">
               {getTitledName() +
                 " - " +
-                server}{" "}
+                getRealmName()}{" "}
             </span>
           </Heading>
           <Heading size="2" className="guild-text">
@@ -799,6 +806,11 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
       return title.name.replace("%s", name);
     }
     return name;
+  }
+
+  //blizzard's realm name once the summary arrives, the slug spelled out until then
+  function getRealmName(): string {
+    return props.characterProfileSummary?.realm?.name ?? realmDisplayName(server);
   }
 
   function getEnchantName(s: number): string {

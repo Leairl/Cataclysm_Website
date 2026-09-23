@@ -56,6 +56,8 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                         await redisProxy.InsertToPlayerPageActivity(bracket, region, player, flavor);
                     };
                     await redisProxy.InsertCacheClassCharacter(bracket, player, summary, region, flavor);
+                    //files the character under its account's alt key while we are already walking the ladder
+                    await redisProxy.IndexAltList(player.Character.Realm.Slug, player.Character.Name, region, flavor);
                 }
                 catch (Exception ex) 
                 {

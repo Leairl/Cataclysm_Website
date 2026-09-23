@@ -227,6 +227,62 @@ export class ActivityClient {
     }
 }
 
+export class AltClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getAlts(server: string | undefined, characterName: string | undefined, region: string | undefined): Promise<GetAltsResponse[]> {
+        let url_ = this.baseUrl + "/api/Alt/GetAlts?";
+        if (server === null)
+            throw new Error("The parameter 'server' cannot be null.");
+        else if (server !== undefined)
+            url_ += "server=" + encodeURIComponent("" + server) + "&";
+        if (characterName === null)
+            throw new Error("The parameter 'characterName' cannot be null.");
+        else if (characterName !== undefined)
+            url_ += "characterName=" + encodeURIComponent("" + characterName) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetAlts(_response);
+        });
+    }
+
+    protected processGetAlts(response: Response): Promise<GetAltsResponse[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetAltsResponse[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<GetAltsResponse[]>(null as any);
+    }
+}
+
 export class LeaderboardAnalyticsClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
@@ -1336,6 +1392,16 @@ export interface CovenantReference {
     key?: Self | undefined;
     name?: string | undefined;
     id: number;
+}
+
+export interface GetAltsResponse {
+    name?: string | undefined;
+    realm?: string | undefined;
+    classchar?: string | undefined;
+    spec?: string | undefined;
+    rating2v2?: number | undefined;
+    rating3v3?: number | undefined;
+    ratingRbg?: number | undefined;
 }
 
 export interface ClassAnalytics {

@@ -1,0 +1,75 @@
+.alt-pane {
+    display: flex;
+    flex-direction: column;
+    padding: .75rem;
+    max-width: 60vw;
+}
+
+.alt-intro {
+    font-size: .8rem;
+    font-style: italic;
+    opacity: .75;
+    margin-bottom: .75rem;
+    max-width: 44rem;
+}
+
+.alt-empty {
+    font-size: .9rem;
+    opacity: .75;
+}
+
+.alt-cards {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.alt-card {
+    width: 100%;
+}
+
+.alt-head {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.alt-name {
+    font-weight: 600;
+}
+
+.alt-realm {
+    font-size: .8rem;
+    opacity: .7;
+}
+
+.alt-detail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .6rem;
+    margin-top: .25rem;
+    font-size: .78rem;
+}
+
+.alt-spec {
+    opacity: .7;
+}
+
+@media only screen and (max-width: 800px) {
+    .alt-pane {
+        max-width: unset;
+    }
+}
+
+.alt-rating {
+    font-variant-numeric: tabular-nums;
+    opacity: .85;
+}
+
+.alt-bracket {
+    opacity: .6;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: .7rem;
+}

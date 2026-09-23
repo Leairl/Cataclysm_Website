@@ -133,6 +133,14 @@ const Profile: FC<ProfileProps> = () => {
               >
                 Pet
               </SegmentedControl.Item>)}
+              <SegmentedControl.Item
+                onClick={() => {
+                  ChangeTab("alts");
+                }}
+                value="alts"
+              >
+                Alts
+              </SegmentedControl.Item>
               {showGlyphs && (<SegmentedControl.Item
                 onClick={() => {
                   ChangeTab("glyphs");

@@ -8,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile("appsettings.development", optional: true, reloadOnChange: true);
+//the two lines above are added after the defaults, so they outrank them - environment variables and
+//command line arguments have to be re-added here to win again, which is what lets a launch profile
+//point the app at a redis running somewhere else (localhost rather than the container name)
+builder.Configuration.AddEnvironmentVariables();
+builder.Configuration.AddCommandLine(args);
 
 // Add services to the container.
 var configuration = builder.Configuration;

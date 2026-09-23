@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ArgentPonyWarcraftClient;
@@ -475,6 +477,9 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
     // get character summary in redis for character appearance
     public async Task<CharacterAchievementsSummary> GetCharacterAchievements(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
+        //the alt list is keyed by the region the caller asked for, so hold on to it before the line
+        //below overwrites region with the blizzard namespace
+        var altRegion = region;
         region = GetProfileRegion(region, flavor);
         var result = await GetBlizzardDataCached<CharacterAchievementsSummary>("GetCharacterAchievements" + server + characterName + region, async () =>
         {
@@ -504,6 +509,9 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
                 return new CharacterAchievementsSummary();
             }, TimeSpan.FromDays(1)); //uses getredisproxy generic type of characterprofilesummer to get profile summary + region from redis
         }
+        //every character whose achievements are read joins its account's alt list, so viewing one
+        //character is what puts it within reach of the others
+        await InsertAltList(server, characterName, altRegion, result, flavor);
         return result;
     }
     // get character summary in redis for character equipment
@@ -764,6 +772,99 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
         }
         var db = redis.GetDatabase();
         await db.KeyDeleteAsync(key);
+    }
+
+    //Alt tracking: these achievements are account wide, so every character on a battle.net account
+    //reports the same completion timestamp for them. Joining those timestamps into one key gives a
+    //ready made list of the account's characters - no character is ever compared against another,
+    //and the list cannot go stale, because a character files itself under the key its own
+    //achievements produce.
+    private static readonly int[] AltAchievements = [40142, 9911, 7380, 7433];
+
+    //a missing achievement counts as timestamp 0 rather than dropping the character: an account that
+    //never earned one never earned it on any of its characters, so its characters still agree and
+    //still meet on the same key. Null only when every timestamp is 0 - that key says nothing about
+    //an account and would gather every character that has none of these achievements, which is what
+    //a classic character looks like, since these ids are retail.
+    private static string? AltListKey(CharacterAchievementsSummary achievements, string region, GameFlavor flavor)
+    {
+        var stamps = new List<string>();
+        var found = 0;
+        foreach (var id in AltAchievements)
+        {
+            var achievement = achievements?.Achievements?.FirstOrDefault(a => a.Id == id && a.CompletedTimestamp != null);
+            if (achievement == null)
+            {
+                stamps.Add("0");
+                continue;
+            }
+            found++;
+            stamps.Add(achievement.CompletedTimestamp!.Value.ToUnixTimeMilliseconds().ToString());
+        }
+        if (found == 0)
+        {
+            return null;
+        }
+        //the timestamps joined are the real key; hashing only keeps it short
+        var digest = SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("+", stamps)));
+        return flavor.KeyPrefix() + "AltList-" + region.ToLowerInvariant() + "-" + Convert.ToHexString(digest)[..16];
+    }
+
+    //a set, so a character that is looked up twice is stored once
+    public async Task InsertAltList(string server, string characterName, string region, CharacterAchievementsSummary achievements, GameFlavor flavor = GameFlavor.MistsClassic)
+    {
+        var key = AltListKey(achievements, region, flavor);
+        if (key == null)
+        {
+            return;
+        }
+        var db = redis.GetDatabase();
+        await db.SetAddAsync(key, characterName.ToLowerInvariant() + "," + server);
+    }
+
+    //the ladder sync route in: the achievements payload is over a megabyte per character, far too
+    //much to hold for every character on every ladder, so this one fetches it, files the character
+    //under its alt key and throws the payload away. The marker it leaves behind is a few bytes and
+    //keeps the same character from being fetched again for a day.
+    public async Task IndexAltList(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic)
+    {
+        //the ladder hands over "Awakenx"; blizzard's profile route and every alt list member are lowercase
+        server = server.ToLowerInvariant();
+        characterName = characterName.ToLowerInvariant();
+        var db = redis.GetDatabase();
+        var marker = VersionedKey("AltIndexed" + server + characterName + region + flavor.KeyPrefix());
+        if (await db.KeyExistsAsync(marker))
+        {
+            return;
+        }
+        var profileRegion = GetProfileRegion(region, flavor);
+        var achievements = await warcraftClient.GetCharacterAchievementsSummaryAsync(server, characterName, profileRegion, GetRegion(profileRegion), GetLocale(profileRegion));
+        if (achievements == null || !achievements.Success)
+        {
+            return;
+        }
+        await InsertAltList(server, characterName, region, achievements.Value, flavor);
+        //only marked once the character is actually filed, so a failed fetch is retried next sync
+        await db.StringSetAsync(marker, "1", TimeSpan.FromDays(1));
+    }
+
+    //the account's other characters, as "charactername,server" - one redis read, nothing cached that
+    //could fall behind, since the key is rebuilt from the character's own achievements every time
+    public async Task<List<string>> GetAlts(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic)
+    {
+        var achievements = await GetCharacterAchievements(server, characterName, region, flavor);
+        var key = AltListKey(achievements, region, flavor);
+        if (key == null)
+        {
+            return new List<string>();
+        }
+        var db = redis.GetDatabase();
+        var self = characterName.ToLowerInvariant() + "," + server;
+        var alts = await db.SetMembersAsync(key);
+        return alts.Select(alt =>
+        {
+            return alt.ToString();
+        }).Where(alt => alt != self).ToList();
     }
 
 }
