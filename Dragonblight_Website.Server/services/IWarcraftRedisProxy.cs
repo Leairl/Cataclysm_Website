@@ -47,4 +47,5 @@ public interface IWarcraftRedisProxy
     Task InsertAltList(string server, string characterName, string region, CharacterAchievementsSummary achievements, GameFlavor flavor = GameFlavor.MistsClassic);
     Task IndexAltList(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<List<string>> GetAlts(string server, string characterName, string region, GameFlavor flavor = GameFlavor.MistsClassic);
+    Task<RealmsIndex?> GetRealms(string region, GameFlavor flavor = GameFlavor.MistsClassic);
 }

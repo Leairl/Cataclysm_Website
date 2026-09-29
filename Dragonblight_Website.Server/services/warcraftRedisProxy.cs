@@ -866,5 +866,13 @@ class WarcraftRedisProxy(WarcraftClient _warcraftClient, IConnectionMultiplexer 
             return alt.ToString();
         }).Where(alt => alt != self).ToList();
     }
-
+    public async Task<RealmsIndex?> GetRealms(string region, GameFlavor flavor = GameFlavor.MistsClassic)
+    {
+        var ns = GetDynamicRegion(region, flavor);
+        return await GetBlizzardDataCached<RealmsIndex?>("Realmindex_" + ns, async () =>
+        {
+            var getRealmIndex = await warcraftClient.GetRealmsIndexAsync(ns, GetRegion(ns), GetLocale(ns));
+            return getRealmIndex.Success ? getRealmIndex.Value: throw new Exception("Failure to Retrieve Realms");
+        }, TimeSpan.FromDays(30));
+    }
 }

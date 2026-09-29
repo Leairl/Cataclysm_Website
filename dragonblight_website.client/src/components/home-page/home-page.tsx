@@ -8,7 +8,7 @@ import { ClassColor } from "../../helpers/classColorHelper";
 import { Dragonblight } from "../../clients/Dragonblight";
 import { UsRealms, EuRealms } from "../../clients/ServerNames";
 import { Link, Outlet } from "react-router-dom";
-import { flavorHref } from "../../helpers/game-flavor";
+import { flavorHref, getFlavor } from "../../helpers/game-flavor";
 
 function HomePage() {
   //finding data with setSearchResults, and referencing / storing with searchResults
@@ -91,7 +91,7 @@ function HomePage() {
   ) {
     return (
       <Option
-        value={`${characterName}-${server}`}
+        value={`${characterName}-${server}-${region}`}
         key={`${characterName}-${server}-${region}-add`}
       >
           <div className="flex">
@@ -132,7 +132,7 @@ function HomePage() {
     }
     //returning data from character profile summary
     const client = new Dragonblight.SearchClient();
-    client.searchChar(search).then((data) => {
+    client.searchChar(search).then(async (data) => {
       //map does for loop for each item and outputs a new item (converts to new type)
       const mapData = data.map(
         (characterSummary: Dragonblight.CharacterProfileSummary) => {
@@ -192,18 +192,43 @@ function HomePage() {
       const searchSplit = search.split("-");
       const characterName = searchSplit[0];
       //checks through the list of eu and us realms, and connects it with a similar named server typed in search.
-      const UsServers =
+      var UsServers = "" as string | undefined
+      var EuServers = "" as string | undefined
+      if (getFlavor() == "classic")
+      {
+      UsServers =
         searchSplit.length > 1
           ? UsRealms.find((r) =>
               r.toLowerCase().startsWith(searchSplit[1].toLowerCase())
             )
           : UsRealms[0];
-      const EuServers =
+      EuServers =
         searchSplit.length > 1
           ? EuRealms.find((r) =>
               r.toLowerCase().startsWith(searchSplit[1].toLowerCase())
             )
           : EuRealms[0];
+      }
+      else if (getFlavor() == "retail")
+      {
+      const realmClient = new Dragonblight.RealmClient();
+      const retailUsRealms = await realmClient.getRealms("us");
+      const retailEuRealms = await realmClient.getRealms("eu");
+      // when we are looking for a realm, does a comparison from the list of servers we have saved to the one being
+      // searched in the search text box. if we get the right slug then it just pulls that slug to the box
+      UsServers =
+        searchSplit.length > 1
+          ? retailUsRealms.realms?.find((r) =>
+              r.slug?.toLowerCase().startsWith(searchSplit[1].toLowerCase())
+            )?.slug
+          : retailUsRealms.realms?.[0].slug;
+      EuServers =
+        searchSplit.length > 1
+          ? retailEuRealms.realms?.find((r) =>
+              r.slug?.toLowerCase().startsWith(searchSplit[1].toLowerCase())
+            )?.slug
+          : retailEuRealms.realms?.[0].slug;
+      }
 
       //if the character name and server is the same in the search bar as the character not loaded in redis
       if (
