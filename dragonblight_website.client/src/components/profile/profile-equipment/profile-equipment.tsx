@@ -15,7 +15,6 @@ import GlyphViewer  from "../../glyph-viewer/glyph-viewer";
 import RetailTalentViewer from "../../retail-talent-viewer/retail-talent-viewer";
 import ProfileAlts from "../profile-alts/profile-alts";
 import { realmDisplayName } from "../../../helpers/realmNameHelper";
-
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { getFlavor, wowheadUrl } from "../../../helpers/game-flavor";
 import { installTierSetSpecFilter } from "../../../helpers/wowhead-tier-set";
@@ -30,7 +29,9 @@ interface profileEquipmentProps {
     | undefined;
   showModelViewer: boolean;
   loading: boolean;
+  characterNotFound: boolean;
 }
+
 const mogslots: number[] = [
   1,
   3,
@@ -329,6 +330,10 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   }
 
   useEffect(() => {
+    //no character means no model to build, and no #model3d for the viewer to draw into
+    if (props.characterNotFound) {
+      return;
+    }
     if (props.currTab == "gear") {
       //display 3d model viewer if selected to show the model in switch
       //makes sure we dont try to destroy a model viewer thats not there
@@ -339,7 +344,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         SetupModelViewer();
       }
     }
-  }, [props.showModelViewer, props.currTab]);
+  }, [props.showModelViewer, props.currTab, props.characterNotFound]);
   useEffect(() => {
     setLoading(props.loading);
   }, [props.loading]);
@@ -372,10 +377,23 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
   });
 
   return (
-    <div className="page-container">
+    <div className={props.characterNotFound ? "page-container not-found" : "page-container"}>
+      {/* the skeleton stays up, still and blurred, so the page keeps its shape behind the message */}
+      {props.characterNotFound && (
+        <div className="not-found-overlay">
+          <Callout.Root color="red">
+            <Callout.Icon>
+              <InfoCircledIcon />
+            </Callout.Icon>
+            <Callout.Text className="text-white txt-shadow">
+              {characterName}-{realmDisplayName(server)} not found
+            </Callout.Text>
+          </Callout.Root>
+        </div>
+      )}
       <div className="center-column">
           <Card className="mb-3 header-card">
-            {loading && (
+            {(loading || props.characterNotFound) && (
               <div className="flex flex-row">  
                   {getSkeletonIconCards()}
                   <div className="flex flex-col m-1">
@@ -384,9 +402,9 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
                   </div>
               </div>
             )}
-            {!loading && <div>{getCharacterHeader()}</div>}
+            {!loading && !props.characterNotFound && <div>{getCharacterHeader()}</div>}
           </Card>
-        {(GetNumAchievements() ?? 0) > 0 && (
+        {!props.characterNotFound && (GetNumAchievements() ?? 0) > 0 && (
           <Card className="mb-3 achievement-row">
             <div className="flex pl-1 flex-wrap justify-center">
               {getAchievements()}
@@ -395,7 +413,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
         )}
         {(props.currTab == "gear" || props?.currTab == undefined) && (
         <Card className="paperdoll-card overflow-visible">
-          {loading && (
+          {(loading || props.characterNotFound) && (
             <div>
               <Flex className="flex-row items-center">
                 <div className="flex-1"></div>
@@ -417,7 +435,7 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               </div>
             </div>
           )}
-          {!loading && (
+          {!loading && !props.characterNotFound && (
             <div>
               <div className={modelLoading ? "model3d" : "model3d invisible"}>
                 <div className="grid min-h-[250px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
@@ -483,7 +501,6 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
             ></RetailTalentViewer>
             ) : (
             <TalentViewer
-              pet={false}
               charClass={
                 props.characterProfileSummary?.character_class?.name ?? ""
               }
@@ -493,28 +510,6 @@ const ProfileEquipment: FC<profileEquipmentProps> = (props) => {
               server={server ?? ""}
             ></TalentViewer>
             )}
-          </Card>
-        )}
-        {props.currTab == "pettalents" && (
-          <Card className="talent-row">
-                          <Callout.Root color="red">
-    <Callout.Icon>
-      <InfoCircledIcon />
-    </Callout.Icon>
-    <Callout.Text>
-      Pet talents coming soon when Blizzard API returns this information.
-    </Callout.Text>
-  </Callout.Root>
-            <TalentViewer
-              pet={true}
-              charClass={
-                'hunterpet' 
-              }
-              charClassId={0}
-              region={region ?? ""}
-              charName={characterName ?? ""}
-              server={server ?? ""}
-            ></TalentViewer>
           </Card>
         )}
         {props.currTab == "alts" && (

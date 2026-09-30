@@ -9,9 +9,10 @@ import { RatingTier, RetailTiers } from "../../../helpers/ratingTierHelper";
 interface ProfileRatingProps {
   // Arrives after the ratings, so a Gladiator title can appear a moment after the card.
   achievements?: Dragonblight.CharacterAchievementsSummary;
+  characterNotFound?: boolean;
 }
 
-const ProfileRating: FC<ProfileRatingProps> = ({ achievements }) => {
+const ProfileRating: FC<ProfileRatingProps> = ({ achievements, characterNotFound }) => {
   // pulls dictionary of keys from pvp bracket
   const [characterRatings, setcharacterRatings] = useState<
     Dragonblight.CharacterPvpBracketStatistics[]
@@ -203,7 +204,7 @@ const ProfileRating: FC<ProfileRatingProps> = ({ achievements }) => {
   }
 
   return (
-    <div>
+    <div className={characterNotFound ? "page-container not-found" : "page-container"}>
       <div>{loading && getSkeletons()}</div>
       <div>{!loading && getRatings()}</div>
     </div>

@@ -26,6 +26,7 @@ interface ProfileStatsProps {
   characterProfileSummary: Dragonblight.CharacterProfileSummary | undefined;
   characterEquipmentSummary: Dragonblight.CharacterEquipmentSummary | undefined;
   loading: boolean;
+  characterNotFound?: boolean;
 }
 
 const ProfileStats: FC<ProfileStatsProps> = (props) => {
@@ -90,8 +91,8 @@ const ProfileStats: FC<ProfileStatsProps> = (props) => {
     );
   }, [region, server, characterName]);
   return (
-    <div>
-      <div>{loading && getSkeletonStatCards()}</div>
+    <div className={props.characterNotFound ? "not-found" : ""}>
+      <div>{(loading || props.characterNotFound) && getSkeletonStatCards()}</div>
       <div>{!loading && getStats()}</div>
     </div>
   );

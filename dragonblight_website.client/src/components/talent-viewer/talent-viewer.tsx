@@ -13,7 +13,6 @@ interface TalentViewerProps {
     region : string
     charClass : string
     charClassId : number
-    pet: boolean
 }
 const TalentViewer: React.FC<TalentViewerProps> = (props) => {
     const [playerTalents, setPlayerTalents] = useState<Dragonblight.CharacterSpecializationsSummary>();

@@ -18,6 +18,7 @@ const Profile: FC<ProfileProps> = () => {
     const [characterEquipmentSummary, setCharacterEquipmentSummary] = useState<Dragonblight.CharacterEquipmentSummary>();
     const [achievementsSummary, setAchievementsSummary] = useState<Dragonblight.CharacterAchievementsSummary>();
 
+    const [characterNotFound, setCharacterNotFound] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [cookies, setCookie] = useCookies(["showModelViewer"]);
     //makes sure showModelViewer is always set to true, and to use our cookies whenever we refresh (keeps the switch at the same spot)
@@ -46,11 +47,12 @@ const Profile: FC<ProfileProps> = () => {
         setLoading(true)
         setErr("");
         CharacterClient.getProfile(slug, characterName, region).then((data) => {
-          if (data == null) {
-            setErr("Character not found");
+          if (data?.charSummary == null) {
+            setCharacterNotFound(true);
             setLoading(false);
             return;
           }
+          setCharacterNotFound(false);
             setcharacterSummary(data.charSummary);
             setSpecName(data.charSummary.active_spec?.name);
             CharacterClient.getEquipment(slug, characterName, region).then((dataEquip) => {
@@ -61,6 +63,7 @@ const Profile: FC<ProfileProps> = () => {
                 setLoading(false)
                 })
         }).catch(() => {
+            setCharacterNotFound(true);
             setLoading(false);
         });
     },
@@ -98,7 +101,7 @@ const Profile: FC<ProfileProps> = () => {
       </div>
       :
         // uses loading useState in profile.tsx, but is affected by useEffect in child profile components to allow change in display.
- <div className='grid'>
+ <div className={characterNotFound ? "page-container not-found grid" : "page-container grid"}>
  <div className="button-row">
  <Text as="label" size="2">
    <Flex className='button-row'gap="2">
@@ -125,14 +128,6 @@ const Profile: FC<ProfileProps> = () => {
               >
                 Talents
               </SegmentedControl.Item>
-              {(characterSummary?.character_class?.name == 'Hunter' && <SegmentedControl.Item
-                onClick={() => {
-                  ChangeTab("pettalents");
-                }}
-                value="pettalents"
-              >
-                Pet
-              </SegmentedControl.Item>)}
               <SegmentedControl.Item
                 onClick={() => {
                   ChangeTab("alts");
@@ -178,10 +173,11 @@ const Profile: FC<ProfileProps> = () => {
     specName={specName}
     showModelViewer={showModelViewer}
     loading={loading} 
+    characterNotFound={characterNotFound}
     ></ProfileEquipment> 
-    <ProfileRating achievements={achievementsSummary}></ProfileRating>
+    <ProfileRating achievements={achievementsSummary} characterNotFound={characterNotFound}></ProfileRating>
     </div>
-    <ProfileStats characterProfileSummary={characterSummary} characterEquipmentSummary={characterEquipmentSummary} loading={loading}></ProfileStats>
+    <ProfileStats characterProfileSummary={characterSummary} characterEquipmentSummary={characterEquipmentSummary} loading={loading} characterNotFound={characterNotFound}></ProfileStats>
 </div>
 </div>
 ))};
