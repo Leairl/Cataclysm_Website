@@ -21,7 +21,9 @@ async function CutoffData() {
     setRewards(await DragonblightClient.getPvPRewards(props.region))
     setLoading(false);
 }
-
+    function getShuffleSpec(bracket: string | undefined): string | undefined {
+            return bracket?.split('-')[2];
+        }
   useEffect(() => {
     CutoffData()
   }, [props.bracket, props.region]);
@@ -30,9 +32,12 @@ async function CutoffData() {
     <div className="flex flex-row min-h-[64px] justify-center">
     <div className={!(loading && rewards != undefined) ? "mobileLeftPadding fadeIn flex flex-row flex-wrap wrap" : "mobileLeftPadding fadeOut flex flex-row flex-wrap wrap"}>
   { 
+  
 rewards?.filter(r => {
   //if result is positive during sort, swap values to sort in ascending order
-return r.bracket?.type?.includes(props.bracket) || (r.bracket?.type?.includes('BATTLEGROUNDS') && props.bracket == 'rbg')
+return r.bracket?.type?.includes(props.bracket) || 
+(r.bracket?.type?.includes('BATTLEGROUNDS') && props.bracket == 'rbg') || 
+(r.bracket?.type?.includes('SHUFFLE') && props.bracket.includes('shuffle') && r.specialization?.name?.toLowerCase() == getShuffleSpec(props.bracket))
 }).sort((c,p) => {
   return p.rating_cutoff - c.rating_cutoff
 }).map((i) => {
@@ -40,8 +45,11 @@ return r.bracket?.type?.includes(props.bracket) || (r.bracket?.type?.includes('B
         if (AchievementName?.endsWith(' Gladiator')) {
             return "text-yellow-600"
         }
+        if (AchievementName?.endsWith(' Legend')) {
+            return "text-yellow-600"
+        }
         if (AchievementName?.startsWith('Gladiator') || AchievementName?.startsWith('Hero of the Faction')) {
-            return "text-purple-500	"
+            return "text-purple-500"
         }
         if (AchievementName?.startsWith('Duelist')) {
             return "text-blue-500"
@@ -53,9 +61,11 @@ return r.bracket?.type?.includes(props.bracket) || (r.bracket?.type?.includes('B
             return "text-neutral-500"
         }
     }
-
     function getCardBorder(AchievementName: string | undefined) {
         if (AchievementName?.endsWith(' Gladiator')) {
+            return "border-yellow-600 border-2"
+        }
+        if (AchievementName?.endsWith(' Legend')) {
             return "border-yellow-600 border-2"
         }
         if (AchievementName?.startsWith('Gladiator') || AchievementName?.startsWith('Hero of the Faction')) {
@@ -72,13 +82,25 @@ return r.bracket?.type?.includes(props.bracket) || (r.bracket?.type?.includes('B
         }
     }
 
+    //Blizzard names carry the season ("Gladiator - Season 15", "Obsidian Legend: Dragonflight Season 2")
+    //and sometimes a [DNT] marker; the card shows only the title itself
+    const title = i.achievement?.name
+      ?.replace(/\s*[-:]\s*(\w+ )*Season \d+/, '')
+      .replace('[DNT] ', '')
+      .trim();
+
   return (
-    
-    <Card className={getCardBorder(i.achievement?.name?.replace(/- Season [0-9][0-9]/, '').replace(/: Season [0-9][0-9]/, '').replace('[DNT] ', '')) + " hover:highlight- w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0"}>
-        <span className={getAchievementColor(i.achievement?.name?.replace(/- Season [0-9][0-9]/, '').replace(/: Season [0-9][0-9]/, '').replace('[DNT] ', ''))}>
-        <b>{i.achievement?.name?.replace(/- Season [0-9][0-9]/, '').replace(/: Season [0-9][0-9]/, '').replace('[DNT] ', '')}</b></span> {" "}
+    <Card className={`${getCardBorder(title) ?? ""} w-[180px] min-w-[180px] p-1 text-center mb-2 mr-2 flex-grow-0`}>
+        <span className={getAchievementColor(title)}><b>{title}</b></span>
+        {/* every spec has its own Solo Shuffle rewards, so without the spec those cards look identical */}
+        {i.specialization?.name && (
+          <>
+            <br></br>
+            <span className="text-sm">{i.specialization.name}</span>
+          </>
+        )}
         <br></br>
-        <span className="text-sm">Rating Cutoff:{" "}{i.rating_cutoff}</span>
+        <span className="text-sm">Rating Cutoff: {i.rating_cutoff}</span>
         <br></br>
         <span className="text-xs italic">Ranks: 1 - {i.rank}</span>
     </Card>

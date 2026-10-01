@@ -2,6 +2,7 @@ using ArgentPonyWarcraftClient;
 
 public interface IWarcraftRedisProxy
 {
+    Task<PvpLeaderboard> GetShuffleWarriorFuryLeaderboard(string region);
     Task<PvpLeaderboard> Get3v3Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<PvpLeaderboard> Get2v2Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);
     Task<PvpLeaderboard> Get5v5Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic);

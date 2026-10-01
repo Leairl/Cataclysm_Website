@@ -28,4 +28,11 @@ public record PvpSeasonReward
     /// </summary>
     [JsonPropertyName("faction")]
     public EnumType Faction { get; init; }
+
+    /// <summary>
+    /// Gets the specialization this reward is for. Only Solo Shuffle rewards have one, since that
+    /// bracket keeps a separate ladder per specialization; null for every other bracket.
+    /// </summary>
+    [JsonPropertyName("specialization")]
+    public PlayableSpecializationReference Specialization { get; init; }
 }

@@ -712,6 +712,51 @@ export class PvpLeaderboardClient {
         return Promise.resolve<PvpCharacterSummary[]>(null as any);
     }
 
+    getShuffleWarriorFuryLadder(skip: number | undefined, take: number | undefined, region: string | undefined): Promise<PvpCharacterSummary[]> {
+        let url_ = this.baseUrl + "/api/PvpLeaderboard/GetShuffleWarriorFuryLadder?";
+        if (skip === null)
+            throw new Error("The parameter 'skip' cannot be null.");
+        else if (skip !== undefined)
+            url_ += "skip=" + encodeURIComponent("" + skip) + "&";
+        if (take === null)
+            throw new Error("The parameter 'take' cannot be null.");
+        else if (take !== undefined)
+            url_ += "take=" + encodeURIComponent("" + take) + "&";
+        if (region === null)
+            throw new Error("The parameter 'region' cannot be null.");
+        else if (region !== undefined)
+            url_ += "region=" + encodeURIComponent("" + region) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetShuffleWarriorFuryLadder(_response);
+        });
+    }
+
+    protected processGetShuffleWarriorFuryLadder(response: Response): Promise<PvpCharacterSummary[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PvpCharacterSummary[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PvpCharacterSummary[]>(null as any);
+    }
+
     getSeasonStart(region: string | undefined): Promise<Date | null> {
         let url_ = this.baseUrl + "/api/PvpLeaderboard/GetSeasonStart?";
         if (region === null)
@@ -786,7 +831,7 @@ export class PvpLeaderboardClient {
         return Promise.resolve<PvpSeasonRewardWithRank[]>(null as any);
     }
 
-    getRankFromCutoffs(cutoff: number | undefined, bracket: string | undefined, region: string | undefined): Promise<number> {
+    getRankFromCutoffs(cutoff: number | undefined, bracket: string | undefined, region: string | undefined, specId: number | null | undefined): Promise<number> {
         let url_ = this.baseUrl + "/api/PvpLeaderboard/GetRankFromCutoffs?";
         if (cutoff === null)
             throw new Error("The parameter 'cutoff' cannot be null.");
@@ -800,6 +845,8 @@ export class PvpLeaderboardClient {
             throw new Error("The parameter 'region' cannot be null.");
         else if (region !== undefined)
             url_ += "region=" + encodeURIComponent("" + region) + "&";
+        if (specId !== undefined && specId !== null)
+            url_ += "specId=" + encodeURIComponent("" + specId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1804,6 +1851,7 @@ export interface PvpSeasonReward {
     achievement?: AchievementReference | undefined;
     rating_cutoff: number;
     faction?: EnumType | undefined;
+    specialization?: PlayableSpecializationReference | undefined;
 }
 
 export interface PvpSeasonRewardWithRank extends PvpSeasonReward {

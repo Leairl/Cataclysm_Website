@@ -109,6 +109,22 @@ namespace Dragonblight_Website.Server.Controllers
             }
         }
 
+        [HttpGet("GetShuffleWarriorFuryLadder")]
+        public async Task<ActionResult<IEnumerable<PvpCharacterSummary>>> GetShuffleWarriorFuryLadder(int skip, int take, string region)
+        {
+            try
+            {
+                var ladder = await _warcraftCachedData.GetPvpLeaderSummaries("shuffle-warrior-fury", region, GameFlavor.Retail); 
+                ladder = ladder.OrderBy(l => l?.PvpEntry.Rank).ToList();
+                return Ok(ladder.Skip(skip).Take(take));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching the Fury Warrior Solo Shuffle ladder.");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
         [HttpGet("GetSeasonStart")]
         public async Task<ActionResult<DateTimeOffset?>> GetSeasonStart(string region)
         {
@@ -139,7 +155,8 @@ namespace Dragonblight_Website.Server.Controllers
                         Achievement = r.Achievement,
                         RatingCutoff = r.RatingCutoff,
                         Faction = r.Faction,
-                        rank = await GetRankFromCutoffs(r.RatingCutoff, r.Bracket.Type, region)
+                        Specialization = r.Specialization,
+                        rank = await GetRankFromCutoffs(r.RatingCutoff, r.Bracket.Type, region, r.Specialization?.Id)
                         };
                     });
                     var result = await Task.WhenAll(pvpSeasonRewardWithRank);
@@ -160,8 +177,11 @@ namespace Dragonblight_Website.Server.Controllers
            [JsonPropertyName("rank")]
             public int rank { get; set; }
         }
+        //Blizzard's playable-specialization id for Fury Warrior
+        private const int FurySpecId = 72;
+
         [HttpGet("GetRankFromCutoffs")]
-        public async Task<int> GetRankFromCutoffs(int cutoff, string bracket, string region)
+        public async Task<int> GetRankFromCutoffs(int cutoff, string bracket, string region, int? specId = null)
         {
             try
             {
@@ -180,6 +200,12 @@ namespace Dragonblight_Website.Server.Controllers
                 if (bracket == "BATTLEGROUNDS")
                 {
                     return (await _warcraftCachedData.GetRBGLeaderboard(region, HttpContext.GetGameFlavor())).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
+                }
+                //every spec has its own Solo Shuffle ladder and all their rewards say SHUFFLE, so the
+                //reward's spec id picks the ladder. Specs without a ladder method yet rank as 0.
+                if (bracket == "SHUFFLE" && specId == FurySpecId)
+                {
+                    return (await _warcraftCachedData.GetShuffleWarriorFuryLeaderboard(region)).Entries.Where(p => p.Rating >= cutoff).Last().Rank;
                 }
                 return 0;
             }

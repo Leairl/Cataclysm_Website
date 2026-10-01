@@ -36,9 +36,7 @@ const ProfileAlts: FC<ProfileAltsProps> = (/*props*/) => {
   return (
     <div className="alt-pane">
       <p className="alt-intro">
-        Other characters on this Battle.net account. Account-wide achievements
-        complete at the same moment on every character of an account, so
-        characters whose completion times line up share an account.
+        Other characters on this Battle.net account.
       </p>
       {loading && getSkeletons()}
       {!loading && alts?.length === 0 && (

@@ -119,6 +119,22 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             logger.LogError(ex, "Error in Cache3v3Ladder");
         }
     }
+    public async Task CacheShuffleWarriorFuryLadder(string region)
+    {
+        try
+        {
+            //not using string since we are executing from GetShuffleWarriorFuryLeaderboard method in warcraftclient
+            var oldleaderboardShuffleWarriorFury = await redisProxy.GetShuffleWarriorFuryLeaderboard(region);
+            await redisProxy.ClearLeaderboard("shuffle-warrior-fury", region);
+            //only compares because the backgroundservice shorter than ladderupdate, updates new leaderboard after deleting the old one and is able to be compared because of this
+            var newleaderboardShuffleWarriorFury = await redisProxy.GetShuffleWarriorFuryLeaderboard(region);
+            await BatchCacheCharSummary("shuffle-warrior-fury", region, oldleaderboardShuffleWarriorFury.Entries.ToArray(), newleaderboardShuffleWarriorFury.Entries.ToArray(), 5, GameFlavor.Retail);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in CacheShuffleWarriorFuryLadder");
+        }
+    }
     //get Leaderboard5v5 in redis (defined method with a defined type to execute x function)
     public async Task Cache5v5Ladder(string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
@@ -137,13 +153,17 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
     }
     public async Task CacheAllLadders(string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
-        await CacheRBGLadder(region, flavor);
-        if (flavor.Brackets().Contains("5v5"))
+        // await CacheRBGLadder(region, flavor);
+        // if (flavor.Brackets().Contains("5v5"))
+        // {
+        //     await Cache5v5Ladder(region, flavor);
+        // }
+        if (flavor == GameFlavor.Retail)
         {
-            await Cache5v5Ladder(region, flavor);
+            await CacheShuffleWarriorFuryLadder(region);
         }
-        await Cache3v3Ladder(region, flavor);
-        await Cache2v2Ladder(region, flavor);
+        // await Cache3v3Ladder(region, flavor);
+        // await Cache2v2Ladder(region, flavor);
 
     }
 

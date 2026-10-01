@@ -22,7 +22,7 @@ import { useParams } from "react-router-dom";
 import { Pagination } from "react-headless-pagination";
 import ClassFilter from "../class-filter/class-filter";
 import Cutoffs from "../cutoffs/cutoffs";
-import { brackets } from "../../helpers/game-flavor";
+import { brackets} from "../../helpers/game-flavor";
 
 const Skeletons = [0, 1, 2];
 
@@ -128,6 +128,16 @@ function Rankings() {
               >
                 RBG
               </SegmentedControl.Item>
+              {brackets().includes("shuffle") && (
+                <SegmentedControl.Item
+                  onClick={() => {
+                    BracketClick("shuffle-warrior-fury");
+                  }}
+                  value="shuffle-warrior-fury"
+                >
+                  Shuffle
+                </SegmentedControl.Item>
+              )}
             </SegmentedControl.Root>
           </div>
           <div className="grow"></div>
@@ -607,6 +617,11 @@ function Rankings() {
     if (bracket == "3v3") {
       setLadderData(
         await DragonblightClient.get3v3Ladder(page * 50, 50, region)
+      );
+    }
+    if (bracket == "shuffle-warrior-fury") {
+      setLadderData(
+        await DragonblightClient.getShuffleWarriorFuryLadder(page * 50, 50, region)
       );
     }
     if (bracket == "2v2") {
