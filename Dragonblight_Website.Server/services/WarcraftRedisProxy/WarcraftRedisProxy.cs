@@ -5,6 +5,7 @@ using StackExchange.Redis;
 //The Redis-backed front for the Blizzard API, split across files by area:
 //  this file              - the cache helpers every lookup goes through, and Blizzard namespaces
 //  .Leaderboards          - PvP ladders, seasons, rewards and ladder history
+//  .Shuffle               - Solo Shuffle ladders, one per spec (retail only)
 //  .Characters            - a character's profile endpoints
 //  .Talents               - character talents and the retail talent trees
 //  .Activity              - rating changes between ladder syncs (Redis only)

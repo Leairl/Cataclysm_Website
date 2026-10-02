@@ -5,17 +5,6 @@ using ArgentPonyWarcraftClient;
 //ladder history is our own record, kept as Redis lists.
 partial class WarcraftRedisProxy
 {
-    //Solo Shuffle is retail only, so this never takes a flavor: the classic namespace and season would
-    //ask Blizzard for a ladder that does not exist
-    public async Task<PvpLeaderboard> GetShuffleWarriorFuryLeaderboard(string region)
-    {
-        var ns = GetDynamicRegion(region, GameFlavor.Retail);
-        return await GetBlizzardDataCached<PvpLeaderboard>("getShuffleWarriorFuryLeaderboard" + ns, async () =>
-        {
-            var currShuffleWarriorFuryLeaderboard = await warcraftClient.GetPvpLeaderboardAsync(await GetSeason(region, GameFlavor.Retail), "shuffle-warrior-fury", ns, GetRegion(ns), GetLocale(ns));
-            return currShuffleWarriorFuryLeaderboard.Value;
-        }, TimeSpan.FromHours(3)); 
-    }
     public async Task<PvpLeaderboard> Get2v2Leaderboard(string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
         var ns = GetDynamicRegion(region, flavor);
@@ -130,6 +119,162 @@ partial class WarcraftRedisProxy
         if (bracket == "shuffle-warrior-fury")
         {
             key = "getShuffleWarriorFuryLeaderboard" + region;
+        }
+        if (bracket == "shuffle-deathknight-blood")
+        {
+            key = "getShuffleDeathKnightBloodLeaderboard" + region;
+        }
+        if (bracket == "shuffle-deathknight-frost")
+        {
+            key = "getShuffleDeathKnightFrostLeaderboard" + region;
+        }
+        if (bracket == "shuffle-deathknight-unholy")
+        {
+            key = "getShuffleDeathKnightUnholyLeaderboard" + region;
+        }
+        if (bracket == "shuffle-demonhunter-devourer")
+        {
+            key = "getShuffleDemonHunterDevourerLeaderboard" + region;
+        }
+        if (bracket == "shuffle-demonhunter-havoc")
+        {
+            key = "getShuffleDemonHunterHavocLeaderboard" + region;
+        }
+        if (bracket == "shuffle-demonhunter-vengeance")
+        {
+            key = "getShuffleDemonHunterVengeanceLeaderboard" + region;
+        }
+        if (bracket == "shuffle-druid-balance")
+        {
+            key = "getShuffleDruidBalanceLeaderboard" + region;
+        }
+        if (bracket == "shuffle-druid-feral")
+        {
+            key = "getShuffleDruidFeralLeaderboard" + region;
+        }
+        if (bracket == "shuffle-druid-guardian")
+        {
+            key = "getShuffleDruidGuardianLeaderboard" + region;
+        }
+        if (bracket == "shuffle-druid-restoration")
+        {
+            key = "getShuffleDruidRestorationLeaderboard" + region;
+        }
+        if (bracket == "shuffle-evoker-devastation")
+        {
+            key = "getShuffleEvokerDevastationLeaderboard" + region;
+        }
+        if (bracket == "shuffle-evoker-preservation")
+        {
+            key = "getShuffleEvokerPreservationLeaderboard" + region;
+        }
+        if (bracket == "shuffle-evoker-augmentation")
+        {
+            key = "getShuffleEvokerAugmentationLeaderboard" + region;
+        }
+        if (bracket == "shuffle-hunter-beastmastery")
+        {
+            key = "getShuffleHunterBeastMasteryLeaderboard" + region;
+        }
+        if (bracket == "shuffle-hunter-marksmanship")
+        {
+            key = "getShuffleHunterMarksmanshipLeaderboard" + region;
+        }
+        if (bracket == "shuffle-hunter-survival")
+        {
+            key = "getShuffleHunterSurvivalLeaderboard" + region;
+        }
+        if (bracket == "shuffle-mage-arcane")
+        {
+            key = "getShuffleMageArcaneLeaderboard" + region;
+        }
+        if (bracket == "shuffle-mage-fire")
+        {
+            key = "getShuffleMageFireLeaderboard" + region;
+        }
+        if (bracket == "shuffle-mage-frost")
+        {
+            key = "getShuffleMageFrostLeaderboard" + region;
+        }
+        if (bracket == "shuffle-monk-brewmaster")
+        {
+            key = "getShuffleMonkBrewmasterLeaderboard" + region;
+        }
+        if (bracket == "shuffle-monk-windwalker")
+        {
+            key = "getShuffleMonkWindwalkerLeaderboard" + region;
+        }
+        if (bracket == "shuffle-monk-mistweaver")
+        {
+            key = "getShuffleMonkMistweaverLeaderboard" + region;
+        }
+        if (bracket == "shuffle-paladin-holy")
+        {
+            key = "getShufflePaladinHolyLeaderboard" + region;
+        }
+        if (bracket == "shuffle-paladin-protection")
+        {
+            key = "getShufflePaladinProtectionLeaderboard" + region;
+        }
+        if (bracket == "shuffle-paladin-retribution")
+        {
+            key = "getShufflePaladinRetributionLeaderboard" + region;
+        }
+        if (bracket == "shuffle-priest-discipline")
+        {
+            key = "getShufflePriestDisciplineLeaderboard" + region;
+        }
+        if (bracket == "shuffle-priest-holy")
+        {
+            key = "getShufflePriestHolyLeaderboard" + region;
+        }
+        if (bracket == "shuffle-priest-shadow")
+        {
+            key = "getShufflePriestShadowLeaderboard" + region;
+        }
+        if (bracket == "shuffle-rogue-assassination")
+        {
+            key = "getShuffleRogueAssassinationLeaderboard" + region;
+        }
+        if (bracket == "shuffle-rogue-outlaw")
+        {
+            key = "getShuffleRogueOutlawLeaderboard" + region;
+        }
+        if (bracket == "shuffle-rogue-subtlety")
+        {
+            key = "getShuffleRogueSubtletyLeaderboard" + region;
+        }
+        if (bracket == "shuffle-shaman-elemental")
+        {
+            key = "getShuffleShamanElementalLeaderboard" + region;
+        }
+        if (bracket == "shuffle-shaman-enhancement")
+        {
+            key = "getShuffleShamanEnhancementLeaderboard" + region;
+        }
+        if (bracket == "shuffle-shaman-restoration")
+        {
+            key = "getShuffleShamanRestorationLeaderboard" + region;
+        }
+        if (bracket == "shuffle-warlock-affliction")
+        {
+            key = "getShuffleWarlockAfflictionLeaderboard" + region;
+        }
+        if (bracket == "shuffle-warlock-demonology")
+        {
+            key = "getShuffleWarlockDemonologyLeaderboard" + region;
+        }
+        if (bracket == "shuffle-warlock-destruction")
+        {
+            key = "getShuffleWarlockDestructionLeaderboard" + region;
+        }
+        if (bracket == "shuffle-warrior-arms")
+        {
+            key = "getShuffleWarriorArmsLeaderboard" + region;
+        }
+        if (bracket == "shuffle-warrior-protection")
+        {
+            key = "getShuffleWarriorProtectionLeaderboard" + region;
         }
         if (bracket == "2v2")
         {

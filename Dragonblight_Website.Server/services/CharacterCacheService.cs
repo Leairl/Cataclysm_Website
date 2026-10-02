@@ -2,15 +2,16 @@ using ArgentPonyWarcraftClient;
 using StackExchange.Redis;
 using TwitchLib.Api.Helix.Models.Entitlements;
 
-class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger, IConfiguration Config, IConnectionMultiplexer redis)
+partial class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCacheService> logger, IConfiguration Config, IConnectionMultiplexer redis)
 {
     //uses PvpLeaderboardEntry in generic method in order to locate character slug / name in warcraft client
     public async Task BatchCacheCharSummary(string bracket, string region, PvpLeaderboardEntry[] oldarray, PvpLeaderboardEntry[] newarray, int batchSize = 5, GameFlavor flavor = GameFlavor.MistsClassic)
-    {
+    {   
         using var HttpClient = new HttpClient();
         using var RateLimitedHttpClient = new RateLimitedHttpClient(HttpClient);
-        var clientId = Config[flavor.KeyPrefix() + region.ToLower() + bracket.ToLower() + "bracket-battlenetApi:clientId"];
-        var clientSecret = Config[flavor.KeyPrefix() + region.ToLower() + bracket.ToLower() + "bracket-battlenetApi:clientSecret"];
+        var keyGroup = bracket.Split('-')[0].ToLower();
+        var clientId = Config[flavor.KeyPrefix() + region.ToLower() + keyGroup + "bracket-battlenetApi:clientId"];
+        var clientSecret = Config[flavor.KeyPrefix() + region.ToLower() + keyGroup + "bracket-battlenetApi:clientSecret"];
         var warcraftClient = new WarcraftClient(clientId, clientSecret, Region.US, Locale.en_US, RateLimitedHttpClient);
         redisProxy.overrideClient = warcraftClient;
         await redisProxy.ClearAllCachedClassCharacters(bracket, region, flavor);
@@ -36,7 +37,7 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
                         summary = await redisProxy.GetCharSummary(player.Character.Realm.Slug, player.Character.Name, region, flavor);
                     }
                     var talents = await redisProxy.GetCharacterSpecName(player.Character.Realm.Slug, player.Character.Name, region, flavor);
-                    if (talents == "")
+                    if (talents == "" && flavor != GameFlavor.Retail)
                     {
                         redis.GetDatabase().KeyDelete("characterSpecSummary" + player.Character.Name + player.Character.Realm.Slug + redisProxy.GetProfileRegion(region, flavor));
                         redis.GetDatabase().KeyDelete(flavor.KeyPrefix() + "characterSpecName" + player.Character.Name + player.Character.Realm.Slug + region);
@@ -119,22 +120,6 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
             logger.LogError(ex, "Error in Cache3v3Ladder");
         }
     }
-    public async Task CacheShuffleWarriorFuryLadder(string region)
-    {
-        try
-        {
-            //not using string since we are executing from GetShuffleWarriorFuryLeaderboard method in warcraftclient
-            var oldleaderboardShuffleWarriorFury = await redisProxy.GetShuffleWarriorFuryLeaderboard(region);
-            await redisProxy.ClearLeaderboard("shuffle-warrior-fury", region);
-            //only compares because the backgroundservice shorter than ladderupdate, updates new leaderboard after deleting the old one and is able to be compared because of this
-            var newleaderboardShuffleWarriorFury = await redisProxy.GetShuffleWarriorFuryLeaderboard(region);
-            await BatchCacheCharSummary("shuffle-warrior-fury", region, oldleaderboardShuffleWarriorFury.Entries.ToArray(), newleaderboardShuffleWarriorFury.Entries.ToArray(), 5, GameFlavor.Retail);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error in CacheShuffleWarriorFuryLadder");
-        }
-    }
     //get Leaderboard5v5 in redis (defined method with a defined type to execute x function)
     public async Task Cache5v5Ladder(string region, GameFlavor flavor = GameFlavor.MistsClassic)
     {
@@ -161,6 +146,45 @@ class CharacterCacheService(IWarcraftRedisProxy redisProxy, ILogger<CharacterCac
         if (flavor == GameFlavor.Retail)
         {
             await CacheShuffleWarriorFuryLadder(region);
+            await CacheShuffleDeathKnightBloodLadder(region);
+            await CacheShuffleDeathKnightFrostLadder(region);
+            await CacheShuffleDeathKnightUnholyLadder(region);
+            await CacheShuffleDemonHunterDevourerLadder(region);
+            await CacheShuffleDemonHunterHavocLadder(region);
+            await CacheShuffleDemonHunterVengeanceLadder(region);
+            await CacheShuffleDruidBalanceLadder(region);
+            await CacheShuffleDruidFeralLadder(region);
+            await CacheShuffleDruidGuardianLadder(region);
+            await CacheShuffleDruidRestorationLadder(region);
+            await CacheShuffleEvokerDevastationLadder(region);
+            await CacheShuffleEvokerPreservationLadder(region);
+            await CacheShuffleEvokerAugmentationLadder(region);
+            await CacheShuffleHunterBeastMasteryLadder(region);
+            await CacheShuffleHunterMarksmanshipLadder(region);
+            await CacheShuffleHunterSurvivalLadder(region);
+            await CacheShuffleMageArcaneLadder(region);
+            await CacheShuffleMageFireLadder(region);
+            await CacheShuffleMageFrostLadder(region);
+            await CacheShuffleMonkBrewmasterLadder(region);
+            await CacheShuffleMonkWindwalkerLadder(region);
+            await CacheShuffleMonkMistweaverLadder(region);
+            await CacheShufflePaladinHolyLadder(region);
+            await CacheShufflePaladinProtectionLadder(region);
+            await CacheShufflePaladinRetributionLadder(region);
+            await CacheShufflePriestDisciplineLadder(region);
+            await CacheShufflePriestHolyLadder(region);
+            await CacheShufflePriestShadowLadder(region);
+            await CacheShuffleRogueAssassinationLadder(region);
+            await CacheShuffleRogueOutlawLadder(region);
+            await CacheShuffleRogueSubtletyLadder(region);
+            await CacheShuffleShamanElementalLadder(region);
+            await CacheShuffleShamanEnhancementLadder(region);
+            await CacheShuffleShamanRestorationLadder(region);
+            await CacheShuffleWarlockAfflictionLadder(region);
+            await CacheShuffleWarlockDemonologyLadder(region);
+            await CacheShuffleWarlockDestructionLadder(region);
+            await CacheShuffleWarriorArmsLadder(region);
+            await CacheShuffleWarriorProtectionLadder(region);
         }
         // await Cache3v3Ladder(region, flavor);
         // await Cache2v2Ladder(region, flavor);

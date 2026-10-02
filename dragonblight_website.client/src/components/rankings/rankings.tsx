@@ -23,6 +23,8 @@ import { Pagination } from "react-headless-pagination";
 import ClassFilter from "../class-filter/class-filter";
 import Cutoffs from "../cutoffs/cutoffs";
 import { brackets} from "../../helpers/game-flavor";
+import ShuffleSpecFilter from "../shuffle-spec-filter/shuffle-spec-filter";
+import { shuffleSpecs, defaultShuffleSpec, isShuffleBracket, shuffleSpecIcon } from "../../helpers/shuffle-specs";
 
 const Skeletons = [0, 1, 2];
 
@@ -42,7 +44,8 @@ function Rankings() {
   //getting values that are changeable
   useEffect(() => {
     setLoading(true);
-    if (selectedClasses.includes("All Classes")) {
+    //a class filter left over from another bracket does not apply to a Shuffle ladder
+    if (selectedClasses.includes("All Classes") || isShuffleBracket(bracket)) {
       LadderData();
     }
     else {
@@ -85,14 +88,21 @@ function Rankings() {
   return (
     <div>
       <Cutoffs region={region} bracket={bracket}></Cutoffs>
-      <div className="flex-col">
-        <div className="flex-row justify-center flex px-0 py-3 flex-wrap">
-          <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
-          <div className="left50"></div>
+      <div className="toolbar py-3">
+          <div className="toolbar-left">
+
+          {/* a Shuffle ladder is a single spec, so there are no classes to filter */}
+          {isShuffleBracket(bracket) ? (
+            <ShuffleSpecFilter selected={bracket} onSelect={BracketClick}></ShuffleSpecFilter>
+          ) : (
+            <ClassFilter onSelect={(sc) => setSelectedClasses(sc)}></ClassFilter>
+          )}
+          </div>
           <div className={loading ? "div-disabled" : ""}>
             <SegmentedControl.Root
               className=" w-[250px] flex-grow-0"
-              defaultValue={URLbracket ?? "3v3"}
+              //every spec ladder sits under the one Shuffle tab
+              defaultValue={isShuffleBracket(URLbracket) ? "shuffle" : URLbracket ?? "3v3"}
             >
               <SegmentedControl.Item
                 onClick={() => {
@@ -131,16 +141,20 @@ function Rankings() {
               {brackets().includes("shuffle") && (
                 <SegmentedControl.Item
                   onClick={() => {
-                    BracketClick("shuffle-warrior-fury");
+                    //stay on the chosen spec if a Shuffle ladder is already showing
+                    if (!isShuffleBracket(bracket)) {
+                      BracketClick(defaultShuffleSpec);
+                    }
                   }}
-                  value="shuffle-warrior-fury"
+                  value="shuffle"
                 >
                   Shuffle
                 </SegmentedControl.Item>
               )}
             </SegmentedControl.Root>
-          </div>
-          <div className="grow"></div>
+            </div>
+          <div className="toolbar-right">
+
             <Tooltip className="flex items-center" content="Percentage synced with Blizzard">
               <span className="flex items-center">
               <span>{Number(syncStatus.toFixed(2)) * 100}%</span>
@@ -343,6 +357,10 @@ function Rankings() {
                           <Avatar.Root className="h-[23px] w-[23px] mr-1">
                           <Avatar.Image
                             src={(() => {
+                              const shuffleSpec = shuffleSpecs.find((s) => s.slug == bracket);
+                              if (shuffleSpec) {
+                                return shuffleSpecIcon(shuffleSpec);
+                              }
                               if (characterEntry.charSummary?.active_spec?.name == null || characterEntry.charSummary?.active_spec?.name == "" || characterEntry.charSummary?.name == null) {
                                 return `/unknown.png`;
                               }
@@ -619,9 +637,10 @@ function Rankings() {
         await DragonblightClient.get3v3Ladder(page * 50, 50, region)
       );
     }
-    if (bracket == "shuffle-warrior-fury") {
+    const shuffleSpec = shuffleSpecs.find((s) => s.slug == bracket);
+    if (shuffleSpec) {
       setLadderData(
-        await DragonblightClient.getShuffleWarriorFuryLadder(page * 50, 50, region)
+        await shuffleSpec.fetch(DragonblightClient, page * 50, 50, region)
       );
     }
     if (bracket == "2v2") {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dragonblight } from '../../clients/Dragonblight';
 import { Card } from '@radix-ui/themes';
+import { shuffleSpecs } from '../../helpers/shuffle-specs';
 
 
 interface CutoffProps {
@@ -21,9 +22,11 @@ async function CutoffData() {
     setRewards(await DragonblightClient.getPvPRewards(props.region))
     setLoading(false);
 }
-    function getShuffleSpec(bracket: string | undefined): string | undefined {
-            return bracket?.split('-')[2];
-        }
+    //names repeat across classes (Frost, Holy, Restoration, Protection), so a Shuffle reward is
+    //matched to its ladder by spec id
+    function getShuffleSpecId(bracket: string | undefined): number | undefined {
+        return shuffleSpecs.find(s => s.slug == bracket)?.specId;
+    }
   useEffect(() => {
     CutoffData()
   }, [props.bracket, props.region]);
@@ -37,7 +40,7 @@ rewards?.filter(r => {
   //if result is positive during sort, swap values to sort in ascending order
 return r.bracket?.type?.includes(props.bracket) || 
 (r.bracket?.type?.includes('BATTLEGROUNDS') && props.bracket == 'rbg') || 
-(r.bracket?.type?.includes('SHUFFLE') && props.bracket.includes('shuffle') && r.specialization?.name?.toLowerCase() == getShuffleSpec(props.bracket))
+(r.bracket?.type?.includes('SHUFFLE') && r.specialization?.id != undefined && r.specialization.id == getShuffleSpecId(props.bracket))
 }).sort((c,p) => {
   return p.rating_cutoff - c.rating_cutoff
 }).map((i) => {
