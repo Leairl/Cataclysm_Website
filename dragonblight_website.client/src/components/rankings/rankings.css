@@ -21,9 +21,7 @@
 .desktopWidth {
   width: 950px;
 }
-.left50 {
-  width: 18.5%;
-}
+
 .toolbar-right { justify-self: end; display: flex; align-items: center; }
 .toolbar-left { justify-self: start; }
 .toolbar {
@@ -32,10 +30,7 @@
   align-items: center;
   gap: 8px;
 }
-.grow { 
-  flex-grow: 1;
-  width: 0px;
-  }
+
 @media only screen and (max-width: 950px) {
   .toolbar { grid-template-columns: 1fr; justify-items: center; }
   .toolbar-left, .toolbar-right { justify-self: center; }
